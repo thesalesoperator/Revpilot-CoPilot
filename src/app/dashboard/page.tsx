@@ -20,7 +20,7 @@ import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase/client'
-import { formatCurrency, formatDate, formatPercent, generatePaymentSchedule } from '@/lib/utils'
+import { formatCurrency, formatDate, formatPercent } from '@/lib/utils'
 import type { Sale, Product, PaymentRecord } from '@/types/database'
 
 interface SaleWithPayments extends Sale {
@@ -439,6 +439,12 @@ interface SaleModalProps {
   onSuccess: () => void
 }
 
+interface FuturePayment {
+  id: string
+  amount: string
+  dueDate: string
+}
+
 function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleModalProps) {
   const [formData, setFormData] = useState({
     client_name: '',
@@ -447,15 +453,22 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
     total_package_price: '',
     cash_collected_upfront: '',
     commission_percent: '',
-    payment_count: '1',
-    payment_cycle: 'monthly',
     sale_date: new Date().toISOString().split('T')[0],
     notes: '',
   })
+  const [futurePayments, setFuturePayments] = useState<FuturePayment[]>([])
   const [loading, setLoading] = useState(false)
 
   const { showToast } = useToast()
   const supabase = createClient()
+
+  // Calculate remaining balance
+  const totalPrice = parseFloat(formData.total_package_price) || 0
+  const upfront = parseFloat(formData.cash_collected_upfront) || 0
+  const commissionPct = parseFloat(formData.commission_percent) || 0
+  const futurePaymentsTotal = futurePayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+  const remainingBalance = totalPrice - upfront - futurePaymentsTotal
+  const hasRemainingBalance = totalPrice > 0 && upfront < totalPrice
 
   useEffect(() => {
     if (sale) {
@@ -466,11 +479,10 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
         total_package_price: sale.total_package_price.toString(),
         cash_collected_upfront: sale.cash_collected_upfront.toString(),
         commission_percent: sale.commission_percent.toString(),
-        payment_count: sale.payment_count.toString(),
-        payment_cycle: sale.payment_cycle,
         sale_date: sale.sale_date.split('T')[0],
         notes: sale.notes || '',
       })
+      setFuturePayments([])
     } else {
       setFormData({
         client_name: '',
@@ -479,11 +491,10 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
         total_package_price: '',
         cash_collected_upfront: '',
         commission_percent: '',
-        payment_count: '1',
-        payment_cycle: 'monthly',
         sale_date: new Date().toISOString().split('T')[0],
         notes: '',
       })
+      setFuturePayments([])
     }
   }, [sale, isOpen])
 
@@ -501,27 +512,58 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
         product_name: product.name,
         total_package_price: product.default_price.toString(),
         commission_percent: product.default_commission_percent.toString(),
-        payment_count: product.default_payment_count.toString(),
-        payment_cycle: product.default_payment_cycle,
       }))
     }
   }
 
+  const addFuturePayment = () => {
+    const nextMonth = new Date()
+    nextMonth.setMonth(nextMonth.getMonth() + futurePayments.length + 1)
+
+    setFuturePayments([
+      ...futurePayments,
+      {
+        id: crypto.randomUUID(),
+        amount: remainingBalance > 0 ? remainingBalance.toFixed(2) : '',
+        dueDate: nextMonth.toISOString().split('T')[0],
+      },
+    ])
+  }
+
+  const updateFuturePayment = (id: string, field: 'amount' | 'dueDate', value: string) => {
+    setFuturePayments(
+      futurePayments.map((p) => (p.id === id ? { ...p, [field]: value } : p))
+    )
+  }
+
+  const removeFuturePayment = (id: string) => {
+    setFuturePayments(futurePayments.filter((p) => p.id !== id))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate that all balance is accounted for
+    if (hasRemainingBalance && Math.abs(remainingBalance) > 0.01) {
+      showToast('error', `Please allocate the remaining ${formatCurrency(remainingBalance)} to future payments`)
+      return
+    }
+
     setLoading(true)
 
     try {
+      const paymentCount = 1 + futurePayments.length
+
       const saleData = {
         user_id: userId,
         client_name: formData.client_name,
         product_name: formData.product_name,
         product_id: formData.product_id || null,
-        total_package_price: parseFloat(formData.total_package_price),
-        cash_collected_upfront: parseFloat(formData.cash_collected_upfront),
-        commission_percent: parseFloat(formData.commission_percent),
-        payment_count: parseInt(formData.payment_count),
-        payment_cycle: formData.payment_cycle,
+        total_package_price: totalPrice,
+        cash_collected_upfront: upfront,
+        commission_percent: commissionPct,
+        payment_count: paymentCount,
+        payment_cycle: 'custom',
         sale_date: formData.sale_date,
         notes: formData.notes || null,
         status: 'active',
@@ -541,24 +583,27 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
 
         if (saleError) throw saleError
 
-        // Generate payment schedule
-        const paymentSchedule = generatePaymentSchedule(
-          saleData.total_package_price,
-          saleData.cash_collected_upfront,
-          saleData.payment_count,
-          saleData.payment_cycle,
-          new Date(saleData.sale_date)
-        )
-
-        // Insert payment records
-        const paymentRecords = paymentSchedule.map((payment) => ({
-          sale_id: newSale.id,
-          payment_number: payment.paymentNumber,
-          amount: payment.amount,
-          due_date: payment.dueDate.toISOString(),
-          status: payment.status,
-          paid_date: payment.status === 'paid' ? new Date().toISOString() : null,
-        }))
+        // Create payment records
+        const paymentRecords = [
+          // First payment (upfront - already paid)
+          {
+            sale_id: newSale.id,
+            payment_number: 1,
+            amount: upfront,
+            due_date: new Date(formData.sale_date).toISOString(),
+            status: 'paid',
+            paid_date: new Date().toISOString(),
+          },
+          // Future payments
+          ...futurePayments.map((payment, index) => ({
+            sale_id: newSale.id,
+            payment_number: index + 2,
+            amount: parseFloat(payment.amount),
+            due_date: new Date(payment.dueDate).toISOString(),
+            status: 'pending',
+            paid_date: null,
+          })),
+        ]
 
         await supabase.from('payment_records').insert(paymentRecords)
         showToast('success', 'Sale added successfully')
@@ -573,12 +618,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
     }
   }
 
-  // Calculate preview
-  const totalPrice = parseFloat(formData.total_package_price) || 0
-  const upfront = parseFloat(formData.cash_collected_upfront) || 0
-  const commissionPct = parseFloat(formData.commission_percent) || 0
-  const paymentCount = parseInt(formData.payment_count) || 1
-  const installmentAmount = paymentCount > 1 ? (totalPrice - upfront) / (paymentCount - 1) : 0
+  // Calculate commission preview
   const guaranteedCommission = upfront * (commissionPct / 100)
   const potentialCommission = (totalPrice - upfront) * (commissionPct / 100)
 
@@ -659,7 +699,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Cash Collected Upfront</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Cash Collected Today</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <input
@@ -694,34 +734,6 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Number of Payments</label>
-            <input
-              type="number"
-              value={formData.payment_count}
-              onChange={(e) => setFormData((prev) => ({ ...prev, payment_count: e.target.value }))}
-              className="input-field"
-              min="1"
-              max="60"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Payment Cycle</label>
-            <select
-              value={formData.payment_cycle}
-              onChange={(e) => setFormData((prev) => ({ ...prev, payment_cycle: e.target.value }))}
-              className="select-field"
-              required
-            >
-              <option value="weekly">Weekly</option>
-              <option value="biweekly">Bi-Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="quarterly">Quarterly</option>
-            </select>
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Sale Date</label>
             <input
               type="date"
@@ -743,18 +755,87 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
           </div>
         </div>
 
-        {/* Preview */}
+        {/* Future Payments Section - shows when there's remaining balance */}
+        {hasRemainingBalance && (
+          <div className="border border-[rgba(255,190,87,0.3)] bg-[rgba(255,190,87,0.05)] rounded-xl p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium text-[#ffbe57]">Future Payment Schedule</h4>
+                <p className="text-xs text-gray-400 mt-1">
+                  Remaining balance: <span className={remainingBalance > 0.01 ? 'text-[#ff6b8a]' : 'text-[#00ffc1]'}>{formatCurrency(remainingBalance)}</span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={addFuturePayment}
+                className="btn-secondary text-sm py-2 px-3 flex items-center gap-1"
+              >
+                <Plus className="w-4 h-4" />
+                Add Payment
+              </button>
+            </div>
+
+            {futurePayments.length > 0 && (
+              <div className="space-y-3">
+                {futurePayments.map((payment, index) => (
+                  <div key={payment.id} className="flex items-center gap-3 bg-[rgba(0,0,0,0.2)] rounded-lg p-3">
+                    <div className="w-8 h-8 rounded-full bg-[rgba(255,190,87,0.2)] flex items-center justify-center text-[#ffbe57] text-sm font-medium">
+                      {index + 2}
+                    </div>
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                        <input
+                          type="number"
+                          value={payment.amount}
+                          onChange={(e) => updateFuturePayment(payment.id, 'amount', e.target.value)}
+                          className="input-field pl-7 py-2 text-sm"
+                          placeholder="Amount"
+                          step="0.01"
+                          min="0"
+                          required
+                        />
+                      </div>
+                      <input
+                        type="date"
+                        value={payment.dueDate}
+                        onChange={(e) => updateFuturePayment(payment.id, 'dueDate', e.target.value)}
+                        className="input-field py-2 text-sm"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFuturePayment(payment.id)}
+                      className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {futurePayments.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-4">
+                Click &quot;Add Payment&quot; to schedule future installments
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Commission Preview */}
         {totalPrice > 0 && (
           <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.2)] rounded-xl p-4">
             <h4 className="text-sm font-medium text-[#00ffc1] mb-3">Commission Preview</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
-                <p className="text-gray-400">Installment Amount</p>
-                <p className="text-white font-medium">{formatCurrency(installmentAmount)}</p>
+                <p className="text-gray-400">Total Payments</p>
+                <p className="text-white font-medium">{1 + futurePayments.length}</p>
               </div>
               <div>
-                <p className="text-gray-400">Remaining Payments</p>
-                <p className="text-white font-medium">{Math.max(0, paymentCount - 1)}</p>
+                <p className="text-gray-400">Outstanding Balance</p>
+                <p className="text-white font-medium">{formatCurrency(totalPrice - upfront)}</p>
               </div>
               <div>
                 <p className="text-gray-400">Guaranteed Commission</p>
