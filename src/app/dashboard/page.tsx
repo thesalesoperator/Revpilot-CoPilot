@@ -11,7 +11,6 @@ import {
   Plus,
   Edit2,
   Trash2,
-  RotateCcw,
   Package,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -125,23 +124,29 @@ export default function DashboardPage() {
     }
   }
 
-  const handleRefund = async (sale: Sale) => {
-    if (!confirm('Mark this sale as refunded?')) return
-
+  const handleStatusChange = async (sale: Sale, newStatus: string) => {
     try {
+      const updateData: Record<string, unknown> = { status: newStatus }
+
+      // If marking as refunded, set refund date and amount
+      if (newStatus === 'refunded') {
+        updateData.refund_date = new Date().toISOString()
+        updateData.refund_amount = sale.total_package_price
+      } else {
+        // Clear refund data if changing away from refunded
+        updateData.refund_date = null
+        updateData.refund_amount = null
+      }
+
       await supabase
         .from('sales')
-        .update({
-          status: 'refunded',
-          refund_date: new Date().toISOString(),
-          refund_amount: sale.total_package_price,
-        })
+        .update(updateData)
         .eq('id', sale.id)
 
-      showToast('success', 'Sale marked as refunded')
+      showToast('success', 'Status updated successfully')
       fetchData()
     } catch (error) {
-      showToast('error', 'Failed to process refund')
+      showToast('error', 'Failed to update status')
     }
   }
 
@@ -294,13 +299,21 @@ export default function DashboardPage() {
                           </button>
                         </td>
                         <td>
-                          {sale.status === 'refunded' ? (
-                            <span className="badge badge-danger">Refunded</span>
-                          ) : paidPayments === totalPayments ? (
-                            <span className="badge badge-success">Completed</span>
-                          ) : (
-                            <span className="badge badge-warning">Active</span>
-                          )}
+                          <select
+                            value={sale.status}
+                            onChange={(e) => handleStatusChange(sale, e.target.value)}
+                            className={`status-select text-sm font-medium rounded-full px-3 py-1.5 border cursor-pointer transition-colors focus:outline-none ${
+                              sale.status === 'refunded'
+                                ? 'bg-[rgba(255,0,67,0.15)] text-[#ff6b8a] border-[rgba(255,0,67,0.3)]'
+                                : sale.status === 'paid'
+                                ? 'bg-[rgba(0,255,193,0.15)] text-[#00ffc1] border-[rgba(0,255,193,0.3)]'
+                                : 'bg-[rgba(255,152,85,0.15)] text-[#ffbe57] border-[rgba(255,152,85,0.3)]'
+                            }`}
+                          >
+                            <option value="not_yet_paid">Not Yet Paid</option>
+                            <option value="paid">Paid</option>
+                            <option value="refunded">Refunded</option>
+                          </select>
                         </td>
                         <td>
                           <div className="flex items-center gap-2">
@@ -311,15 +324,6 @@ export default function DashboardPage() {
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
-                            {sale.status !== 'refunded' && (
-                              <button
-                                onClick={() => handleRefund(sale)}
-                                className="p-2 rounded-lg hover:bg-[rgba(255,190,87,0.1)] text-gray-400 hover:text-[#ffbe57] transition-colors"
-                                title="Mark Refunded"
-                              >
-                                <RotateCcw className="w-4 h-4" />
-                              </button>
-                            )}
                             <button
                               onClick={() => handleDeleteSale(sale.id)}
                               className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
@@ -566,7 +570,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
         payment_cycle: 'custom',
         sale_date: formData.sale_date,
         notes: formData.notes || null,
-        status: 'active',
+        status: 'not_yet_paid',
       }
 
       if (sale) {
