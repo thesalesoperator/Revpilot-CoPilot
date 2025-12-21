@@ -11,6 +11,8 @@ import {
   Trash2,
   Save,
   User,
+  Trophy,
+  Flame,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -18,12 +20,15 @@ import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
-import type { Product, Settings, Profile } from '@/types/database'
+import type { Product, Settings, Profile, UserBadge, UserStreak } from '@/types/database'
+import { BADGES, getBadgesByCategory } from '@/data/badges'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [products, setProducts] = useState<Product[]>([])
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([])
+  const [userStreaks, setUserStreaks] = useState<UserStreak[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [isProductModalOpen, setIsProductModalOpen] = useState(false)
@@ -37,15 +42,19 @@ export default function SettingsPage() {
     if (!user) return
 
     try {
-      const [settingsRes, productsRes, profileRes] = await Promise.all([
+      const [settingsRes, productsRes, profileRes, badgesRes, streaksRes] = await Promise.all([
         supabase.from('settings').select('*').eq('user_id', user.id).single(),
         supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('user_badges').select('*').eq('user_id', user.id),
+        supabase.from('user_streaks').select('*').eq('user_id', user.id),
       ])
 
       if (settingsRes.data) setSettings(settingsRes.data)
       if (productsRes.data) setProducts(productsRes.data)
       if (profileRes.data) setProfile(profileRes.data)
+      if (badgesRes.data) setUserBadges(badgesRes.data)
+      if (streaksRes.data) setUserStreaks(streaksRes.data)
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -305,6 +314,189 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Badges & Achievements */}
+        <div className="glass-card">
+          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+            <div className="flex items-center gap-3">
+              <Trophy className="w-5 h-5 text-[#00ffc1]" />
+              <h2 className="text-xl font-semibold gradient-text">Badges & Achievements</h2>
+            </div>
+            <p className="text-gray-400 text-sm mt-1">
+              Track your progress and earn badges for your accomplishments
+            </p>
+          </div>
+
+          {/* Current Streaks */}
+          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <Flame className="w-5 h-5 text-orange-500" />
+              Current Streaks
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {['journal', 'habits', 'metrics', 'login'].map((streakType) => {
+                const streak = userStreaks.find((s) => s.streak_type === streakType)
+                const labels: Record<string, string> = {
+                  journal: 'Journal',
+                  habits: 'Habits',
+                  metrics: 'Metrics',
+                  login: 'Login',
+                }
+                return (
+                  <div
+                    key={streakType}
+                    className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4 text-center"
+                  >
+                    <p className="text-gray-400 text-sm mb-1">{labels[streakType]}</p>
+                    <p className="text-2xl font-bold text-white">
+                      {streak?.current_streak || 0}
+                      <span className="text-sm font-normal text-gray-500 ml-1">days</span>
+                    </p>
+                    {streak?.longest_streak ? (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Best: {streak.longest_streak} days
+                      </p>
+                    ) : null}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Badge Categories */}
+          <div className="p-6 space-y-8">
+            {/* Streak Badges */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Streak Badges</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {getBadgesByCategory('streak').map((badge) => {
+                  const isEarned = userBadges.some((ub) => ub.badge_id === badge.id)
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`rounded-xl p-4 text-center transition-all ${
+                        isEarned
+                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.3)]'
+                          : 'bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] opacity-50'
+                      }`}
+                    >
+                      <div className={`text-3xl mb-2 ${isEarned ? '' : 'grayscale'}`}>
+                        {badge.icon}
+                      </div>
+                      <h4 className={`font-medium ${isEarned ? 'text-white' : 'text-gray-500'}`}>
+                        {badge.name}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1">{badge.description}</p>
+                      {isEarned && (
+                        <span className="inline-block mt-2 text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                          Earned!
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Achievement Badges */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Achievement Badges</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {getBadgesByCategory('achievement').map((badge) => {
+                  const isEarned = userBadges.some((ub) => ub.badge_id === badge.id)
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`rounded-xl p-4 transition-all ${
+                        isEarned
+                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.3)]'
+                          : 'bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] opacity-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`text-2xl ${isEarned ? '' : 'grayscale'}`}>
+                          {badge.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-medium ${isEarned ? 'text-white' : 'text-gray-500'}`}>
+                            {badge.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">{badge.requirement}</p>
+                          {isEarned && (
+                            <span className="inline-block mt-2 text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                              Earned!
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Milestone Badges */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">Milestone Badges</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {getBadgesByCategory('milestone').map((badge) => {
+                  const isEarned = userBadges.some((ub) => ub.badge_id === badge.id)
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`rounded-xl p-4 transition-all ${
+                        isEarned
+                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.3)]'
+                          : 'bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] opacity-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`text-2xl ${isEarned ? '' : 'grayscale'}`}>
+                          {badge.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-medium ${isEarned ? 'text-white' : 'text-gray-500'}`}>
+                            {badge.name}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">{badge.requirement}</p>
+                          {isEarned && (
+                            <span className="inline-block mt-2 text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                              Earned!
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Stats Summary */}
+            <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-400 text-sm">Total Badges Earned</p>
+                  <p className="text-3xl font-bold text-[#00ffc1]">
+                    {userBadges.length} / {BADGES.length}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-gray-400 text-sm">Completion</p>
+                  <p className="text-3xl font-bold text-white">
+                    {Math.round((userBadges.length / BADGES.length) * 100)}%
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 bg-[rgba(255,255,255,0.1)] rounded-full h-3 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] transition-all duration-500"
+                  style={{ width: `${(userBadges.length / BADGES.length) * 100}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

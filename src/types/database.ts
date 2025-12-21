@@ -274,3 +274,70 @@ export type PaymentRecord = Database['public']['Tables']['payment_records']['Row
 export type Settings = Database['public']['Tables']['settings']['Row']
 export type TrackedMetric = Database['public']['Tables']['tracked_metrics']['Row']
 export type MetricEntry = Database['public']['Tables']['metric_entries']['Row']
+
+// Journal types
+export interface JournalEntry {
+  id: string
+  user_id: string
+  entry_date: string
+  what_went_well: string | null
+  what_didnt_go_well: string | null
+  what_to_improve: string | null
+  where_need_support: string | null
+  additional_notes: string | null
+  mood_rating: number | null
+  created_at: string
+  updated_at: string
+}
+
+// Habit types
+export interface Habit {
+  id: string
+  user_id: string
+  name: string
+  description: string | null
+  category: 'personal' | 'professional'
+  frequency: 'daily' | 'weekly'
+  target_days: number[] | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface HabitCompletion {
+  id: string
+  habit_id: string
+  user_id: string
+  completed_date: string
+  created_at: string
+}
+
+// Streak types
+export interface UserStreak {
+  id: string
+  user_id: string
+  streak_type: 'journal' | 'metrics' | 'habits' | 'login'
+  current_streak: number
+  longest_streak: number
+  last_activity_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+// Badge types
+export interface UserBadge {
+  id: string
+  user_id: string
+  badge_id: string
+  earned_at: string
+}
+
+// Badge definitions
+export interface BadgeDefinition {
+  id: string
+  name: string
+  description: string
+  icon: string
+  category: 'streak' | 'achievement' | 'milestone'
+  requirement: string
+}
