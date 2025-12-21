@@ -35,7 +35,7 @@ export default function SignupPage() {
       showToast('error', error.message)
       setLoading(false)
     } else {
-      showToast('success', 'Account created! Please check your email to confirm.')
+      showToast('success', 'Account created successfully!')
       router.push('/dashboard')
     }
   }
