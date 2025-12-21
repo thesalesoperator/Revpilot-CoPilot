@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     // Download the audio file from Supabase Storage
     const { data: fileData, error: downloadError } = await supabase.storage
-      .from('call-recordings')
+      .from('CALL_RECORDINGS')
       .download(recording.file_url)
 
     if (downloadError || !fileData) {

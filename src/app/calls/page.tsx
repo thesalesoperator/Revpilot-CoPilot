@@ -148,7 +148,7 @@ export default function CallsPage() {
       // Upload to Supabase Storage
       setUploadProgress(30)
       const { error: uploadError } = await supabase.storage
-        .from('call-recordings')
+        .from('CALL_RECORDINGS')
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
@@ -209,7 +209,7 @@ export default function CallsPage() {
 
     try {
       // Delete from storage
-      await supabase.storage.from('call-recordings').remove([fileUrl])
+      await supabase.storage.from('CALL_RECORDINGS').remove([fileUrl])
 
       // Delete from database
       await supabase.from('call_recordings').delete().eq('id', recordingId)
