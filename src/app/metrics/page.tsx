@@ -10,19 +10,26 @@ import {
   BellOff,
   Calendar,
   TrendingUp,
+  TrendingDown,
   Percent,
   DollarSign,
   Hash,
+  ArrowUp,
+  ArrowDown,
+  Minus,
 } from 'lucide-react'
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Cell,
 } from 'recharts'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -273,6 +280,73 @@ export default function MetricsPage() {
     return Hash
   }
 
+  // Calculate month-over-month comparison for a metric
+  const getMonthComparison = (metricId: string) => {
+    const now = new Date()
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+
+    const metricEntries = entries.filter((e) => e.metric_id === metricId)
+
+    const thisMonthEntries = metricEntries.filter((e) => {
+      const date = new Date(e.period_start)
+      return date >= thisMonthStart
+    })
+
+    const lastMonthEntries = metricEntries.filter((e) => {
+      const date = new Date(e.period_start)
+      return date >= lastMonthStart && date <= lastMonthEnd
+    })
+
+    const thisMonthAvg = thisMonthEntries.length > 0
+      ? thisMonthEntries.reduce((sum, e) => sum + e.value, 0) / thisMonthEntries.length
+      : null
+
+    const lastMonthAvg = lastMonthEntries.length > 0
+      ? lastMonthEntries.reduce((sum, e) => sum + e.value, 0) / lastMonthEntries.length
+      : null
+
+    let percentChange: number | null = null
+    if (thisMonthAvg !== null && lastMonthAvg !== null && lastMonthAvg !== 0) {
+      percentChange = ((thisMonthAvg - lastMonthAvg) / lastMonthAvg) * 100
+    }
+
+    return {
+      thisMonth: thisMonthAvg,
+      lastMonth: lastMonthAvg,
+      percentChange,
+      thisMonthLabel: now.toLocaleDateString('en-US', { month: 'short' }),
+      lastMonthLabel: new Date(now.getFullYear(), now.getMonth() - 1, 1).toLocaleDateString('en-US', { month: 'short' }),
+    }
+  }
+
+  // Group metrics by type for separate charts
+  const percentageMetrics = metrics.filter((m) => m.metric_type === 'percentage')
+  const currencyMetrics = metrics.filter((m) => m.metric_type === 'currency')
+  const numberMetrics = metrics.filter((m) => m.metric_type === 'number')
+
+  // Get chart data for specific metric types
+  const getChartDataForMetrics = (metricList: TrackedMetric[]) => {
+    const weekMap = new Map<string, Record<string, number>>()
+
+    entries.forEach((entry) => {
+      const metric = metricList.find((m) => m.id === entry.metric_id)
+      if (!metric) return
+
+      const weekKey = entry.period_start
+      if (!weekMap.has(weekKey)) {
+        weekMap.set(weekKey, { week: new Date(weekKey).getTime() })
+      }
+      weekMap.get(weekKey)![metric.metric_name] = entry.value
+    })
+
+    return Array.from(weekMap.values()).sort((a, b) => a.week - b.week).map((data) => ({
+      ...data,
+      weekLabel: formatDate(new Date(data.week).toISOString()),
+    }))
+  }
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -356,6 +430,7 @@ export default function MetricsPage() {
                 const latestEntry = entries
                   .filter((e) => e.metric_id === metric.id)
                   .sort((a, b) => new Date(b.period_start).getTime() - new Date(a.period_start).getTime())[0]
+                const comparison = getMonthComparison(metric.id)
 
                 return (
                   <div
@@ -411,6 +486,72 @@ export default function MetricsPage() {
                         {latestEntry ? `Week of ${formatDate(latestEntry.period_start)}` : 'No data yet'}
                       </p>
                     </div>
+
+                    {/* Month-over-Month Comparison */}
+                    {(comparison.thisMonth !== null || comparison.lastMonth !== null) && (
+                      <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-gray-500">Month Comparison</span>
+                          {comparison.percentChange !== null && (
+                            <div className={`flex items-center gap-1 text-xs font-medium ${
+                              comparison.percentChange > 0 ? 'text-[#00ffc1]' : comparison.percentChange < 0 ? 'text-[#ff6b8a]' : 'text-gray-400'
+                            }`}>
+                              {comparison.percentChange > 0 ? (
+                                <ArrowUp className="w-3 h-3" />
+                              ) : comparison.percentChange < 0 ? (
+                                <ArrowDown className="w-3 h-3" />
+                              ) : (
+                                <Minus className="w-3 h-3" />
+                              )}
+                              {Math.abs(comparison.percentChange).toFixed(1)}%
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          {/* Last Month Bar */}
+                          <div className="flex-1">
+                            <div className="text-xs text-gray-500 mb-1">{comparison.lastMonthLabel}</div>
+                            <div className="h-8 bg-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden relative">
+                              {comparison.lastMonth !== null && comparison.thisMonth !== null && (
+                                <div
+                                  className="h-full bg-gray-600 rounded-lg transition-all"
+                                  style={{
+                                    width: `${Math.min(100, (comparison.lastMonth / Math.max(comparison.lastMonth, comparison.thisMonth)) * 100)}%`,
+                                  }}
+                                />
+                              )}
+                              <span className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
+                                {comparison.lastMonth !== null ? formatValue(comparison.lastMonth, metric.metric_type) : '—'}
+                              </span>
+                            </div>
+                          </div>
+                          {/* This Month Bar */}
+                          <div className="flex-1">
+                            <div className="text-xs text-gray-500 mb-1">{comparison.thisMonthLabel}</div>
+                            <div className="h-8 bg-[rgba(255,255,255,0.05)] rounded-lg overflow-hidden relative">
+                              {comparison.thisMonth !== null && comparison.lastMonth !== null && (
+                                <div
+                                  className="h-full rounded-lg transition-all"
+                                  style={{
+                                    width: `${Math.min(100, (comparison.thisMonth / Math.max(comparison.lastMonth, comparison.thisMonth)) * 100)}%`,
+                                    backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+                                  }}
+                                />
+                              )}
+                              {comparison.thisMonth !== null && comparison.lastMonth === null && (
+                                <div
+                                  className="h-full rounded-lg transition-all w-full"
+                                  style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
+                                />
+                              )}
+                              <span className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
+                                {comparison.thisMonth !== null ? formatValue(comparison.thisMonth, metric.metric_type) : '—'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -418,20 +559,28 @@ export default function MetricsPage() {
           )}
         </div>
 
-        {/* Chart */}
-        {metrics.length > 0 && chartData.length > 0 && (
+        {/* Percentage Metrics Chart */}
+        {percentageMetrics.length > 0 && getChartDataForMetrics(percentageMetrics).length > 0 && (
           <div className="glass-card p-6">
-            <h2 className="text-xl font-semibold gradient-text mb-6">Performance Over Time</h2>
-            <div className="h-[400px]">
+            <div className="flex items-center gap-2 mb-6">
+              <Percent className="w-5 h-5 text-[#00ffc1]" />
+              <h2 className="text-xl font-semibold gradient-text">Rate Metrics Over Time</h2>
+            </div>
+            <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
+                <LineChart data={getChartDataForMetrics(percentageMetrics)}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis
                     dataKey="weekLabel"
                     stroke="#6b7280"
                     tick={{ fill: '#9ca3af', fontSize: 12 }}
                   />
-                  <YAxis stroke="#6b7280" tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <YAxis
+                    stroke="#6b7280"
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                    domain={[0, 100]}
+                    tickFormatter={(value) => `${value}%`}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'rgba(0, 16, 46, 0.95)',
@@ -439,19 +588,128 @@ export default function MetricsPage() {
                       borderRadius: '12px',
                       color: 'white',
                     }}
+                    formatter={(value: number) => [`${value}%`, '']}
                   />
                   <Legend />
-                  {metrics.map((metric, index) => (
-                    <Line
-                      key={metric.id}
-                      type="monotone"
-                      dataKey={metric.metric_name}
-                      stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ fill: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 0 }}
-                      activeDot={{ r: 6, stroke: CHART_COLORS[index % CHART_COLORS.length], strokeWidth: 2 }}
-                    />
-                  ))}
+                  {percentageMetrics.map((metric) => {
+                    const originalIndex = metrics.findIndex((m) => m.id === metric.id)
+                    return (
+                      <Line
+                        key={metric.id}
+                        type="monotone"
+                        dataKey={metric.metric_name}
+                        stroke={CHART_COLORS[originalIndex % CHART_COLORS.length]}
+                        strokeWidth={2}
+                        dot={{ fill: CHART_COLORS[originalIndex % CHART_COLORS.length], strokeWidth: 0 }}
+                        activeDot={{ r: 6, stroke: CHART_COLORS[originalIndex % CHART_COLORS.length], strokeWidth: 2 }}
+                        connectNulls
+                      />
+                    )
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Currency Metrics Chart */}
+        {currencyMetrics.length > 0 && getChartDataForMetrics(currencyMetrics).length > 0 && (
+          <div className="glass-card p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <DollarSign className="w-5 h-5 text-[#ff9855]" />
+              <h2 className="text-xl font-semibold gradient-text">Financial Metrics Over Time</h2>
+            </div>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={getChartDataForMetrics(currencyMetrics)}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis
+                    dataKey="weekLabel"
+                    stroke="#6b7280"
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  />
+                  <YAxis
+                    stroke="#6b7280"
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                    tickFormatter={(value) => `$${value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(0, 16, 46, 0.95)',
+                      border: '1px solid rgba(0, 255, 193, 0.2)',
+                      borderRadius: '12px',
+                      color: 'white',
+                    }}
+                    formatter={(value: number) => [formatCurrency(value), '']}
+                  />
+                  <Legend />
+                  {currencyMetrics.map((metric) => {
+                    const originalIndex = metrics.findIndex((m) => m.id === metric.id)
+                    return (
+                      <Line
+                        key={metric.id}
+                        type="monotone"
+                        dataKey={metric.metric_name}
+                        stroke={CHART_COLORS[originalIndex % CHART_COLORS.length]}
+                        strokeWidth={2}
+                        dot={{ fill: CHART_COLORS[originalIndex % CHART_COLORS.length], strokeWidth: 0 }}
+                        activeDot={{ r: 6, stroke: CHART_COLORS[originalIndex % CHART_COLORS.length], strokeWidth: 2 }}
+                        connectNulls
+                      />
+                    )
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Number Metrics Chart */}
+        {numberMetrics.length > 0 && getChartDataForMetrics(numberMetrics).length > 0 && (
+          <div className="glass-card p-6">
+            <div className="flex items-center gap-2 mb-6">
+              <Hash className="w-5 h-5 text-[#a78bfa]" />
+              <h2 className="text-xl font-semibold gradient-text">Count Metrics Over Time</h2>
+            </div>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={getChartDataForMetrics(numberMetrics)}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis
+                    dataKey="weekLabel"
+                    stroke="#6b7280"
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  />
+                  <YAxis
+                    stroke="#6b7280"
+                    tick={{ fill: '#9ca3af', fontSize: 12 }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(0, 16, 46, 0.95)',
+                      border: '1px solid rgba(0, 255, 193, 0.2)',
+                      borderRadius: '12px',
+                      color: 'white',
+                    }}
+                    formatter={(value: number) => [Math.round(value), '']}
+                  />
+                  <Legend />
+                  {numberMetrics.map((metric) => {
+                    const originalIndex = metrics.findIndex((m) => m.id === metric.id)
+                    return (
+                      <Line
+                        key={metric.id}
+                        type="monotone"
+                        dataKey={metric.metric_name}
+                        stroke={CHART_COLORS[originalIndex % CHART_COLORS.length]}
+                        strokeWidth={2}
+                        dot={{ fill: CHART_COLORS[originalIndex % CHART_COLORS.length], strokeWidth: 0 }}
+                        activeDot={{ r: 6, stroke: CHART_COLORS[originalIndex % CHART_COLORS.length], strokeWidth: 2 }}
+                        connectNulls
+                      />
+                    )
+                  })}
                 </LineChart>
               </ResponsiveContainer>
             </div>
