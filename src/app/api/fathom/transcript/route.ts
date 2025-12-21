@@ -5,11 +5,16 @@ import OpenAI from 'openai'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 const FATHOM_API_BASE = 'https://api.fathom.ai/external/v1'
+
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 const SALES_ANALYSIS_PROMPT = `You are an expert sales coach analyzing a sales call transcript. Provide detailed, actionable feedback.
 
@@ -168,6 +173,7 @@ export async function POST(request: NextRequest) {
     // Analyze with GPT-4
     let analysis
     try {
+      const openai = getOpenAIClient()
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [

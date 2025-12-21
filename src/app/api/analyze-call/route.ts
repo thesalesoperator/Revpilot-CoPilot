@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured')
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  })
+}
 
 const SALES_ANALYSIS_PROMPT = `You are an expert sales coach analyzing a sales call transcript. Provide detailed, actionable feedback.
 
@@ -128,6 +133,7 @@ export async function POST(request: NextRequest) {
 
     // Transcribe with Whisper
     let transcript: string
+    const openai = getOpenAIClient()
     try {
       const transcription = await openai.audio.transcriptions.create({
         file: file,
