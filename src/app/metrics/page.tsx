@@ -588,7 +588,7 @@ export default function MetricsPage() {
                       borderRadius: '12px',
                       color: 'white',
                     }}
-                    formatter={(value: number) => [`${value}%`, '']}
+                    formatter={(value) => [`${value ?? 0}%`, '']}
                   />
                   <Legend />
                   {percentageMetrics.map((metric) => {
@@ -640,7 +640,7 @@ export default function MetricsPage() {
                       borderRadius: '12px',
                       color: 'white',
                     }}
-                    formatter={(value: number) => [formatCurrency(value), '']}
+                    formatter={(value) => [formatCurrency(Number(value ?? 0)), '']}
                   />
                   <Legend />
                   {currencyMetrics.map((metric) => {
@@ -692,7 +692,7 @@ export default function MetricsPage() {
                       borderRadius: '12px',
                       color: 'white',
                     }}
-                    formatter={(value: number) => [Math.round(value), '']}
+                    formatter={(value) => [Math.round(Number(value ?? 0)), '']}
                   />
                   <Legend />
                   {numberMetrics.map((metric) => {
