@@ -341,3 +341,62 @@ export interface BadgeDefinition {
   category: 'streak' | 'achievement' | 'milestone'
   requirement: string
 }
+
+// Call Recording types
+export interface CallAnalysis {
+  opening_rapport: {
+    score: number
+    feedback: string
+    highlights: string[]
+  }
+  discovery_questions: {
+    score: number
+    feedback: string
+    highlights: string[]
+  }
+  pain_identification: {
+    score: number
+    feedback: string
+    highlights: string[]
+  }
+  value_proposition: {
+    score: number
+    feedback: string
+    highlights: string[]
+  }
+  objection_handling: {
+    score: number
+    feedback: string
+    highlights: string[]
+  }
+  closing_techniques: {
+    score: number
+    feedback: string
+    highlights: string[]
+  }
+  talk_listen_ratio: {
+    rep_percentage: number
+    prospect_percentage: number
+    feedback: string
+  }
+  key_improvements: string[]
+  strengths: string[]
+  summary: string
+}
+
+export interface CallRecording {
+  id: string
+  user_id: string
+  title: string
+  file_name: string
+  file_url: string
+  file_size: number | null
+  duration_seconds: number | null
+  status: 'uploading' | 'transcribing' | 'analyzing' | 'completed' | 'failed'
+  error_message: string | null
+  transcript: string | null
+  analysis: CallAnalysis | null
+  overall_score: number | null
+  created_at: string
+  updated_at: string
+}

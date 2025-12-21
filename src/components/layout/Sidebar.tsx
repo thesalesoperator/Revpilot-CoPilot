@@ -11,6 +11,7 @@ import {
   Calculator,
   BookOpen,
   CheckSquare,
+  Phone,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
@@ -19,6 +20,7 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/projections', icon: TrendingUp, label: 'Projections' },
   { href: '/metrics', icon: BarChart3, label: 'Metrics' },
+  { href: '/calls', icon: Phone, label: 'Call Review' },
   { href: '/journal', icon: BookOpen, label: 'Journal' },
   { href: '/habits', icon: CheckSquare, label: 'Habits' },
   { href: '/settings', icon: Settings, label: 'Settings' },
