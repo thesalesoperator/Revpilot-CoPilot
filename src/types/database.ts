@@ -187,6 +187,73 @@ export interface Database {
           updated_at?: string
         }
       }
+      tracked_metrics: {
+        Row: {
+          id: string
+          user_id: string
+          metric_name: string
+          metric_type: string
+          tracking_frequency: string
+          reminder_enabled: boolean
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          metric_name: string
+          metric_type?: string
+          tracking_frequency?: string
+          reminder_enabled?: boolean
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          metric_name?: string
+          metric_type?: string
+          tracking_frequency?: string
+          reminder_enabled?: boolean
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      metric_entries: {
+        Row: {
+          id: string
+          user_id: string
+          metric_id: string
+          value: number
+          period_start: string
+          period_end: string
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          metric_id: string
+          value: number
+          period_start: string
+          period_end: string
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          metric_id?: string
+          value?: number
+          period_start?: string
+          period_end?: string
+          notes?: string | null
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -205,3 +272,5 @@ export type Product = Database['public']['Tables']['products']['Row']
 export type Sale = Database['public']['Tables']['sales']['Row']
 export type PaymentRecord = Database['public']['Tables']['payment_records']['Row']
 export type Settings = Database['public']['Tables']['settings']['Row']
+export type TrackedMetric = Database['public']['Tables']['tracked_metrics']['Row']
+export type MetricEntry = Database['public']['Tables']['metric_entries']['Row']

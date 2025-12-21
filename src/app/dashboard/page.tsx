@@ -16,6 +16,7 @@ import {
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatCard from '@/components/ui/StatCard'
 import Modal from '@/components/ui/Modal'
+import MetricsReminder from '@/components/ui/MetricsReminder'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase/client'
@@ -192,6 +193,9 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
+        {/* Metrics Reminder */}
+        <MetricsReminder />
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
