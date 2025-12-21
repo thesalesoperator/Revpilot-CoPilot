@@ -96,14 +96,24 @@ export default function MetricsPage() {
           .order('period_start', { ascending: true }),
       ])
 
-      if (metricsRes.data) setMetrics(metricsRes.data)
-      if (entriesRes.data) setEntries(entriesRes.data)
+      if (metricsRes.error) {
+        console.error('Error fetching metrics:', metricsRes.error)
+        showToast('error', `Error loading metrics: ${metricsRes.error.message}`)
+      } else if (metricsRes.data) {
+        setMetrics(metricsRes.data)
+      }
+
+      if (entriesRes.error) {
+        console.error('Error fetching entries:', entriesRes.error)
+      } else if (entriesRes.data) {
+        setEntries(entriesRes.data)
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
-  }, [user, supabase, dateRange])
+  }, [user, supabase, dateRange, showToast])
 
   useEffect(() => {
     fetchData()
@@ -113,7 +123,7 @@ export default function MetricsPage() {
     if (!user) return
 
     try {
-      await supabase.from('tracked_metrics').insert({
+      const { error } = await supabase.from('tracked_metrics').insert({
         user_id: user.id,
         metric_name: metricName,
         metric_type: metricType,
@@ -121,10 +131,17 @@ export default function MetricsPage() {
         reminder_enabled: reminderEnabled,
       })
 
+      if (error) {
+        console.error('Error adding metric:', error)
+        showToast('error', `Failed to add metric: ${error.message}`)
+        return
+      }
+
       showToast('success', 'Metric added successfully')
       fetchData()
       setIsAddMetricModalOpen(false)
     } catch (error) {
+      console.error('Error adding metric:', error)
       showToast('error', 'Failed to add metric')
     }
   }
@@ -133,24 +150,37 @@ export default function MetricsPage() {
     if (!confirm('Are you sure you want to delete this metric and all its data?')) return
 
     try {
-      await supabase.from('tracked_metrics').delete().eq('id', metricId)
+      const { error } = await supabase.from('tracked_metrics').delete().eq('id', metricId)
+      if (error) {
+        console.error('Error deleting metric:', error)
+        showToast('error', `Failed to delete metric: ${error.message}`)
+        return
+      }
       showToast('success', 'Metric deleted')
       fetchData()
     } catch (error) {
+      console.error('Error deleting metric:', error)
       showToast('error', 'Failed to delete metric')
     }
   }
 
   const handleToggleReminder = async (metric: TrackedMetric) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from('tracked_metrics')
         .update({ reminder_enabled: !metric.reminder_enabled })
         .eq('id', metric.id)
 
+      if (error) {
+        console.error('Error updating reminder:', error)
+        showToast('error', `Failed to update reminder: ${error.message}`)
+        return
+      }
+
       showToast('success', `Reminders ${metric.reminder_enabled ? 'disabled' : 'enabled'}`)
       fetchData()
     } catch (error) {
+      console.error('Error updating reminder:', error)
       showToast('error', 'Failed to update reminder setting')
     }
   }
@@ -576,7 +606,7 @@ function LogMetricsModal({
     setLoading(true)
 
     try {
-      const entries = metrics
+      const entriesToInsert = metrics
         .filter((m) => values[m.id] && values[m.id] !== '')
         .map((m) => ({
           user_id: userId,
@@ -586,27 +616,38 @@ function LogMetricsModal({
           period_end: weekEnd,
         }))
 
-      if (entries.length === 0) {
+      if (entriesToInsert.length === 0) {
         showToast('error', 'Please enter at least one metric value')
         setLoading(false)
         return
       }
 
       // Delete existing entries for this week and metrics
-      for (const entry of entries) {
-        await supabase
+      for (const entry of entriesToInsert) {
+        const { error: deleteError } = await supabase
           .from('metric_entries')
           .delete()
           .eq('metric_id', entry.metric_id)
           .eq('period_start', entry.period_start)
+
+        if (deleteError) {
+          console.error('Error deleting existing entry:', deleteError)
+        }
       }
 
       // Insert new entries
-      await supabase.from('metric_entries').insert(entries)
+      const { error: insertError } = await supabase.from('metric_entries').insert(entriesToInsert)
+
+      if (insertError) {
+        console.error('Error inserting entries:', insertError)
+        showToast('error', `Failed to log metrics: ${insertError.message}`)
+        return
+      }
 
       showToast('success', 'Metrics logged successfully')
       onSuccess()
     } catch (error) {
+      console.error('Error logging metrics:', error)
       showToast('error', 'Failed to log metrics')
     } finally {
       setLoading(false)
