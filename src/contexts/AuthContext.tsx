@@ -53,25 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
 
-    if (!error) {
-      // Create profile
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase.from('profiles').insert({
-          id: user.id,
-          email: user.email!,
-          full_name: fullName,
-        })
-
-        // Create default settings
-        await supabase.from('settings').insert({
-          user_id: user.id,
-          commission_pay_day: 15,
-          commission_pay_frequency: 'monthly',
-        })
-      }
-    }
-
+    // Note: Profile and settings are created automatically by database trigger
     return { error: error as Error | null }
   }
 

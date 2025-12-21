@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Settings as SettingsIcon,
   Calendar,
   Package,
   Plus,

@@ -18,7 +18,7 @@ import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase/client'
-import { formatCurrency, formatDate, formatPercent, calculateSaleMetrics, generatePaymentSchedule } from '@/lib/utils'
+import { formatCurrency, formatDate, formatPercent, generatePaymentSchedule } from '@/lib/utils'
 import type { Sale, Product, PaymentRecord } from '@/types/database'
 
 interface SaleWithPayments extends Sale {
@@ -68,43 +68,7 @@ export default function DashboardPage() {
     fetchData()
   }, [fetchData])
 
-  // Calculate metrics
-  const metrics = sales.reduce(
-    (acc, sale) => {
-      if (sale.status === 'refunded') return acc
-
-      const saleMetrics = calculateSaleMetrics(
-        sale.total_package_price,
-        sale.cash_collected_upfront,
-        sale.commission_percent,
-        sale.payment_count
-      )
-
-      // Calculate collected from payments
-      const paidPayments = sale.payment_records?.filter(p => p.status === 'paid') || []
-      const totalPaidFromPayments = paidPayments.reduce((sum, p) => sum + p.amount, 0)
-      const actualCashCollected = sale.cash_collected_upfront + totalPaidFromPayments - sale.cash_collected_upfront
-
-      return {
-        totalCashCollected: acc.totalCashCollected + sale.cash_collected_upfront + totalPaidFromPayments - sale.cash_collected_upfront,
-        totalContractedValue: acc.totalContractedValue + saleMetrics.totalContractedValue,
-        outstandingCash: acc.outstandingCash + (sale.total_package_price - sale.cash_collected_upfront - totalPaidFromPayments + sale.cash_collected_upfront),
-        guaranteedCommission: acc.guaranteedCommission + (sale.cash_collected_upfront + totalPaidFromPayments - sale.cash_collected_upfront) * (sale.commission_percent / 100),
-        potentialCommission: acc.potentialCommission + (sale.total_package_price - sale.cash_collected_upfront - totalPaidFromPayments + sale.cash_collected_upfront) * (sale.commission_percent / 100),
-        remainingPayments: acc.remainingPayments + (sale.payment_records?.filter(p => p.status === 'pending').length || 0),
-      }
-    },
-    {
-      totalCashCollected: 0,
-      totalContractedValue: 0,
-      outstandingCash: 0,
-      guaranteedCommission: 0,
-      potentialCommission: 0,
-      remainingPayments: 0,
-    }
-  )
-
-  // Recalculate metrics correctly
+  // Calculate metrics from sales and their payment records
   const correctedMetrics = sales.reduce(
     (acc, sale) => {
       if (sale.status === 'refunded') return acc

@@ -1,4 +1,4 @@
-import { addDays, addWeeks, addMonths } from 'date-fns'
+import { addWeeks, addMonths } from 'date-fns'
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {

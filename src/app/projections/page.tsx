@@ -13,7 +13,7 @@ import {
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase/client'
-import { formatCurrency, formatPercent } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import type { Product } from '@/types/database'
 
 interface ProjectedSale {
