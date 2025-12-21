@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-const FATHOM_API_BASE = 'https://api.fathom.video/v1'
+const FATHOM_API_BASE = 'https://api.fathom.ai/external/v1'
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // Fetch calls from Fathom API
     const response = await fetch(`${FATHOM_API_BASE}/meetings`, {
       headers: {
-        'Authorization': `Bearer ${profile.fathom_api_key}`,
+        'X-Api-Key': profile.fathom_api_key,
         'Content-Type': 'application/json',
       },
     })

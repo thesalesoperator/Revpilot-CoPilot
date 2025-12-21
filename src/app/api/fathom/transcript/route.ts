@@ -9,7 +9,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-const FATHOM_API_BASE = 'https://api.fathom.video/v1'
+const FATHOM_API_BASE = 'https://api.fathom.ai/external/v1'
 
 const SALES_ANALYSIS_PROMPT = `You are an expert sales coach analyzing a sales call transcript. Provide detailed, actionable feedback.
 
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     // Fetch transcript from Fathom API
     const transcriptResponse = await fetch(`${FATHOM_API_BASE}/recordings/${meetingId}/transcript`, {
       headers: {
-        'Authorization': `Bearer ${profile.fathom_api_key}`,
+        'X-Api-Key': profile.fathom_api_key,
         'Content-Type': 'application/json',
       },
     })
