@@ -13,6 +13,11 @@ import {
   User,
   Trophy,
   Flame,
+  Link,
+  ExternalLink,
+  CheckCircle,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -33,6 +38,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [isProductModalOpen, setIsProductModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [fathomApiKey, setFathomApiKey] = useState('')
+  const [showApiKey, setShowApiKey] = useState(false)
+  const [fathomConnected, setFathomConnected] = useState(false)
 
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -52,7 +60,13 @@ export default function SettingsPage() {
 
       if (settingsRes.data) setSettings(settingsRes.data)
       if (productsRes.data) setProducts(productsRes.data)
-      if (profileRes.data) setProfile(profileRes.data)
+      if (profileRes.data) {
+        setProfile(profileRes.data)
+        if (profileRes.data.fathom_api_key) {
+          setFathomApiKey(profileRes.data.fathom_api_key)
+          setFathomConnected(true)
+        }
+      }
       if (badgesRes.data) setUserBadges(badgesRes.data)
       if (streaksRes.data) setUserStreaks(streaksRes.data)
     } catch (error) {
@@ -106,6 +120,35 @@ export default function SettingsPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleSaveFathom = async () => {
+    if (!user) return
+    setSaving(true)
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          fathom_api_key: fathomApiKey || null,
+          fathom_connected_at: fathomApiKey ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      setFathomConnected(!!fathomApiKey)
+      showToast('success', fathomApiKey ? 'Fathom connected successfully' : 'Fathom disconnected')
+    } catch (error) {
+      showToast('error', 'Failed to save Fathom API key')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDisconnectFathom = async () => {
+    if (!confirm('Are you sure you want to disconnect Fathom?')) return
+    setFathomApiKey('')
+    await handleSaveFathom()
   }
 
   const handleAddProduct = () => {
@@ -312,6 +355,88 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Fathom Integration */}
+        <div className="glass-card">
+          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+            <div className="flex items-center gap-3">
+              <Link className="w-5 h-5 text-[#00ffc1]" />
+              <h2 className="text-xl font-semibold gradient-text">Fathom Integration</h2>
+              {fathomConnected && (
+                <span className="flex items-center gap-1 text-sm bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
+                  <CheckCircle className="w-3 h-3" />
+                  Connected
+                </span>
+              )}
+            </div>
+            <p className="text-gray-400 text-sm mt-1">
+              Connect your Fathom account to import and analyze your sales calls
+            </p>
+          </div>
+          <div className="p-6 space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Fathom API Key</label>
+              <div className="flex gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type={showApiKey ? 'text' : 'password'}
+                    value={fathomApiKey}
+                    onChange={(e) => setFathomApiKey(e.target.value)}
+                    className="input-field pr-10"
+                    placeholder="Enter your Fathom API key"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                  >
+                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <button
+                  onClick={handleSaveFathom}
+                  disabled={saving}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  {saving ? (
+                    <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      {fathomConnected ? 'Update' : 'Connect'}
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Get your API key from{' '}
+                <a
+                  href="https://fathom.video/settings/integrations"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#00ffc1] hover:underline inline-flex items-center gap-1"
+                >
+                  Fathom Settings <ExternalLink className="w-3 h-3" />
+                </a>
+              </p>
+            </div>
+
+            {fathomConnected && (
+              <div className="flex items-center justify-between bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4">
+                <div>
+                  <p className="text-white font-medium">Fathom is connected</p>
+                  <p className="text-sm text-gray-400">You can now import calls from the Call Review page</p>
+                </div>
+                <button
+                  onClick={handleDisconnectFathom}
+                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                >
+                  Disconnect
+                </button>
               </div>
             )}
           </div>

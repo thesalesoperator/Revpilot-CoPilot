@@ -22,6 +22,9 @@ import {
   Zap,
   Award,
   BarChart3,
+  Download,
+  Video,
+  ExternalLink,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -75,6 +78,11 @@ export default function CallsPage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [selectedRecording, setSelectedRecording] = useState<CallRecording | null>(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [isFathomModalOpen, setIsFathomModalOpen] = useState(false)
+  const [fathomCalls, setFathomCalls] = useState<any[]>([])
+  const [loadingFathom, setLoadingFathom] = useState(false)
+  const [importingCallId, setImportingCallId] = useState<string | null>(null)
+  const [fathomConnected, setFathomConnected] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -119,6 +127,72 @@ export default function CallsPage() {
 
     return () => clearInterval(interval)
   }, [recordings, fetchRecordings])
+
+  // Check if Fathom is connected
+  useEffect(() => {
+    const checkFathomConnection = async () => {
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('fathom_api_key')
+        .eq('id', user.id)
+        .single()
+      setFathomConnected(!!data?.fathom_api_key)
+    }
+    checkFathomConnection()
+  }, [user, supabase])
+
+  const fetchFathomCalls = async () => {
+    if (!user) return
+    setLoadingFathom(true)
+    try {
+      const response = await fetch(`/api/fathom/calls?userId=${user.id}`)
+      const data = await response.json()
+      if (response.ok) {
+        setFathomCalls(data.meetings || data || [])
+      } else {
+        showToast('error', data.error || 'Failed to fetch Fathom calls')
+      }
+    } catch (error) {
+      showToast('error', 'Failed to connect to Fathom')
+    } finally {
+      setLoadingFathom(false)
+    }
+  }
+
+  const handleOpenFathomModal = () => {
+    setIsFathomModalOpen(true)
+    fetchFathomCalls()
+  }
+
+  const handleImportFathomCall = async (meeting: any) => {
+    if (!user) return
+    setImportingCallId(meeting.id)
+    try {
+      const response = await fetch('/api/fathom/transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          meetingId: meeting.id,
+          userId: user.id,
+          title: meeting.title || meeting.name || `Call ${meeting.id}`,
+        }),
+      })
+
+      if (response.ok) {
+        showToast('success', 'Call imported and analyzed successfully!')
+        setIsFathomModalOpen(false)
+        fetchRecordings()
+      } else {
+        const data = await response.json()
+        showToast('error', data.error || 'Failed to import call')
+      }
+    } catch (error) {
+      showToast('error', 'Failed to import call')
+    } finally {
+      setImportingCallId(null)
+    }
+  }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -269,23 +343,34 @@ export default function CallsPage() {
             <h1 className="text-3xl font-bold text-white mb-2">Call Review</h1>
             <p className="text-gray-400">Upload sales calls for AI-powered feedback and coaching</p>
           </div>
-          <button
-            onClick={() => setIsUploadModalOpen(true)}
-            disabled={uploading}
-            className="btn-primary flex items-center gap-2"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Uploading {uploadProgress}%
-              </>
-            ) : (
-              <>
-                <Upload className="w-5 h-5" />
-                Upload Call
-              </>
+          <div className="flex items-center gap-3">
+            {fathomConnected && (
+              <button
+                onClick={handleOpenFathomModal}
+                className="btn-secondary flex items-center gap-2"
+              >
+                <Download className="w-5 h-5" />
+                Import from Fathom
+              </button>
             )}
-          </button>
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              disabled={uploading}
+              className="btn-primary flex items-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Uploading {uploadProgress}%
+                </>
+              ) : (
+                <>
+                  <Upload className="w-5 h-5" />
+                  Upload Call
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Upload Progress */}
@@ -465,6 +550,73 @@ export default function CallsPage() {
                 Actionable improvement suggestions
               </li>
             </ul>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Fathom Import Modal */}
+      <Modal isOpen={isFathomModalOpen} onClose={() => setIsFathomModalOpen(false)} title="Import from Fathom">
+        <div className="space-y-4">
+          {loadingFathom ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+            </div>
+          ) : fathomCalls.length === 0 ? (
+            <div className="text-center py-8">
+              <Video className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-400 mb-2">No calls found in Fathom</p>
+              <p className="text-sm text-gray-500">Record some meetings with Fathom first</p>
+            </div>
+          ) : (
+            <div className="max-h-96 overflow-y-auto space-y-3">
+              {fathomCalls.map((meeting: any) => (
+                <div
+                  key={meeting.id}
+                  className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4 flex items-center justify-between hover:border-[rgba(0,255,193,0.2)] transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
+                      <Video className="w-5 h-5 text-[#00ffc1]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-white truncate">
+                        {meeting.title || meeting.name || `Meeting ${meeting.id}`}
+                      </h4>
+                      <p className="text-sm text-gray-400">
+                        {meeting.created_at
+                          ? new Date(meeting.created_at).toLocaleDateString()
+                          : meeting.date
+                          ? new Date(meeting.date).toLocaleDateString()
+                          : 'Unknown date'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleImportFathomCall(meeting)}
+                    disabled={importingCallId === meeting.id}
+                    className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+                  >
+                    {importingCallId === meeting.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    {importingCallId === meeting.id ? 'Importing...' : 'Import'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="pt-4 border-t border-[rgba(255,255,255,0.05)]">
+            <a
+              href="https://fathom.video/home"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-[#00ffc1] hover:underline flex items-center gap-1"
+            >
+              Open Fathom <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
         </div>
       </Modal>
