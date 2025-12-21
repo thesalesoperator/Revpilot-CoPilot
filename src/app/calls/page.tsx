@@ -87,7 +87,7 @@ export default function CallsPage() {
 
     try {
       const { data, error } = await supabase
-        .from('call_recordings')
+        .from('Call_Recordings')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -148,7 +148,7 @@ export default function CallsPage() {
       // Upload to Supabase Storage
       setUploadProgress(30)
       const { error: uploadError } = await supabase.storage
-        .from('call_recordings')
+        .from('Call_Recordings')
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
@@ -157,7 +157,7 @@ export default function CallsPage() {
 
       // Create database record
       const { data: recording, error: dbError } = await supabase
-        .from('call_recordings')
+        .from('Call_Recordings')
         .insert({
           user_id: user.id,
           title: file.name.replace(/\.[^/.]+$/, ''),
@@ -209,10 +209,10 @@ export default function CallsPage() {
 
     try {
       // Delete from storage
-      await supabase.storage.from('call_recordings').remove([fileUrl])
+      await supabase.storage.from('Call_Recordings').remove([fileUrl])
 
       // Delete from database
-      await supabase.from('call_recordings').delete().eq('id', recordingId)
+      await supabase.from('Call_Recordings').delete().eq('id', recordingId)
 
       showToast('success', 'Recording deleted')
       fetchRecordings()
