@@ -56,16 +56,45 @@ interface MetricWithEntries extends TrackedMetric {
   entries?: MetricEntry[]
 }
 
+// Generate list of weeks for dropdown
+const generateWeekOptions = (numWeeks: number) => {
+  const weeks: { start: string; end: string; label: string }[] = []
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+
+  for (let i = 0; i < numWeeks; i++) {
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - dayOfWeek - (i * 7))
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+
+    const startStr = startOfWeek.toISOString().split('T')[0]
+    const endStr = endOfWeek.toISOString().split('T')[0]
+
+    const formatWeekDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const label = i === 0
+      ? `This Week (${formatWeekDate(startOfWeek)} - ${formatWeekDate(endOfWeek)})`
+      : i === 1
+      ? `Last Week (${formatWeekDate(startOfWeek)} - ${formatWeekDate(endOfWeek)})`
+      : `${formatWeekDate(startOfWeek)} - ${formatWeekDate(endOfWeek)}`
+
+    weeks.push({ start: startStr, end: endStr, label })
+  }
+
+  return weeks
+}
+
 export default function MetricsPage() {
   const [metrics, setMetrics] = useState<MetricWithEntries[]>([])
   const [entries, setEntries] = useState<MetricEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [isAddMetricModalOpen, setIsAddMetricModalOpen] = useState(false)
   const [isLogMetricsModalOpen, setIsLogMetricsModalOpen] = useState(false)
+  const [weeksToShow, setWeeksToShow] = useState<string>('12')
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>(() => {
     const end = new Date()
     const start = new Date()
-    start.setMonth(start.getMonth() - 3)
+    start.setDate(start.getDate() - (12 * 7)) // 12 weeks back
     return {
       start: start.toISOString().split('T')[0],
       end: end.toISOString().split('T')[0],
@@ -92,7 +121,7 @@ export default function MetricsPage() {
           .select('*')
           .eq('user_id', user.id)
           .gte('period_start', dateRange.start)
-          .lte('period_end', dateRange.end)
+          .lte('period_start', dateRange.end)
           .order('period_start', { ascending: true }),
       ])
 
@@ -118,6 +147,18 @@ export default function MetricsPage() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  // Update date range when weeks selection changes
+  const handleWeeksChange = (weeks: string) => {
+    setWeeksToShow(weeks)
+    const end = new Date()
+    const start = new Date()
+    start.setDate(start.getDate() - (parseInt(weeks) * 7))
+    setDateRange({
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0],
+    })
+  }
 
   const handleAddMetric = async (metricName: string, metricType: string, reminderEnabled: boolean) => {
     if (!user) return
@@ -272,23 +313,22 @@ export default function MetricsPage() {
           </div>
         </div>
 
-        {/* Date Range Selector */}
+        {/* Time Range Selector */}
         <div className="glass-card p-4">
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-400">Date Range:</span>
-            <input
-              type="date"
-              value={dateRange.start}
-              onChange={(e) => setDateRange((prev) => ({ ...prev, start: e.target.value }))}
-              className="input-field py-2 px-3 w-auto"
-            />
-            <span className="text-gray-500">to</span>
-            <input
-              type="date"
-              value={dateRange.end}
-              onChange={(e) => setDateRange((prev) => ({ ...prev, end: e.target.value }))}
-              className="input-field py-2 px-3 w-auto"
-            />
+            <Calendar className="w-5 h-5 text-[#00ffc1]" />
+            <span className="text-sm text-gray-400">Show:</span>
+            <select
+              value={weeksToShow}
+              onChange={(e) => handleWeeksChange(e.target.value)}
+              className="select-field py-2 px-3 w-auto"
+            >
+              <option value="4">Last 4 weeks</option>
+              <option value="8">Last 8 weeks</option>
+              <option value="12">Last 12 weeks</option>
+              <option value="26">Last 6 months</option>
+              <option value="52">Last year</option>
+            </select>
           </div>
         </div>
 
@@ -587,19 +627,22 @@ function LogMetricsModal({
 }: LogMetricsModalProps) {
   const [values, setValues] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
-  const [weekStart, setWeekStart] = useState(currentWeek.start)
-  const [weekEnd, setWeekEnd] = useState(currentWeek.end)
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0)
+  const weekOptions = generateWeekOptions(12) // Show last 12 weeks
 
   const { showToast } = useToast()
   const supabase = createClient()
 
+  const selectedWeek = weekOptions[selectedWeekIndex]
+  const weekStart = selectedWeek?.start || currentWeek.start
+  const weekEnd = selectedWeek?.end || currentWeek.end
+
   useEffect(() => {
     if (isOpen) {
-      setWeekStart(currentWeek.start)
-      setWeekEnd(currentWeek.end)
+      setSelectedWeekIndex(0) // Reset to current week
       setValues({})
     }
-  }, [isOpen, currentWeek])
+  }, [isOpen])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -667,21 +710,19 @@ function LogMetricsModal({
         <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.2)] rounded-xl p-4">
           <div className="flex items-center gap-4">
             <Calendar className="w-5 h-5 text-[#00ffc1]" />
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-400">Week of:</span>
-              <input
-                type="date"
-                value={weekStart}
-                onChange={(e) => {
-                  setWeekStart(e.target.value)
-                  const end = new Date(e.target.value)
-                  end.setDate(end.getDate() + 6)
-                  setWeekEnd(end.toISOString().split('T')[0])
-                }}
-                className="input-field py-2 px-3 w-auto"
-              />
-              <span className="text-gray-500">to</span>
-              <span className="text-white">{formatDate(weekEnd)}</span>
+            <div className="flex items-center gap-3 flex-1">
+              <span className="text-sm text-gray-400">Week:</span>
+              <select
+                value={selectedWeekIndex}
+                onChange={(e) => setSelectedWeekIndex(parseInt(e.target.value))}
+                className="select-field py-2 px-3 flex-1"
+              >
+                {weekOptions.map((week, index) => (
+                  <option key={week.start} value={index}>
+                    {week.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
