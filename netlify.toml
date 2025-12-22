@@ -1,0 +1,20 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Use Next.js runtime for automatic API route handling
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Ensure API routes work as serverless functions
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["node_modules/**"]
+
+# Headers for CORS on API routes
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
