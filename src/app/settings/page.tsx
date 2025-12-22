@@ -18,6 +18,10 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
+  Chrome,
+  Download,
+  Headphones,
+  Zap,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -357,6 +361,128 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Live Coaching Chrome Extension */}
+        <div className="glass-card overflow-hidden">
+          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] bg-gradient-to-r from-[rgba(0,255,193,0.05)] to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
+                <Headphones className="w-5 h-5 text-[#0a0f1c]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold gradient-text">Live Sales Coaching</h2>
+                <p className="text-gray-400 text-sm">Get real-time AI coaching during your Zoom calls</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 space-y-6">
+            {/* Features */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
+                <Zap className="w-6 h-6 text-[#00ffc1] mb-2" />
+                <h4 className="font-medium text-white mb-1">Real-Time Suggestions</h4>
+                <p className="text-sm text-gray-400">Get coaching tips and follow-up questions as you talk</p>
+              </div>
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
+                <svg className="w-6 h-6 text-[#00ffc1] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                <h4 className="font-medium text-white mb-1">Objection Handling</h4>
+                <p className="text-sm text-gray-400">AI detects objections and suggests responses</p>
+              </div>
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
+                <svg className="w-6 h-6 text-[#00ffc1] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <h4 className="font-medium text-white mb-1">Talk Ratio Tracking</h4>
+                <p className="text-sm text-gray-400">Monitor how much you talk vs listen</p>
+              </div>
+            </div>
+
+            {/* Installation Instructions */}
+            <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-6">
+              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                <Chrome className="w-5 h-5" />
+                Install Chrome Extension
+              </h3>
+              <ol className="space-y-4 text-sm">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">1</span>
+                  <div>
+                    <p className="text-white font-medium">Download the extension</p>
+                    <p className="text-gray-400">Click the button below to download the extension files</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">2</span>
+                  <div>
+                    <p className="text-white font-medium">Open Chrome Extensions</p>
+                    <p className="text-gray-400">
+                      Go to <code className="bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded">chrome://extensions</code> in your browser
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">3</span>
+                  <div>
+                    <p className="text-white font-medium">Enable Developer Mode</p>
+                    <p className="text-gray-400">Toggle "Developer mode" in the top right corner</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">4</span>
+                  <div>
+                    <p className="text-white font-medium">Load the extension</p>
+                    <p className="text-gray-400">Click "Load unpacked" and select the downloaded folder</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">5</span>
+                  <div>
+                    <p className="text-white font-medium">Start coaching!</p>
+                    <p className="text-gray-400">Join a Zoom call in Chrome and click "Start Coaching" in the overlay</p>
+                  </div>
+                </li>
+              </ol>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <a
+                  href="/downloads/revpilot-extension.zip"
+                  download
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Extension
+                </a>
+                <a
+                  href="https://zoom.us/wc/join"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary inline-flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open Zoom Web
+                </a>
+              </div>
+            </div>
+
+            {/* Pro Tips */}
+            <div className="bg-[rgba(255,152,85,0.05)] border border-[rgba(255,152,85,0.1)] rounded-xl p-4">
+              <h4 className="font-medium text-white mb-2 flex items-center gap-2">
+                <svg className="w-4 h-4 text-[#ff9855]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Pro Tips
+              </h4>
+              <ul className="text-sm text-gray-400 space-y-1">
+                <li>• Use Zoom in Chrome (not the desktop app) for the overlay to work</li>
+                <li>• Pin the extension icon for quick access</li>
+                <li>• The coaching panel is only visible to you, not other call participants</li>
+                <li>• Drag the panel to reposition it on your screen</li>
+              </ul>
+            </div>
           </div>
         </div>
 

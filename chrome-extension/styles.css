@@ -1,0 +1,388 @@
+/* RevPilot Sales Coach - Chrome Extension Styles */
+
+#revpilot-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+#revpilot-overlay * {
+  box-sizing: border-box;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Main Container */
+.revpilot-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.98) 0%, rgba(10, 15, 28, 0.98) 100%);
+  border: 1px solid rgba(0, 255, 193, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 255, 193, 0.1);
+  pointer-events: auto;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+/* Header */
+.revpilot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 255, 193, 0.05);
+  border-bottom: 1px solid rgba(0, 255, 193, 0.1);
+}
+
+.revpilot-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ffc1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.revpilot-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.revpilot-btn-icon {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.revpilot-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Body */
+.revpilot-body {
+  padding: 16px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Status View */
+.revpilot-status {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.revpilot-status-icon {
+  margin-bottom: 12px;
+}
+
+.revpilot-status p {
+  color: #9ca3af;
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+/* Buttons */
+.revpilot-btn-primary {
+  background: linear-gradient(135deg, #00ffc1 0%, #00d9a6 100%);
+  color: #0a0f1c;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.revpilot-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 255, 193, 0.4);
+}
+
+.revpilot-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.revpilot-btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.revpilot-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+/* Coaching View */
+.revpilot-coaching {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.revpilot-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ffc1;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.revpilot-pulse {
+  width: 8px;
+  height: 8px;
+  background: #00ffc1;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Suggestions */
+.revpilot-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.revpilot-empty {
+  text-align: center;
+  padding: 24px;
+  color: #6b7280;
+}
+
+.revpilot-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.revpilot-subtext {
+  font-size: 12px !important;
+  margin-top: 4px !important;
+  opacity: 0.7;
+}
+
+.revpilot-suggestion {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  transition: all 0.3s;
+}
+
+.revpilot-suggestion-new {
+  animation: slideIn 0.3s ease-out;
+  border-color: rgba(0, 255, 193, 0.3);
+  background: rgba(0, 255, 193, 0.05);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.revpilot-suggestion-question {
+  border-left: 3px solid #00ffc1;
+}
+
+.revpilot-suggestion-objection {
+  border-left: 3px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.revpilot-suggestion-tip {
+  border-left: 3px solid #3b82f6;
+}
+
+.revpilot-suggestion-alert {
+  border-left: 3px solid #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.revpilot-suggestion-positive {
+  border-left: 3px solid #22c55e;
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.revpilot-suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.revpilot-suggestion-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.3px;
+}
+
+.revpilot-suggestion-time {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.revpilot-suggestion-text {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Stats */
+.revpilot-stats {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.revpilot-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.revpilot-stat:last-child {
+  margin-bottom: 0;
+}
+
+.revpilot-stat-label {
+  width: 60px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.revpilot-stat-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.revpilot-stat-fill {
+  height: 100%;
+  background: #00ffc1;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.revpilot-stat-bar.prospect .revpilot-stat-fill {
+  background: #ff9855;
+}
+
+.revpilot-stat-value {
+  width: 36px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+/* Minimized FAB */
+.revpilot-minimized {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  pointer-events: auto;
+}
+
+.revpilot-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(10, 15, 28, 0.95) 100%);
+  border: 2px solid rgba(0, 255, 193, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 193, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.revpilot-fab:hover {
+  transform: scale(1.1);
+  border-color: #00ffc1;
+}
+
+.revpilot-notification-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #0a0f1c;
+  animation: pulse 1s infinite;
+}
+
+/* Scrollbar */
+.revpilot-suggestions::-webkit-scrollbar,
+.revpilot-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.revpilot-suggestions::-webkit-scrollbar-track,
+.revpilot-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.revpilot-suggestions::-webkit-scrollbar-thumb,
+.revpilot-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.revpilot-suggestions::-webkit-scrollbar-thumb:hover,
+.revpilot-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

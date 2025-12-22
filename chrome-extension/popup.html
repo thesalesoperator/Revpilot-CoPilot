@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevPilot Sales Coach</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0f1c 0%, #111827 100%);
+      color: #e5e7eb;
+    }
+
+    .popup-container {
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0, 255, 193, 0.1);
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, rgba(0, 255, 193, 0.2) 0%, rgba(0, 255, 193, 0.1) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .title {
+      flex: 1;
+    }
+
+    .title h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .title p {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    /* Login Form */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    .form-group input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: rgba(0, 255, 193, 0.5);
+    }
+
+    .form-group input::placeholder {
+      color: #6b7280;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00ffc1 0%, #00d9a6 100%);
+      color: #0a0f1c;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #f87171;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* Logged In State */
+    .logged-in {
+      display: none;
+    }
+
+    .logged-in.show {
+      display: block;
+    }
+
+    .login-form.hide {
+      display: none;
+    }
+
+    .user-info {
+      background: rgba(0, 255, 193, 0.05);
+      border: 1px solid rgba(0, 255, 193, 0.1);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .user-email {
+      font-size: 14px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .user-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #00ffc1;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #00ffc1;
+      border-radius: 50%;
+    }
+
+    .instructions {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .instructions h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .instructions ol {
+      padding-left: 18px;
+      font-size: 12px;
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+
+    .instructions li {
+      margin-bottom: 4px;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9ca3af;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+
+    .footer a {
+      color: #00ffc1;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#00ffc1" stroke-width="2"/>
+          <path d="M8 12l3 3 5-6" stroke="#00ffc1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="title">
+        <h1>RevPilot Sales Coach</h1>
+        <p>Real-time AI coaching</p>
+      </div>
+    </div>
+
+    <div class="login-form" id="loginForm">
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="your@email.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Your password" />
+      </div>
+
+      <button class="btn-primary" id="loginBtn">Sign In</button>
+
+      <div class="footer">
+        <a href="https://revpilot-commission-calculator.netlify.app/signup" target="_blank">
+          Don't have an account? Sign up
+        </a>
+      </div>
+    </div>
+
+    <div class="logged-in" id="loggedIn">
+      <div class="user-info">
+        <div class="user-email" id="userEmail">user@example.com</div>
+        <div class="user-status">
+          <span class="status-dot"></span>
+          <span>Connected</span>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h3>How to use:</h3>
+        <ol>
+          <li>Join a Zoom meeting in Chrome</li>
+          <li>Click "Start Coaching" in the overlay</li>
+          <li>Get real-time suggestions during your call</li>
+        </ol>
+      </div>
+
+      <button class="btn-secondary" id="logoutBtn">Sign Out</button>
+
+      <div class="footer">
+        <a href="https://revpilot-commission-calculator.netlify.app/dashboard" target="_blank">
+          Open RevPilot Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
