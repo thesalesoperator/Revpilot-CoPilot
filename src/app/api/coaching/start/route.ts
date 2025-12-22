@@ -111,15 +111,17 @@ export async function POST(request: NextRequest) {
 
       try {
         // Use the current Recall.ai API format (recording_config structure)
+        // Docs: https://docs.recall.ai/docs/recallai-transcription
         const botPayload = {
           meeting_url: normalizedMeetingUrl,
           bot_name: 'RevPilot Coach',
           recording_config: {
             transcript: {
               provider: {
-                // Use Recall's own transcription (works without Zoom captions enabled)
-                recallai_v2: {
-                  language: 'en'
+                // Use Recall's streaming transcription with low latency mode
+                // Must use prioritize_low_latency for real-time webhooks (otherwise 3-10 min delay)
+                recallai_streaming: {
+                  mode: 'prioritize_low_latency'
                 }
               }
             },
@@ -127,11 +129,12 @@ export async function POST(request: NextRequest) {
               {
                 type: 'webhook',
                 url: `${webhookUrl}?session_id=${session.id}`,
+                // transcript.data = final utterances, transcript.partial_data = interim results
                 events: ['transcript.data', 'transcript.partial_data']
               }
             ]
           },
-          // Also set webhook_url for bot status events
+          // Also set webhook_url for bot status events (joining, in_call, done, etc.)
           webhook_url: `${webhookUrl}?session_id=${session.id}&type=status`
         }
 

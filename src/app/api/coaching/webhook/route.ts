@@ -19,15 +19,13 @@ export async function OPTIONS() {
 
 function getOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not configured')
+    console.error('[Webhook] OPENAI_API_KEY is not configured!')
+    return null
   }
   return new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   })
 }
-
-// Store recent transcript chunks for context
-const transcriptBuffer: Map<string, { text: string; lastUpdate: number }> = new Map()
 
 // Coaching system prompt
 const COACHING_PROMPT = `You are a real-time sales coach providing brief, actionable suggestions during a live sales call.
@@ -63,133 +61,169 @@ Current transcript (last 60 seconds):
 `
 
 export async function POST(request: NextRequest) {
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
   try {
     const body = await request.json()
     const url = new URL(request.url)
     const sessionIdParam = url.searchParams.get('session_id')
     const webhookType = url.searchParams.get('type')
 
-    console.log('[Webhook] Received:', JSON.stringify(body, null, 2).slice(0, 500))
+    console.log('[Webhook] ====== INCOMING REQUEST ======')
+    console.log('[Webhook] Event type:', body.event || body.type || 'unknown')
     console.log('[Webhook] Query params - session_id:', sessionIdParam, 'type:', webhookType)
+    console.log('[Webhook] Full body:', JSON.stringify(body, null, 2).slice(0, 1000))
 
-    // Handle different webhook event types from Recall.ai
     const eventType = body.event || body.type
 
-    // New Recall.ai API format - transcript events
+    // Handle transcript events (new Recall.ai format)
+    // Docs: https://docs.recall.ai/docs/bot-real-time-transcription
     if (eventType === 'transcript.data' || eventType === 'transcript.partial_data') {
-      return handleTranscriptEvent(body, sessionIdParam)
+      return handleTranscriptEvent(body, sessionIdParam, supabase, eventType === 'transcript.data')
     }
 
-    // Bot status events
+    // Handle bot status change events
     if (eventType === 'bot.status_change' || webhookType === 'status') {
-      return handleBotStatusChange(body)
-    }
-
-    // Legacy format - direct transcription
-    if (eventType === 'transcription' || body.transcript) {
-      return handleTranscription(body)
+      return handleBotStatusChange(body, supabase)
     }
 
     console.log('[Webhook] Unknown event type:', eventType)
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
+    return NextResponse.json({ received: true, event: eventType }, { headers: corsHeaders })
 
   } catch (error) {
     console.error('[Webhook] Error:', error)
-    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500, headers: corsHeaders })
+    return NextResponse.json({ error: 'Webhook processing failed', details: String(error) }, { status: 500, headers: corsHeaders })
   }
 }
 
-// Handle new Recall.ai transcript events (transcript.data, transcript.partial_data)
-async function handleTranscriptEvent(body: any, sessionId: string | null) {
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Handle Recall.ai transcript events
+// Event structure: { event: "transcript.data", data: { data: { words: [...], participant: {...} } } }
+async function handleTranscriptEvent(
+  body: any,
+  sessionId: string | null,
+  supabase: ReturnType<typeof createClient>,
+  isFinal: boolean
+) {
+  console.log('[Webhook] Processing transcript event, isFinal:', isFinal)
 
-  // Extract transcript data from new format
-  const data = body.data || body
-  const words = data.words || []
-  const speaker = data.speaker || 'Unknown'
-  const isFinal = data.is_final !== false
+  // Extract transcript data - note the DOUBLE nesting: body.data.data
+  // See: https://docs.recall.ai/docs/real-time-webhook-endpoints
+  const outerData = body.data || {}
+  const innerData = outerData.data || outerData // Handle both nested and flat structures
+  const words = innerData.words || []
+  const participant = innerData.participant || {}
+  const speaker = participant.name || 'Unknown'
 
-  // Build transcript text
+  // Build transcript text from words array
   let transcriptText = ''
   if (Array.isArray(words)) {
-    transcriptText = words.map((w: any) => w.text || w.word || w).join(' ')
-  } else if (data.transcript) {
-    transcriptText = typeof data.transcript === 'string' ? data.transcript : data.transcript.text
+    transcriptText = words.map((w: any) => w.text || w.word || String(w)).join(' ')
   }
 
   if (!transcriptText.trim()) {
     console.log('[Webhook] Empty transcript, skipping')
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
+    return NextResponse.json({ received: true, skipped: 'empty' }, { headers: corsHeaders })
   }
 
-  console.log(`[Webhook] Transcript from ${speaker}: "${transcriptText.slice(0, 100)}..."`)
+  console.log(`[Webhook] Transcript from "${speaker}": "${transcriptText.slice(0, 100)}..."`)
 
-  // Find session by session_id param or bot_id
-  let session
+  // Find session - try session_id param first, then bot_id
+  let session = null
+
   if (sessionId) {
-    const { data: s } = await supabase
+    const { data: s, error } = await supabase
       .from('coaching_sessions')
-      .select('id, user_id')
+      .select('id, user_id, transcript, last_suggestion_at')
       .eq('id', sessionId)
       .eq('status', 'active')
       .single()
-    session = s
+
+    if (error) {
+      console.log('[Webhook] Session lookup by ID error:', error.message)
+    } else {
+      session = s
+    }
   }
 
-  // Fallback to finding by bot_id
+  // Fallback: find by bot_id
   if (!session && body.bot_id) {
-    const { data: s } = await supabase
+    const { data: s, error } = await supabase
       .from('coaching_sessions')
-      .select('id, user_id')
+      .select('id, user_id, transcript, last_suggestion_at')
       .eq('bot_id', body.bot_id)
       .eq('status', 'active')
       .single()
-    session = s
+
+    if (error) {
+      console.log('[Webhook] Session lookup by bot_id error:', error.message)
+    } else {
+      session = s
+    }
   }
 
   if (!session) {
-    console.log('[Webhook] No active session found')
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
+    console.log('[Webhook] No active session found for session_id:', sessionId, 'bot_id:', body.bot_id)
+    return NextResponse.json({ received: true, skipped: 'no_session' }, { headers: corsHeaders })
   }
 
-  // Update transcript buffer (include speaker info)
-  const bufferKey = session.id
-  const existing = transcriptBuffer.get(bufferKey) || { text: '', lastUpdate: 0 }
-  existing.text += `\n${speaker}: ${transcriptText}`
-  existing.lastUpdate = Date.now()
+  console.log('[Webhook] Found session:', session.id)
 
-  // Keep only last ~500 words
-  const words_arr = existing.text.split(' ')
-  if (words_arr.length > 500) {
-    existing.text = words_arr.slice(-500).join(' ')
-  }
-  transcriptBuffer.set(bufferKey, existing)
+  // Append to existing transcript (stored in DB, not memory - serverless is stateless!)
+  const existingTranscript = session.transcript || ''
+  const newTranscript = existingTranscript + `\n${speaker}: ${transcriptText}`
+
+  // Keep only last ~2000 characters to avoid bloat
+  const trimmedTranscript = newTranscript.length > 5000
+    ? newTranscript.slice(-5000)
+    : newTranscript
 
   // Update session transcript in DB
-  await supabase
+  const { error: updateError } = await supabase
     .from('coaching_sessions')
     .update({
-      transcript: existing.text,
+      transcript: trimmedTranscript,
       updated_at: new Date().toISOString(),
     })
     .eq('id', session.id)
 
-  // Only generate coaching on final transcripts, rate limited
+  if (updateError) {
+    console.error('[Webhook] Failed to update transcript:', updateError)
+  } else {
+    console.log('[Webhook] Transcript updated, length:', trimmedTranscript.length)
+  }
+
+  // Only generate AI coaching on final transcripts
   if (!isFinal) {
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
+    console.log('[Webhook] Partial transcript, skipping AI coaching')
+    return NextResponse.json({ received: true, partial: true }, { headers: corsHeaders })
   }
 
-  // Rate limit coaching suggestions (every 10 seconds)
-  const lastSuggestionKey = `last_${session.id}`
-  const lastSuggestion = transcriptBuffer.get(lastSuggestionKey)
-  if (lastSuggestion && Date.now() - lastSuggestion.lastUpdate < 10000) {
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
-  }
-  transcriptBuffer.set(lastSuggestionKey, { text: '', lastUpdate: Date.now() })
+  // Rate limit: only generate suggestions every 10 seconds
+  // Use DB timestamp since serverless functions are stateless
+  const lastSuggestionAt = session.last_suggestion_at ? new Date(session.last_suggestion_at) : null
+  const now = new Date()
+  const timeSinceLastSuggestion = lastSuggestionAt ? now.getTime() - lastSuggestionAt.getTime() : Infinity
 
-  // Generate coaching suggestion
+  if (timeSinceLastSuggestion < 10000) {
+    console.log('[Webhook] Rate limited, last suggestion was', Math.round(timeSinceLastSuggestion / 1000), 'seconds ago')
+    return NextResponse.json({ received: true, rateLimited: true }, { headers: corsHeaders })
+  }
+
+  // Update last_suggestion_at timestamp
+  await supabase
+    .from('coaching_sessions')
+    .update({ last_suggestion_at: now.toISOString() })
+    .eq('id', session.id)
+
+  // Generate AI coaching suggestion
+  const openai = getOpenAIClient()
+  if (!openai) {
+    console.error('[Webhook] OpenAI client not available - check OPENAI_API_KEY')
+    return NextResponse.json({ received: true, skipped: 'no_openai' }, { headers: corsHeaders })
+  }
+
   try {
-    const openai = getOpenAIClient()
+    console.log('[Webhook] Generating AI coaching suggestion...')
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -200,7 +234,7 @@ async function handleTranscriptEvent(body: any, sessionId: string | null) {
         },
         {
           role: 'user',
-          content: COACHING_PROMPT + existing.text.slice(-2000)
+          content: COACHING_PROMPT + trimmedTranscript.slice(-2000)
         }
       ],
       temperature: 0.7,
@@ -208,6 +242,9 @@ async function handleTranscriptEvent(body: any, sessionId: string | null) {
     })
 
     const responseText = completion.choices[0]?.message?.content || ''
+    console.log('[Webhook] OpenAI response:', responseText.slice(0, 200))
+
+    // Parse JSON response
     const cleanedResponse = responseText
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '')
@@ -217,17 +254,24 @@ async function handleTranscriptEvent(body: any, sessionId: string | null) {
 
     // Insert suggestion if provided
     if (coaching.suggestion?.type && coaching.suggestion?.content) {
-      await supabase
+      const { error: insertError } = await supabase
         .from('coaching_suggestions')
         .insert({
           session_id: session.id,
           type: coaching.suggestion.type,
           content: coaching.suggestion.content,
         })
-      console.log(`[Webhook] Generated coaching: ${coaching.suggestion.type} - ${coaching.suggestion.content}`)
+
+      if (insertError) {
+        console.error('[Webhook] Failed to insert suggestion:', insertError)
+      } else {
+        console.log(`[Webhook] ✓ Generated coaching: ${coaching.suggestion.type} - ${coaching.suggestion.content}`)
+      }
+    } else {
+      console.log('[Webhook] AI decided no suggestion needed')
     }
 
-    // Insert stats update
+    // Insert stats update if provided
     if (coaching.talk_ratio !== undefined) {
       await supabase
         .from('coaching_suggestions')
@@ -238,174 +282,64 @@ async function handleTranscriptEvent(body: any, sessionId: string | null) {
         })
     }
 
+    return NextResponse.json({ received: true, coaching: !!coaching.suggestion?.content }, { headers: corsHeaders })
+
   } catch (aiError) {
     console.error('[Webhook] AI coaching error:', aiError)
+    return NextResponse.json({ received: true, aiError: String(aiError) }, { headers: corsHeaders })
   }
-
-  return NextResponse.json({ received: true }, { headers: corsHeaders })
 }
 
-async function handleBotStatusChange(body: any) {
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Handle bot status change events
+async function handleBotStatusChange(body: any, supabase: ReturnType<typeof createClient>) {
   const botId = body.data?.bot_id || body.bot_id
+  const status = body.data?.status?.code || body.data?.status || body.status
 
-  if (!botId) return NextResponse.json({ received: true }, { headers: corsHeaders })
+  console.log('[Webhook] Bot status change - bot_id:', botId, 'status:', status)
 
-  const status = body.data?.status || body.status
+  if (!botId) {
+    console.log('[Webhook] No bot_id in status change event')
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
+  }
 
   // Find session by bot ID
-  const { data: session } = await supabase
+  const { data: session, error } = await supabase
     .from('coaching_sessions')
     .select('id')
     .eq('bot_id', botId)
     .single()
 
-  if (!session) return NextResponse.json({ received: true }, { headers: corsHeaders })
+  if (error || !session) {
+    console.log('[Webhook] No session found for bot_id:', botId)
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
+  }
 
   // Map Recall status to our status
   let sessionStatus = 'active'
-  if (status === 'joining') sessionStatus = 'bot_joining'
-  if (status === 'in_call') sessionStatus = 'active'
-  if (status === 'done' || status === 'error') sessionStatus = 'ended'
+  if (status === 'joining' || status === 'joining_call') sessionStatus = 'bot_joining'
+  if (status === 'in_call' || status === 'in_waiting_room') sessionStatus = 'active'
+  if (status === 'done' || status === 'call_ended' || status === 'error' || status === 'fatal') sessionStatus = 'ended'
+
+  console.log('[Webhook] Updating session status to:', sessionStatus)
 
   await supabase
     .from('coaching_sessions')
-    .update({ status: sessionStatus })
+    .update({ status: sessionStatus, updated_at: new Date().toISOString() })
     .eq('id', session.id)
 
-  return NextResponse.json({ received: true }, { headers: corsHeaders })
+  return NextResponse.json({ received: true, newStatus: sessionStatus }, { headers: corsHeaders })
 }
 
-async function handleTranscription(body: any) {
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-  // Extract transcript data
-  const botId = body.bot_id || body.data?.bot_id
-  const transcript = body.transcript || body.data?.transcript
-  const words = body.words || body.data?.words
-
-  if (!botId || (!transcript && !words)) {
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
-  }
-
-  // Find session
-  const { data: session } = await supabase
-    .from('coaching_sessions')
-    .select('id, user_id')
-    .eq('bot_id', botId)
-    .eq('status', 'active')
-    .single()
-
-  if (!session) {
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
-  }
-
-  // Build transcript text
-  let transcriptText = ''
-  if (typeof transcript === 'string') {
-    transcriptText = transcript
-  } else if (Array.isArray(words)) {
-    transcriptText = words.map((w: any) => w.text || w.word).join(' ')
-  } else if (transcript?.text) {
-    transcriptText = transcript.text
-  }
-
-  if (!transcriptText.trim()) {
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
-  }
-
-  // Update transcript buffer
-  const bufferKey = session.id
-  const existing = transcriptBuffer.get(bufferKey) || { text: '', lastUpdate: 0 }
-  existing.text += ' ' + transcriptText
-  existing.lastUpdate = Date.now()
-
-  // Keep only last ~500 words
-  const words_arr = existing.text.split(' ')
-  if (words_arr.length > 500) {
-    existing.text = words_arr.slice(-500).join(' ')
-  }
-  transcriptBuffer.set(bufferKey, existing)
-
-  // Update session transcript in DB
-  await supabase
-    .from('coaching_sessions')
-    .update({
-      transcript: existing.text,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', session.id)
-
-  // Rate limit coaching suggestions (every 10 seconds)
-  const lastSuggestionKey = `last_${session.id}`
-  const lastSuggestion = transcriptBuffer.get(lastSuggestionKey)
-  if (lastSuggestion && Date.now() - lastSuggestion.lastUpdate < 10000) {
-    return NextResponse.json({ received: true }, { headers: corsHeaders })
-  }
-  transcriptBuffer.set(lastSuggestionKey, { text: '', lastUpdate: Date.now() })
-
-  // Generate coaching suggestion
-  try {
-    const openai = getOpenAIClient()
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Use faster model for real-time
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a real-time sales coach. Respond with JSON only.'
-        },
-        {
-          role: 'user',
-          content: COACHING_PROMPT + existing.text.slice(-2000)
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 200,
-    })
-
-    const responseText = completion.choices[0]?.message?.content || ''
-    const cleanedResponse = responseText
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim()
-
-    const coaching = JSON.parse(cleanedResponse)
-
-    // Insert suggestion if provided
-    if (coaching.suggestion?.type && coaching.suggestion?.content) {
-      await supabase
-        .from('coaching_suggestions')
-        .insert({
-          session_id: session.id,
-          type: coaching.suggestion.type,
-          content: coaching.suggestion.content,
-        })
-    }
-
-    // Insert stats update
-    if (coaching.talk_ratio !== undefined) {
-      await supabase
-        .from('coaching_suggestions')
-        .insert({
-          session_id: session.id,
-          type: 'stats',
-          content: JSON.stringify({ talk_ratio: coaching.talk_ratio }),
-        })
-    }
-
-  } catch (aiError) {
-    console.error('AI coaching error:', aiError)
-  }
-
-  return NextResponse.json({ received: true }, { headers: corsHeaders })
-}
-
-// Also support GET for webhook verification
+// GET endpoint for webhook verification and health check
 export async function GET(request: NextRequest) {
   const challenge = request.nextUrl.searchParams.get('challenge')
   if (challenge) {
     return NextResponse.json({ challenge }, { headers: corsHeaders })
   }
-  return NextResponse.json({ status: 'ok' }, { headers: corsHeaders })
+  return NextResponse.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    openai_configured: !!process.env.OPENAI_API_KEY,
+    supabase_configured: !!supabaseUrl && !!supabaseServiceKey,
+  }, { headers: corsHeaders })
 }

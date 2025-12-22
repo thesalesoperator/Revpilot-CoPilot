@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     // Get session from DB
     const { data: session, error: sessionError } = await supabase
       .from('coaching_sessions')
-      .select('*')
+      .select('id, user_id, meeting_url, meeting_id, bot_id, status, transcript, last_suggestion_at, created_at, updated_at')
       .eq('id', sessionId)
       .single()
 
@@ -85,6 +85,8 @@ export async function GET(request: NextRequest) {
         bot_id: session.bot_id,
         meeting_id: session.meeting_id,
         transcript_length: session.transcript?.length || 0,
+        transcript_preview: session.transcript?.slice(-200) || null,
+        last_suggestion_at: session.last_suggestion_at,
         created_at: session.created_at,
         updated_at: session.updated_at,
       },
@@ -94,6 +96,7 @@ export async function GET(request: NextRequest) {
         region: RECALL_API_REGION,
         api_base: RECALL_API_BASE,
         has_api_key: !!RECALL_API_KEY,
+        has_openai_key: !!process.env.OPENAI_API_KEY,
       }
     }, { headers: corsHeaders })
 
