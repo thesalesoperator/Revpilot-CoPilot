@@ -27,6 +27,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 })
 
 async function startCoachingSession(meetingUrl, userId, authToken) {
+  console.log('[RevPilot BG] Starting coaching session')
+  console.log('[RevPilot BG] Token exists:', !!authToken, 'length:', authToken?.length)
+  console.log('[RevPilot BG] UserId:', userId)
+
+  if (!authToken) {
+    throw new Error('No auth token available - please log in again')
+  }
+
   const response = await fetch(`${API_BASE}/api/coaching/start`, {
     method: 'POST',
     headers: {
@@ -36,12 +44,14 @@ async function startCoachingSession(meetingUrl, userId, authToken) {
     body: JSON.stringify({ meetingUrl, userId })
   })
 
+  const data = await response.json()
+  console.log('[RevPilot BG] Response status:', response.status, 'data:', data)
+
   if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to start coaching session')
+    throw new Error(data.error || 'Failed to start coaching session')
   }
 
-  const session = await response.json()
+  const session = data  // Use the already-parsed data
 
   // Store session info
   await chrome.storage.local.set({ coachingSession: session })

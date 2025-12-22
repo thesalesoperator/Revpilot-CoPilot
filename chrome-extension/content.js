@@ -267,7 +267,11 @@
 
     try {
       // Get stored auth
-      const { authToken, userId } = await chrome.storage.local.get(['authToken', 'userId'])
+      const stored = await chrome.storage.local.get(['authToken', 'userId'])
+      const authToken = stored.authToken
+      const userId = stored.userId
+
+      console.log('[RevPilot] Auth check - token exists:', !!authToken, 'userId:', userId)
 
       if (!authToken || !userId) {
         alert('Please log in to RevPilot first. Click the extension icon to sign in.')

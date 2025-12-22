@@ -24,17 +24,33 @@ export async function POST(request: NextRequest) {
     // Verify auth token
     const authHeader = request.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders })
+      console.error('Coaching start: No auth header')
+      return NextResponse.json({ error: 'Unauthorized - no token provided' }, { status: 401, headers: corsHeaders })
     }
 
     const token = authHeader.split(' ')[1]
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    if (!token || token === 'undefined' || token === 'null') {
+      console.error('Coaching start: Empty or invalid token value')
+      return NextResponse.json({ error: 'Unauthorized - token is empty' }, { status: 401, headers: corsHeaders })
+    }
+
+    // Use anon key to verify user tokens
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const authClient = createClient(supabaseUrl, supabaseAnonKey)
 
     // Verify the token with Supabase
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401, headers: corsHeaders })
+    const { data: { user }, error: authError } = await authClient.auth.getUser(token)
+    if (authError) {
+      console.error('Coaching start auth error:', authError.message)
+      return NextResponse.json({ error: `Invalid token: ${authError.message}` }, { status: 401, headers: corsHeaders })
     }
+    if (!user) {
+      console.error('Coaching start: No user returned')
+      return NextResponse.json({ error: 'Invalid token - no user' }, { status: 401, headers: corsHeaders })
+    }
+
+    // Use service key for database operations (bypasses RLS)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const { meetingUrl, userId } = await request.json()
 
