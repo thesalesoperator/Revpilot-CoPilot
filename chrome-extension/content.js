@@ -272,11 +272,51 @@
   }
 
   async function loadStoredSession() {
+    console.log('[RevPilot] Checking for stored session...')
+
+    try {
+      // First check chrome.storage directly for the session
+      const stored = await chrome.storage.local.get(['coachingSession', 'authToken'])
+      console.log('[RevPilot] Storage check - session exists:', !!stored.coachingSession, 'authToken exists:', !!stored.authToken)
+
+      if (stored.coachingSession) {
+        session = stored.coachingSession
+        console.log('[RevPilot] Restored session from storage:', session.id)
+        showCoachingUI()
+        subscribeToSuggestions()
+
+        // Show appropriate banner
+        if (session.botId) {
+          showLiveTranscriptionBanner()
+        } else {
+          startDemoMode(session.botError)
+        }
+        return
+      }
+    } catch (e) {
+      console.error('[RevPilot] Error checking storage:', e)
+    }
+
+    // Fallback: Try message to background script
     chrome.runtime.sendMessage({ type: 'GET_SESSION' }, (storedSession) => {
+      if (chrome.runtime.lastError) {
+        console.log('[RevPilot] GET_SESSION error:', chrome.runtime.lastError.message)
+        return
+      }
+
       if (storedSession) {
+        console.log('[RevPilot] Got session from background:', storedSession.id)
         session = storedSession
         showCoachingUI()
         subscribeToSuggestions()
+
+        if (storedSession.botId) {
+          showLiveTranscriptionBanner()
+        } else {
+          startDemoMode(storedSession.botError)
+        }
+      } else {
+        console.log('[RevPilot] No stored session found')
       }
     })
   }
@@ -799,4 +839,52 @@
       cleanupSession()
     }
   })
+
+  // Expose debug function to window for troubleshooting
+  window.revpilotDebug = async function() {
+    const stored = await chrome.storage.local.get(['coachingSession', 'authToken', 'userId'])
+    console.log('=== RevPilot Debug Info ===')
+    console.log('Session in memory:', session)
+    console.log('Session in storage:', stored.coachingSession)
+    console.log('Auth token exists:', !!stored.authToken)
+    console.log('User ID:', stored.userId)
+    console.log('Polling active:', !!pollInterval)
+    console.log('Suggestions count:', suggestions.length)
+    console.log('===========================')
+    return {
+      session,
+      storedSession: stored.coachingSession,
+      hasAuthToken: !!stored.authToken,
+      userId: stored.userId,
+      pollingActive: !!pollInterval,
+      suggestionsCount: suggestions.length
+    }
+  }
+
+  // Also expose a function to manually trigger polling
+  window.revpilotPoll = async function() {
+    if (!session) {
+      console.log('[RevPilot] No session - cannot poll')
+      return
+    }
+
+    const stored = await chrome.storage.local.get(['authToken'])
+    const authToken = stored.authToken || SUPABASE_ANON_KEY
+
+    console.log('[RevPilot] Manual poll for session:', session.id)
+
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/coaching_suggestions?session_id=eq.${session.id}&type=neq.stats&order=created_at.desc&limit=10`,
+      {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${authToken}`
+        }
+      }
+    )
+
+    const data = await response.json()
+    console.log('[RevPilot] Manual poll result:', response.status, data)
+    return data
+  }
 })()
