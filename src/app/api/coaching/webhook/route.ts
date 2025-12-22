@@ -28,44 +28,46 @@ function getOpenAIClient() {
 }
 
 // Coaching system prompt
-const COACHING_PROMPT = `You are an expert real-time sales coach analyzing a live sales call between a sales rep and a prospect/customer.
+const COACHING_PROMPT = `You are an expert real-time sales coach analyzing a live sales call.
 
-CONTEXT: You're hearing BOTH sides of the conversation. The transcript shows who is speaking (e.g., "Jordan Park: hello" or "Customer: I'm interested").
+CONTEXT: You're hearing the conversation in real-time. The transcript shows who is speaking.
 
-YOUR JOB: Analyze what BOTH parties are saying and coach the sales rep on what to say or do next.
+YOUR JOB: Provide actionable coaching tips to help the sales rep succeed.
 
 RESPOND WITH JSON ONLY:
 {
   "suggestion": {
-    "type": "question" | "tip" | "objection" | "positive" | "alert" | null,
-    "content": "Brief actionable suggestion (max 2 sentences)" | null
+    "type": "question" | "tip" | "objection" | "positive" | "alert",
+    "content": "Brief actionable suggestion (max 2 sentences)"
   },
   "talk_ratio": <estimated % the sales rep is talking, 0-100>
 }
 
 SUGGESTION TYPES:
-- question: Suggest a specific discovery question to ask based on what prospect said
-- tip: Coaching tip based on the conversation flow
-- objection: IMPORTANT - When prospect raises a concern, price objection, or hesitation, tell the rep exactly how to respond
+- question: Suggest a specific discovery question to ask
+- tip: Coaching tip based on the conversation
+- objection: When prospect raises concerns, tell rep how to respond
 - positive: Reinforce something the rep did well
-- alert: Urgent warning - rep talking too much, missing buying signal, etc.
-- null: No suggestion needed (use sparingly - try to always provide value)
+- alert: Urgent warning (talking too much, missed signal, etc.)
 
-PRIORITY TRIGGERS (always respond to these):
-1. Prospect mentions a PROBLEM or PAIN POINT → Suggest follow-up question to dig deeper
-2. Prospect raises an OBJECTION or CONCERN → Provide specific response strategy
-3. Prospect asks about PRICE or COST → Guide how to handle the pricing discussion
-4. Prospect shows BUYING SIGNALS (interest, timeline questions) → Alert rep to move toward close
-5. Prospect mentions COMPETITORS → Suggest differentiation approach
-6. Rep is talking too much (>60%) → Alert to ask more questions
+ALWAYS PROVIDE A SUGGESTION. Examples of what to coach on:
+1. Opening the call - suggest building rapport
+2. Rep making statements - suggest asking questions instead
+3. Rep asking questions - reinforce good behavior or suggest follow-ups
+4. Any pause or silence - suggest probing questions
+5. Rep talking about features - remind to focus on benefits/outcomes
+6. Prospect sounds interested - suggest moving toward next steps
+7. Prospect raises objection - provide specific response strategy
+8. Prospect mentions price - guide pricing discussion
+9. Prospect mentions competitors - suggest differentiation
 
 RULES:
-1. Be SPECIFIC - reference what was actually said
-2. Keep suggestions SHORT (1-2 sentences max)
-3. Focus on what the REP should SAY or DO next
-4. If unsure who the rep is, coach based on sales best practices
+1. ALWAYS give a suggestion - even if just "ask an open-ended question"
+2. Be SPECIFIC - reference what was actually said when possible
+3. Keep it SHORT (1-2 sentences max)
+4. Focus on what the REP should SAY or DO next
 
-Current conversation transcript:
+Current transcript:
 `
 
 export async function POST(request: NextRequest) {
@@ -210,13 +212,13 @@ async function handleTranscriptEvent(
     return NextResponse.json({ received: true, partial: true, wordCount }, { headers: corsHeaders })
   }
 
-  // Rate limit: only generate suggestions every 10 seconds
+  // Rate limit: only generate suggestions every 6 seconds
   // Use DB timestamp since serverless functions are stateless
   const lastSuggestionAt = session.last_suggestion_at ? new Date(session.last_suggestion_at) : null
   const now = new Date()
   const timeSinceLastSuggestion = lastSuggestionAt ? now.getTime() - lastSuggestionAt.getTime() : Infinity
 
-  if (timeSinceLastSuggestion < 10000) {
+  if (timeSinceLastSuggestion < 6000) {
     console.log('[Webhook] Rate limited, last suggestion was', Math.round(timeSinceLastSuggestion / 1000), 'seconds ago')
     return NextResponse.json({ received: true, rateLimited: true }, { headers: corsHeaders })
   }
@@ -264,23 +266,22 @@ async function handleTranscriptEvent(
 
     const coaching = JSON.parse(cleanedResponse)
 
-    // Insert suggestion if provided
-    if (coaching.suggestion?.type && coaching.suggestion?.content) {
-      const { error: insertError } = await supabase
-        .from('coaching_suggestions')
-        .insert({
-          session_id: session.id,
-          type: coaching.suggestion.type,
-          content: coaching.suggestion.content,
-        })
+    // Insert suggestion - AI should always provide one with new prompt
+    const suggestionType = coaching.suggestion?.type || 'tip'
+    const suggestionContent = coaching.suggestion?.content || 'Try asking an open-ended question to learn more about their needs.'
 
-      if (insertError) {
-        console.error('[Webhook] Failed to insert suggestion:', insertError)
-      } else {
-        console.log(`[Webhook] ✓ Generated coaching: ${coaching.suggestion.type} - ${coaching.suggestion.content}`)
-      }
+    const { error: insertError } = await supabase
+      .from('coaching_suggestions')
+      .insert({
+        session_id: session.id,
+        type: suggestionType,
+        content: suggestionContent,
+      })
+
+    if (insertError) {
+      console.error('[Webhook] Failed to insert suggestion:', insertError)
     } else {
-      console.log('[Webhook] AI decided no suggestion needed')
+      console.log(`[Webhook] ✓ Generated coaching: ${suggestionType} - ${suggestionContent}`)
     }
 
     // Insert stats update if provided
