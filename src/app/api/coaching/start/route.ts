@@ -100,25 +100,48 @@ export async function POST(request: NextRequest) {
     if (RECALL_API_KEY) {
       // Normalize the URL to standard Zoom format for Recall.ai
       const normalizedMeetingUrl = normalizeZoomUrl(meetingUrl)
-      console.log(`[Recall.ai] Attempting to create bot with region: ${RECALL_API_REGION}, API base: ${RECALL_API_BASE}`)
+      const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://revpilot-commission-calculator.netlify.app'}/api/coaching/webhook`
+
+      console.log(`[Recall.ai] Creating bot:`)
+      console.log(`  - Region: ${RECALL_API_REGION}`)
+      console.log(`  - API Base: ${RECALL_API_BASE}`)
+      console.log(`  - Meeting URL: ${normalizedMeetingUrl}`)
+      console.log(`  - Webhook URL: ${webhookUrl}`)
+      console.log(`  - Session ID: ${session.id}`)
+
       try {
-        const botResponse = await fetch(`${RECALL_API_BASE}/bot`, {
+        // Use the current Recall.ai API format (recording_config structure)
+        const botPayload = {
+          meeting_url: normalizedMeetingUrl,
+          bot_name: 'RevPilot Coach',
+          recording_config: {
+            transcript: {
+              provider: {
+                // Use meeting_captions for Zoom's built-in captions (free, low latency)
+                meeting_captions: {}
+              }
+            },
+            realtime_endpoints: [
+              {
+                type: 'webhook',
+                url: `${webhookUrl}?session_id=${session.id}`,
+                events: ['transcript.data', 'transcript.partial_data']
+              }
+            ]
+          },
+          // Also set webhook_url for bot status events
+          webhook_url: `${webhookUrl}?session_id=${session.id}&type=status`
+        }
+
+        console.log(`[Recall.ai] Request payload:`, JSON.stringify(botPayload, null, 2))
+
+        const botResponse = await fetch(`${RECALL_API_BASE}/bot/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${RECALL_API_KEY}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            meeting_url: normalizedMeetingUrl,
-            bot_name: 'RevPilot Coach',
-            transcription_options: {
-              provider: 'deepgram',
-            },
-            real_time_transcription: {
-              destination_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://revpilot-commission-calculator.netlify.app'}/api/coaching/webhook`,
-              partial_results: true,
-            },
-          }),
+          body: JSON.stringify(botPayload),
         })
 
         if (botResponse.ok) {
