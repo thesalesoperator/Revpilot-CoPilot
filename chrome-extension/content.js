@@ -313,6 +313,12 @@
           session = response
           showCoachingUI()
           subscribeToSuggestions()
+
+          // Start demo mode if no bot (for testing without Recall.ai)
+          if (!response.botId) {
+            console.log('[RevPilot] No bot - starting demo mode')
+            startDemoMode()
+          }
         }
       })
     } catch (error) {
@@ -342,6 +348,7 @@
           realtimeChannel.unsubscribe()
           realtimeChannel = null
         }
+        stopDemoMode()
         session = null
         suggestions = []
         showStatusUI()
@@ -488,6 +495,78 @@
     if (listenRatio) listenRatio.style.width = `${listenPercent}%`
     if (talkPct) talkPct.textContent = `${talkPercent}%`
     if (listenPct) listenPct.textContent = `${listenPercent}%`
+  }
+
+  // Demo mode - shows sample suggestions for testing without Recall.ai
+  let demoInterval = null
+  function startDemoMode() {
+    const demoSuggestions = [
+      { type: 'tip', content: 'Start with a warm greeting and build rapport before diving into business.' },
+      { type: 'question', content: 'Ask: "What prompted you to take this call today?"' },
+      { type: 'tip', content: 'Listen actively - dig deeper into pain points they mention.' },
+      { type: 'question', content: 'Try: "Can you tell me more about how that affects your team?"' },
+      { type: 'positive', content: 'Great job asking open-ended questions!' },
+      { type: 'objection', content: 'They seem hesitant. Address their concerns directly.' },
+      { type: 'tip', content: 'Now is a good time to present your solution.' },
+      { type: 'question', content: 'Ask: "What would success look like for you?"' },
+      { type: 'alert', content: 'Watch your talk ratio - let the prospect speak more.' },
+      { type: 'positive', content: 'Nice discovery question! Keep exploring their needs.' },
+    ]
+
+    let index = 0
+    let talkRatio = 50
+
+    // Show first suggestion after 3 seconds
+    setTimeout(() => {
+      if (!session) return
+      addSuggestion({
+        id: 'demo-' + Date.now(),
+        type: demoSuggestions[0].type,
+        content: demoSuggestions[0].content,
+        created_at: new Date().toISOString()
+      })
+      index = 1
+    }, 3000)
+
+    // Then show suggestions every 12-18 seconds
+    demoInterval = setInterval(() => {
+      if (!session) {
+        clearInterval(demoInterval)
+        return
+      }
+
+      // Add next suggestion
+      if (index < demoSuggestions.length) {
+        addSuggestion({
+          id: 'demo-' + Date.now(),
+          type: demoSuggestions[index].type,
+          content: demoSuggestions[index].content,
+          created_at: new Date().toISOString()
+        })
+        index++
+      } else {
+        // Loop back with random suggestions
+        const randomSuggestion = demoSuggestions[Math.floor(Math.random() * demoSuggestions.length)]
+        addSuggestion({
+          id: 'demo-' + Date.now(),
+          type: randomSuggestion.type,
+          content: randomSuggestion.content,
+          created_at: new Date().toISOString()
+        })
+      }
+
+      // Update talk ratio randomly
+      talkRatio = Math.max(25, Math.min(75, talkRatio + (Math.random() - 0.5) * 15))
+      updateStats({ talk_ratio: Math.round(talkRatio) })
+
+    }, 12000 + Math.random() * 6000)
+  }
+
+  function stopDemoMode() {
+    if (demoInterval) {
+      clearInterval(demoInterval)
+      demoInterval = null
+    }
   }
 
   function getSuggestionIcon(type) {
