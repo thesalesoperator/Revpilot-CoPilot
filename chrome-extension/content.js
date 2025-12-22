@@ -538,12 +538,17 @@
       }
 
       try {
+        // Get user's auth token for RLS - anon key won't work because RLS requires auth.uid()
+        const stored = await chrome.storage.local.get(['authToken'])
+        const authToken = stored.authToken || SUPABASE_ANON_KEY
+
+        // Filter out 'stats' type - those are for talk ratio updates, not coaching suggestions
         const response = await fetch(
-          `${SUPABASE_URL}/rest/v1/coaching_suggestions?session_id=eq.${session.id}&order=created_at.desc&limit=10`,
+          `${SUPABASE_URL}/rest/v1/coaching_suggestions?session_id=eq.${session.id}&type=neq.stats&order=created_at.desc&limit=10`,
           {
             headers: {
               'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+              'Authorization': `Bearer ${authToken}`
             }
           }
         )
@@ -555,11 +560,35 @@
               addSuggestion(s)
             }
           })
+        } else {
+          console.log('[RevPilot] Poll response not ok:', response.status)
+        }
+
+        // Also fetch latest stats for talk ratio
+        const statsResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/coaching_suggestions?session_id=eq.${session.id}&type=eq.stats&order=created_at.desc&limit=1`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${authToken}`
+            }
+          }
+        )
+        if (statsResponse.ok) {
+          const statsRecords = await statsResponse.json()
+          if (statsRecords.length > 0) {
+            try {
+              const statsData = JSON.parse(statsRecords[0].content)
+              updateStats(statsData)
+            } catch (e) {
+              // Ignore JSON parse errors
+            }
+          }
         }
       } catch (error) {
         console.error('[RevPilot] Poll error:', error)
       }
-    }, 3000)  // Poll every 3 seconds instead of 2
+    }, 3000)  // Poll every 3 seconds
   }
 
   function addSuggestion(suggestion) {
