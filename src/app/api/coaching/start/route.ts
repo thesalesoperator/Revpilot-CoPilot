@@ -120,8 +120,10 @@ export async function POST(request: NextRequest) {
               provider: {
                 // Use Recall's streaming transcription with low latency mode
                 // Must use prioritize_low_latency for real-time webhooks (otherwise 3-10 min delay)
+                // Low latency mode requires language_code: 'en' (only English supported)
                 recallai_streaming: {
-                  mode: 'prioritize_low_latency'
+                  mode: 'prioritize_low_latency',
+                  language_code: 'en'
                 }
               }
             },
