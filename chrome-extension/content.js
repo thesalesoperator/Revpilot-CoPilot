@@ -569,11 +569,14 @@
 
     console.log('[RevPilot] Starting polling for suggestions')
 
-    pollInterval = setInterval(async () => {
+    // Define the poll function so we can call it immediately
+    async function doPoll() {
       if (!session) {
         console.log('[RevPilot] No session, stopping polling')
-        clearInterval(pollInterval)
-        pollInterval = null
+        if (pollInterval) {
+          clearInterval(pollInterval)
+          pollInterval = null
+        }
         return
       }
 
@@ -635,7 +638,13 @@
       } catch (error) {
         console.error('[RevPilot] Poll error:', error)
       }
-    }, 3000)  // Poll every 3 seconds
+    }
+
+    // Poll immediately on start
+    doPoll()
+
+    // Then poll every 3 seconds
+    pollInterval = setInterval(doPoll, 3000)
   }
 
   function addSuggestion(suggestion) {
