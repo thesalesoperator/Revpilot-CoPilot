@@ -10,45 +10,42 @@
   let session = null
   let realtimeChannel = null
   let suggestions = []
+  let isPinned = false
 
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init)
-  } else {
-    init()
-  }
+  // Initialize immediately
+  console.log('[RevPilot] Content script loaded on:', window.location.href)
+
+  // Try to initialize now and also watch for changes
+  setTimeout(init, 1000) // Delay slightly to let Zoom load
+  setTimeout(init, 3000) // Try again after 3s
+  setTimeout(init, 5000) // Try again after 5s
 
   function init() {
-    // Check if we're in a Zoom meeting
-    if (!isZoomMeeting()) {
-      console.log('[RevPilot] Not in a Zoom meeting, waiting...')
-      // Watch for navigation to meeting
-      observeForMeeting()
+    // Don't create multiple overlays
+    if (overlay) return
+
+    // Check if we're on a Zoom page
+    if (!isZoomPage()) {
+      console.log('[RevPilot] Not a Zoom meeting page')
       return
     }
 
-    console.log('[RevPilot] Zoom meeting detected, initializing...')
+    console.log('[RevPilot] Zoom page detected, creating overlay...')
     createOverlay()
     loadStoredSession()
   }
 
-  function isZoomMeeting() {
-    // Check for Zoom meeting indicators
-    return window.location.href.includes('/wc/') ||
-           window.location.href.includes('/j/') ||
-           document.querySelector('[class*="meeting"]') !== null
-  }
-
-  function observeForMeeting() {
-    const observer = new MutationObserver(() => {
-      if (isZoomMeeting() && !overlay) {
-        console.log('[RevPilot] Meeting started, initializing overlay...')
-        createOverlay()
-        loadStoredSession()
-      }
-    })
-
-    observer.observe(document.body, { childList: true, subtree: true })
+  function isZoomPage() {
+    const url = window.location.href
+    // Match various Zoom URL patterns
+    return url.includes('zoom.us/wc/') ||
+           url.includes('zoom.us/j/') ||
+           url.includes('zoom.us/s/') ||
+           url.includes('/start') ||
+           url.includes('/join') ||
+           document.querySelector('#webclient') !== null ||
+           document.querySelector('[class*="meeting"]') !== null ||
+           document.querySelector('[class*="video"]') !== null
   }
 
   function createOverlay() {
@@ -57,7 +54,7 @@
     overlay = document.createElement('div')
     overlay.id = 'revpilot-overlay'
     overlay.innerHTML = `
-      <div class="revpilot-container">
+      <div class="revpilot-container" id="revpilot-container">
         <div class="revpilot-header">
           <div class="revpilot-logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -67,6 +64,11 @@
             <span>RevPilot Coach</span>
           </div>
           <div class="revpilot-controls">
+            <button id="revpilot-pin" class="revpilot-btn-icon" title="Pin to top">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v10M12 12l4-4M12 12l-4-4M5 22h14"/>
+              </svg>
+            </button>
             <button id="revpilot-minimize" class="revpilot-btn-icon" title="Minimize">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14"/>
@@ -146,6 +148,7 @@
 
     // Make draggable
     makeDraggable(overlay.querySelector('.revpilot-container'))
+    makeDraggable(overlay.querySelector('.revpilot-minimized'))
 
     // Event listeners
     document.getElementById('revpilot-start').addEventListener('click', startCoaching)
@@ -153,40 +156,73 @@
     document.getElementById('revpilot-minimize').addEventListener('click', minimize)
     document.getElementById('revpilot-expand').addEventListener('click', expand)
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
+    document.getElementById('revpilot-pin').addEventListener('click', togglePin)
+
+    console.log('[RevPilot] Overlay created successfully!')
   }
 
   function makeDraggable(element) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
+    if (!element) return
 
-    const header = element.querySelector('.revpilot-header')
-    if (header) {
-      header.style.cursor = 'move'
-      header.onmousedown = dragMouseDown
-    }
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
+    let isDragging = false
+
+    const header = element.querySelector('.revpilot-header') || element
+    header.style.cursor = 'move'
+    header.addEventListener('mousedown', dragMouseDown)
 
     function dragMouseDown(e) {
       if (e.target.closest('button')) return
       e.preventDefault()
+      e.stopPropagation()
+      isDragging = true
       pos3 = e.clientX
       pos4 = e.clientY
-      document.onmouseup = closeDragElement
-      document.onmousemove = elementDrag
+      document.addEventListener('mouseup', closeDragElement)
+      document.addEventListener('mousemove', elementDrag)
     }
 
     function elementDrag(e) {
+      if (!isDragging) return
       e.preventDefault()
       pos1 = pos3 - e.clientX
       pos2 = pos4 - e.clientY
       pos3 = e.clientX
       pos4 = e.clientY
-      element.style.top = (element.offsetTop - pos2) + "px"
+
+      const newTop = element.offsetTop - pos2
+      const newLeft = element.offsetLeft - pos1
+
+      // Keep within viewport
+      const maxTop = window.innerHeight - 100
+      const maxLeft = window.innerWidth - 100
+
+      element.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px"
+      element.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + "px"
       element.style.right = "auto"
-      element.style.left = (element.offsetLeft - pos1) + "px"
+      element.style.bottom = "auto"
     }
 
     function closeDragElement() {
-      document.onmouseup = null
-      document.onmousemove = null
+      isDragging = false
+      document.removeEventListener('mouseup', closeDragElement)
+      document.removeEventListener('mousemove', elementDrag)
+    }
+  }
+
+  function togglePin() {
+    isPinned = !isPinned
+    const container = document.getElementById('revpilot-container')
+    const pinBtn = document.getElementById('revpilot-pin')
+
+    if (isPinned) {
+      container.classList.add('revpilot-pinned')
+      pinBtn.classList.add('revpilot-btn-active')
+      pinBtn.title = 'Unpin'
+    } else {
+      container.classList.remove('revpilot-pinned')
+      pinBtn.classList.remove('revpilot-btn-active')
+      pinBtn.title = 'Pin to top'
     }
   }
 
@@ -248,16 +284,18 @@
         userId,
         authToken
       }, (response) => {
-        if (response.error) {
+        if (response && response.error) {
           alert('Failed to start: ' + response.error)
           startBtn.disabled = false
           startBtn.textContent = 'Start Coaching'
           return
         }
 
-        session = response
-        showCoachingUI()
-        subscribeToSuggestions()
+        if (response) {
+          session = response
+          showCoachingUI()
+          subscribeToSuggestions()
+        }
       })
     } catch (error) {
       console.error('[RevPilot] Start error:', error)
@@ -387,6 +425,8 @@
     suggestions.push(suggestion)
 
     const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
     const empty = container.querySelector('.revpilot-empty')
     if (empty) empty.remove()
 
@@ -408,7 +448,7 @@
     }
 
     // Show notification if minimized
-    if (overlay.querySelector('.revpilot-minimized:not(.hidden)')) {
+    if (overlay && overlay.querySelector('.revpilot-minimized:not(.hidden)')) {
       document.getElementById('revpilot-notification').classList.remove('hidden')
     }
 
@@ -421,10 +461,15 @@
     const talkPercent = stats.talk_ratio || 50
     const listenPercent = 100 - talkPercent
 
-    document.getElementById('revpilot-talk-ratio').style.width = `${talkPercent}%`
-    document.getElementById('revpilot-listen-ratio').style.width = `${listenPercent}%`
-    document.getElementById('revpilot-talk-percent').textContent = `${talkPercent}%`
-    document.getElementById('revpilot-listen-percent').textContent = `${listenPercent}%`
+    const talkRatio = document.getElementById('revpilot-talk-ratio')
+    const listenRatio = document.getElementById('revpilot-listen-ratio')
+    const talkPct = document.getElementById('revpilot-talk-percent')
+    const listenPct = document.getElementById('revpilot-listen-percent')
+
+    if (talkRatio) talkRatio.style.width = `${talkPercent}%`
+    if (listenRatio) listenRatio.style.width = `${listenPercent}%`
+    if (talkPct) talkPct.textContent = `${talkPercent}%`
+    if (listenPct) listenPct.textContent = `${listenPercent}%`
   }
 
   function getSuggestionIcon(type) {

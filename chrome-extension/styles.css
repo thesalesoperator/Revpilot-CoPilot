@@ -76,6 +76,18 @@
   color: #fff;
 }
 
+.revpilot-btn-icon.revpilot-btn-active {
+  background: rgba(0, 255, 193, 0.2);
+  color: #00ffc1;
+}
+
+/* Pinned state - stays on top */
+.revpilot-container.revpilot-pinned {
+  z-index: 2147483647;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 255, 193, 0.2);
+  border-color: rgba(0, 255, 193, 0.4);
+}
+
 /* Body */
 .revpilot-body {
   padding: 16px;
