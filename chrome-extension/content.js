@@ -288,6 +288,20 @@
         userId,
         authToken
       }, (response) => {
+        // Check for extension context invalidation
+        if (chrome.runtime.lastError) {
+          const errorMsg = chrome.runtime.lastError.message || ''
+          console.error('[RevPilot] Runtime error:', errorMsg)
+          if (errorMsg.includes('Extension context invalidated') || errorMsg.includes('message channel closed')) {
+            alert('Extension was updated. Please refresh this page (Cmd+R) and try again.')
+          } else {
+            alert('Connection error: ' + errorMsg)
+          }
+          startBtn.disabled = false
+          startBtn.textContent = 'Start Coaching'
+          return
+        }
+
         if (response && response.error) {
           alert('Failed to start: ' + response.error)
           startBtn.disabled = false
