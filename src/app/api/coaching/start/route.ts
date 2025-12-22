@@ -117,8 +117,10 @@ export async function POST(request: NextRequest) {
           recording_config: {
             transcript: {
               provider: {
-                // Use meeting_captions for Zoom's built-in captions (free, low latency)
-                meeting_captions: {}
+                // Use Recall's own transcription (works without Zoom captions enabled)
+                recallai_v2: {
+                  language: 'en'
+                }
               }
             },
             realtime_endpoints: [
