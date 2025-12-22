@@ -138,20 +138,22 @@ async function handleTranscriptEvent(
   console.log(`[Webhook] Transcript from "${speaker}": "${transcriptText.slice(0, 100)}..."`)
 
   // Find session - try session_id param first, then bot_id
+  // Don't filter by status - process events for any non-ended session
   let session = null
 
   if (sessionId) {
     const { data: s, error } = await supabase
       .from('coaching_sessions')
-      .select('id, user_id, transcript, last_suggestion_at')
+      .select('id, user_id, transcript, last_suggestion_at, status')
       .eq('id', sessionId)
-      .eq('status', 'active')
+      .neq('status', 'ended')
       .single()
 
     if (error) {
       console.log('[Webhook] Session lookup by ID error:', error.message)
     } else {
       session = s
+      console.log('[Webhook] Found session by ID, status:', s.status)
     }
   }
 
@@ -159,15 +161,16 @@ async function handleTranscriptEvent(
   if (!session && body.bot_id) {
     const { data: s, error } = await supabase
       .from('coaching_sessions')
-      .select('id, user_id, transcript, last_suggestion_at')
+      .select('id, user_id, transcript, last_suggestion_at, status')
       .eq('bot_id', body.bot_id)
-      .eq('status', 'active')
+      .neq('status', 'ended')
       .single()
 
     if (error) {
       console.log('[Webhook] Session lookup by bot_id error:', error.message)
     } else {
       session = s
+      console.log('[Webhook] Found session by bot_id, status:', s.status)
     }
   }
 
