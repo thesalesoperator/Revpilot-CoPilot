@@ -5,7 +5,20 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 const RECALL_API_KEY = process.env.RECALL_API_KEY
-const RECALL_API_BASE = 'https://api.recall.ai/api/v1'
+const RECALL_API_REGION = process.env.RECALL_API_REGION || 'us-east-1'
+
+// Recall.ai regional API endpoints
+function getRecallApiBase(region: string): string {
+  const regionMap: Record<string, string> = {
+    'us-east-1': 'https://us-east-1.recall.ai/api/v1',
+    'us-west-2': 'https://us-west-2.recall.ai/api/v1',
+    'eu-central-1': 'https://eu-central-1.recall.ai/api/v1',
+    'ap-northeast-1': 'https://api.recall.ai/api/v1',
+  }
+  return regionMap[region] || regionMap['us-east-1']
+}
+
+const RECALL_API_BASE = getRecallApiBase(RECALL_API_REGION)
 
 // CORS headers for Chrome extension
 const corsHeaders = {
@@ -83,7 +96,9 @@ export async function POST(request: NextRequest) {
 
     // If Recall.ai is configured, send bot to join
     let botId = null
+    let botError = null
     if (RECALL_API_KEY) {
+      console.log(`[Recall.ai] Attempting to create bot with region: ${RECALL_API_REGION}, API base: ${RECALL_API_BASE}`)
       try {
         const botResponse = await fetch(`${RECALL_API_BASE}/bot`, {
           method: 'POST',
@@ -107,6 +122,7 @@ export async function POST(request: NextRequest) {
         if (botResponse.ok) {
           const botData = await botResponse.json()
           botId = botData.id
+          console.log(`[Recall.ai] Bot created successfully with ID: ${botId}`)
 
           // Update session with bot ID
           await supabase
@@ -117,12 +133,22 @@ export async function POST(request: NextRequest) {
             })
             .eq('id', session.id)
         } else {
-          console.error('Recall.ai bot error:', await botResponse.text())
+          const errorText = await botResponse.text()
+          console.error(`[Recall.ai] Bot creation failed (${botResponse.status}):`, errorText)
+          botError = `Recall.ai error: ${errorText}`
+          // Check for auth errors which indicate wrong region
+          if (errorText.includes('authentication_failed') || errorText.includes('Invalid API token')) {
+            console.error('[Recall.ai] API key may be invalid or for wrong region. Current region:', RECALL_API_REGION)
+            botError = `Invalid Recall.ai API key or wrong region. Current region: ${RECALL_API_REGION}. Try: us-east-1, us-west-2, eu-central-1, or ap-northeast-1`
+          }
         }
-      } catch (botError) {
-        console.error('Recall.ai error:', botError)
+      } catch (err) {
+        console.error('[Recall.ai] Network error:', err)
+        botError = `Recall.ai network error: ${err}`
         // Continue without bot - we'll use demo mode
       }
+    } else {
+      console.log('[Recall.ai] No API key configured - using demo mode')
     }
 
     // Update session to active
@@ -137,6 +163,8 @@ export async function POST(request: NextRequest) {
       id: session.id,
       status: 'active',
       botId,
+      botError: botError || undefined,
+      demoMode: !botId, // Client knows to use demo mode if no bot
       meetingId,
     }, { headers: corsHeaders })
 

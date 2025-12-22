@@ -324,12 +324,16 @@
           console.log('[RevPilot] Subscribing to realtime...')
           subscribeToSuggestions()
 
-          // Start demo mode if no bot (Recall.ai not configured)
+          // Start demo mode if no bot (Recall.ai not configured or failed)
           if (!response.botId) {
             console.log('[RevPilot] No bot ID - starting demo mode for live suggestions')
-            startDemoMode()
+            if (response.botError) {
+              console.warn('[RevPilot] Bot error:', response.botError)
+            }
+            startDemoMode(response.botError)
           } else {
             console.log('[RevPilot] Bot ID present:', response.botId, '- waiting for real transcription')
+            showLiveTranscriptionBanner()
           }
         } else {
           console.error('[RevPilot] Empty response received')
@@ -531,12 +535,45 @@
     if (listenPct) listenPct.textContent = `${listenPercent}%`
   }
 
+  // Show banner when live transcription is active
+  function showLiveTranscriptionBanner() {
+    const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
+    const banner = document.createElement('div')
+    banner.className = 'revpilot-mode-banner revpilot-live-banner'
+    banner.innerHTML = `
+      <span class="revpilot-banner-icon">🎙️</span>
+      <span>Live transcription active - AI coaching based on your conversation</span>
+    `
+    container.insertBefore(banner, container.firstChild)
+  }
+
+  // Show banner when in demo mode
+  function showDemoModeBanner(botError) {
+    const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
+    const banner = document.createElement('div')
+    banner.className = 'revpilot-mode-banner revpilot-demo-banner'
+    banner.innerHTML = `
+      <span class="revpilot-banner-icon">📋</span>
+      <span>Demo Mode - showing sample coaching tips</span>
+      ${botError ? `<div class="revpilot-banner-detail">Bot connection failed. Configure Recall.ai API key and region in Netlify environment variables.</div>` : ''}
+    `
+    container.insertBefore(banner, container.firstChild)
+  }
+
   // Demo mode - shows sample suggestions when Recall.ai bot is not available
   let demoInterval = null
   let demoTimeout = null
 
-  function startDemoMode() {
+  function startDemoMode(botError) {
     console.log('[RevPilot] Starting demo mode - will show sample suggestions')
+    showDemoModeBanner(botError)
 
     const demoSuggestions = [
       { type: 'tip', content: 'Start with a warm greeting and build rapport before diving into business.' },
