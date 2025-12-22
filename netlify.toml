@@ -6,11 +6,6 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Ensure API routes work as serverless functions
-[functions]
-  node_bundler = "esbuild"
-  included_files = ["node_modules/**"]
-
 # Headers for CORS on API routes
 [[headers]]
   for = "/api/*"
