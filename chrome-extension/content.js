@@ -542,6 +542,8 @@
         const stored = await chrome.storage.local.get(['authToken'])
         const authToken = stored.authToken || SUPABASE_ANON_KEY
 
+        console.log('[RevPilot] Polling for session:', session.id, 'authToken exists:', !!stored.authToken)
+
         // Filter out 'stats' type - those are for talk ratio updates, not coaching suggestions
         const response = await fetch(
           `${SUPABASE_URL}/rest/v1/coaching_suggestions?session_id=eq.${session.id}&type=neq.stats&order=created_at.desc&limit=10`,
@@ -553,15 +555,20 @@
           }
         )
 
+        console.log('[RevPilot] Poll response status:', response.status)
+
         if (response.ok) {
           const newSuggestions = await response.json()
+          console.log('[RevPilot] Fetched suggestions:', newSuggestions.length, 'existing:', suggestions.length)
           newSuggestions.reverse().forEach(s => {
             if (!suggestions.find(existing => existing.id === s.id)) {
+              console.log('[RevPilot] New suggestion found:', s.type, s.content?.substring(0, 50))
               addSuggestion(s)
             }
           })
         } else {
-          console.log('[RevPilot] Poll response not ok:', response.status)
+          const errorText = await response.text()
+          console.log('[RevPilot] Poll response not ok:', response.status, errorText)
         }
 
         // Also fetch latest stats for talk ratio
