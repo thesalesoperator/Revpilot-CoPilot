@@ -98,6 +98,8 @@ export async function POST(request: NextRequest) {
     let botId = null
     let botError = null
     if (RECALL_API_KEY) {
+      // Normalize the URL to standard Zoom format for Recall.ai
+      const normalizedMeetingUrl = normalizeZoomUrl(meetingUrl)
       console.log(`[Recall.ai] Attempting to create bot with region: ${RECALL_API_REGION}, API base: ${RECALL_API_BASE}`)
       try {
         const botResponse = await fetch(`${RECALL_API_BASE}/bot`, {
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            meeting_url: meetingUrl,
+            meeting_url: normalizedMeetingUrl,
             bot_name: 'RevPilot Coach',
             transcription_options: {
               provider: 'deepgram',
@@ -188,6 +190,28 @@ function extractZoomMeetingId(url: string): string | null {
   }
 
   return null
+}
+
+// Convert various Zoom URL formats to standard format for Recall.ai
+function normalizeZoomUrl(url: string): string {
+  // Extract meeting ID
+  const meetingIdMatch = url.match(/\/(?:j|wc)\/(\d+)/)
+  if (!meetingIdMatch) return url
+
+  const meetingId = meetingIdMatch[1]
+
+  // Extract password if present
+  const pwdMatch = url.match(/pwd=([^&]+)/)
+  const password = pwdMatch ? pwdMatch[1] : null
+
+  // Build standard Zoom URL
+  let normalizedUrl = `https://zoom.us/j/${meetingId}`
+  if (password) {
+    normalizedUrl += `?pwd=${password}`
+  }
+
+  console.log(`[Recall.ai] Normalized URL: ${url} -> ${normalizedUrl}`)
+  return normalizedUrl
 }
 
 // Demo coaching for testing without Recall.ai
