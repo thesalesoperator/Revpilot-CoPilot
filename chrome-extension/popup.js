@@ -1,7 +1,6 @@
 // RevPilot Sales Coach - Popup Script
 
-const SUPABASE_URL = 'https://eetumeyptiosseazudwk.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVldHVtZXlwdGlvc3NlYXp1ZHdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyOTM0ODcsImV4cCI6MjA4MTg2OTQ4N30.7CJTB3RWuVEiGORea6CjeY6p-VeVGfyOiM6WEgFgzuI'
+const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
 
 document.addEventListener('DOMContentLoaded', init)
 
@@ -62,12 +61,11 @@ async function handleLogin() {
   loginBtn.textContent = 'Signing in...'
 
   try {
-    // Authenticate with Supabase
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    // Authenticate via our API (avoids CORS issues)
+    const response = await fetch(`${API_BASE}/api/auth/extension`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY
       },
       body: JSON.stringify({ email, password })
     })
@@ -75,7 +73,7 @@ async function handleLogin() {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.error_description || data.msg || 'Invalid credentials')
+      throw new Error(data.error || 'Invalid credentials')
     }
 
     // Store auth info
