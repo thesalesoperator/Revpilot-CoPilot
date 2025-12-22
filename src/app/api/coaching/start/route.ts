@@ -7,12 +7,24 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const RECALL_API_KEY = process.env.RECALL_API_KEY
 const RECALL_API_BASE = 'https://api.recall.ai/api/v1'
 
+// CORS headers for Chrome extension
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Handle CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify auth token
     const authHeader = request.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders })
     }
 
     const token = authHeader.split(' ')[1]
@@ -21,19 +33,19 @@ export async function POST(request: NextRequest) {
     // Verify the token with Supabase
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401, headers: corsHeaders })
     }
 
     const { meetingUrl, userId } = await request.json()
 
     if (!meetingUrl) {
-      return NextResponse.json({ error: 'Meeting URL required' }, { status: 400 })
+      return NextResponse.json({ error: 'Meeting URL required' }, { status: 400, headers: corsHeaders })
     }
 
     // Extract meeting ID from Zoom URL
     const meetingId = extractZoomMeetingId(meetingUrl)
     if (!meetingId) {
-      return NextResponse.json({ error: 'Invalid Zoom meeting URL' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid Zoom meeting URL' }, { status: 400, headers: corsHeaders })
     }
 
     // Create coaching session in database
@@ -50,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     if (sessionError) {
       console.error('Session creation error:', sessionError)
-      return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create session' }, { status: 500, headers: corsHeaders })
     }
 
     // If Recall.ai is configured, send bot to join
@@ -113,11 +125,11 @@ export async function POST(request: NextRequest) {
       status: 'active',
       botId,
       meetingId,
-    })
+    }, { headers: corsHeaders })
 
   } catch (error) {
     console.error('Coaching start error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500, headers: corsHeaders })
   }
 }
 

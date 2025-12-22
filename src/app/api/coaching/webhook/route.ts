@@ -5,6 +5,18 @@ import OpenAI from 'openai'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// Handle CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
 function getOpenAIClient() {
   if (!process.env.OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY is not configured')
@@ -66,11 +78,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Unknown event type
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
 
   } catch (error) {
     console.error('Webhook error:', error)
-    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500, headers: corsHeaders })
   }
 }
 
@@ -78,7 +90,7 @@ async function handleBotStatusChange(body: any) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
   const botId = body.data?.bot_id || body.bot_id
 
-  if (!botId) return NextResponse.json({ received: true })
+  if (!botId) return NextResponse.json({ received: true }, { headers: corsHeaders })
 
   const status = body.data?.status || body.status
 
@@ -89,7 +101,7 @@ async function handleBotStatusChange(body: any) {
     .eq('bot_id', botId)
     .single()
 
-  if (!session) return NextResponse.json({ received: true })
+  if (!session) return NextResponse.json({ received: true }, { headers: corsHeaders })
 
   // Map Recall status to our status
   let sessionStatus = 'active'
@@ -102,7 +114,7 @@ async function handleBotStatusChange(body: any) {
     .update({ status: sessionStatus })
     .eq('id', session.id)
 
-  return NextResponse.json({ received: true })
+  return NextResponse.json({ received: true }, { headers: corsHeaders })
 }
 
 async function handleTranscription(body: any) {
@@ -114,7 +126,7 @@ async function handleTranscription(body: any) {
   const words = body.words || body.data?.words
 
   if (!botId || (!transcript && !words)) {
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
   }
 
   // Find session
@@ -126,7 +138,7 @@ async function handleTranscription(body: any) {
     .single()
 
   if (!session) {
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
   }
 
   // Build transcript text
@@ -140,7 +152,7 @@ async function handleTranscription(body: any) {
   }
 
   if (!transcriptText.trim()) {
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
   }
 
   // Update transcript buffer
@@ -169,7 +181,7 @@ async function handleTranscription(body: any) {
   const lastSuggestionKey = `last_${session.id}`
   const lastSuggestion = transcriptBuffer.get(lastSuggestionKey)
   if (lastSuggestion && Date.now() - lastSuggestion.lastUpdate < 10000) {
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ received: true }, { headers: corsHeaders })
   }
   transcriptBuffer.set(lastSuggestionKey, { text: '', lastUpdate: Date.now() })
 
@@ -227,14 +239,14 @@ async function handleTranscription(body: any) {
     console.error('AI coaching error:', aiError)
   }
 
-  return NextResponse.json({ received: true })
+  return NextResponse.json({ received: true }, { headers: corsHeaders })
 }
 
 // Also support GET for webhook verification
 export async function GET(request: NextRequest) {
   const challenge = request.nextUrl.searchParams.get('challenge')
   if (challenge) {
-    return NextResponse.json({ challenge })
+    return NextResponse.json({ challenge }, { headers: corsHeaders })
   }
-  return NextResponse.json({ status: 'ok' })
+  return NextResponse.json({ status: 'ok' }, { headers: corsHeaders })
 }
