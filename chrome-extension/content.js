@@ -17,6 +17,7 @@
   let realtimeChannel = null
   let suggestions = []
   let isPinned = false
+  let pollInterval = null  // Track polling interval for cleanup
 
   // Initialize immediately
   console.log('[RevPilot] Content script loaded on:', window.location.href)
@@ -44,15 +45,28 @@
 
   function isZoomPage() {
     const url = window.location.href
-    // Match various Zoom URL patterns
-    return url.includes('zoom.us/wc/') ||
-           url.includes('zoom.us/j/') ||
-           url.includes('zoom.us/s/') ||
-           url.includes('/start') ||
-           url.includes('/join') ||
-           document.querySelector('#webclient') !== null ||
-           document.querySelector('[class*="meeting"]') !== null ||
-           document.querySelector('[class*="video"]') !== null
+    const hostname = window.location.hostname
+
+    // Must be on a zoom.us domain
+    if (!hostname.includes('zoom.us')) {
+      return false
+    }
+
+    // Check for actual meeting URLs (more strict patterns)
+    const isMeetingUrl = url.includes('zoom.us/wc/') ||  // Web client meeting
+                         url.includes('zoom.us/j/') ||   // Join meeting
+                         url.includes('zoom.us/s/') ||   // Scheduled meeting
+                         (url.includes('/start') && url.match(/\/wc\/\d+\/start/)) ||  // Starting a meeting
+                         (url.includes('/join') && url.match(/\/wc\/\d+\/join/))       // Joining a meeting
+
+    // Also check for meeting UI elements (specific to Zoom web client)
+    const hasMeetingUI = document.querySelector('#webclient') !== null ||
+                         document.querySelector('.meeting-client') !== null ||
+                         document.querySelector('[data-type="meeting"]') !== null
+
+    console.log('[RevPilot] isZoomPage check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+
+    return isMeetingUrl || hasMeetingUI
   }
 
   function createOverlay() {
@@ -351,11 +365,16 @@
   }
 
   async function stopCoaching() {
-    if (!session) return
+    if (!session) {
+      console.log('[RevPilot] stopCoaching called but no session')
+      return
+    }
 
     const stopBtn = document.getElementById('revpilot-stop')
-    stopBtn.disabled = true
-    stopBtn.textContent = 'Ending...'
+    if (stopBtn) {
+      stopBtn.disabled = true
+      stopBtn.textContent = 'Ending...'
+    }
 
     try {
       const { authToken } = await chrome.storage.local.get(['authToken'])
@@ -364,21 +383,51 @@
         type: 'STOP_COACHING',
         sessionId: session.id,
         authToken
-      }, () => {
-        if (realtimeChannel) {
-          realtimeChannel.unsubscribe()
-          realtimeChannel = null
+      }, (response) => {
+        // Clean up regardless of response
+        cleanupSession()
+
+        // Check for errors
+        if (chrome.runtime.lastError) {
+          console.error('[RevPilot] Stop error:', chrome.runtime.lastError.message)
         }
-        stopDemoMode()
-        session = null
-        suggestions = []
-        showStatusUI()
       })
     } catch (error) {
       console.error('[RevPilot] Stop error:', error)
-      stopBtn.disabled = false
-      stopBtn.textContent = 'End Coaching'
+      // Still cleanup on error
+      cleanupSession()
     }
+  }
+
+  // Centralized cleanup function
+  function cleanupSession() {
+    console.log('[RevPilot] Cleaning up session')
+
+    // Stop realtime subscription
+    if (realtimeChannel) {
+      try {
+        realtimeChannel.unsubscribe()
+      } catch (e) {
+        console.error('[RevPilot] Error unsubscribing:', e)
+      }
+      realtimeChannel = null
+    }
+
+    // Stop polling
+    if (pollInterval) {
+      clearInterval(pollInterval)
+      pollInterval = null
+    }
+
+    // Stop demo mode
+    stopDemoMode()
+
+    // Reset state
+    session = null
+    suggestions = []
+
+    // Update UI
+    showStatusUI()
   }
 
   function showCoachingUI() {
@@ -397,11 +446,38 @@
   }
 
   function showStatusUI() {
-    document.getElementById('revpilot-coaching').classList.add('hidden')
-    document.getElementById('revpilot-status').classList.remove('hidden')
+    const coachingEl = document.getElementById('revpilot-coaching')
+    const statusEl = document.getElementById('revpilot-status')
     const startBtn = document.getElementById('revpilot-start')
-    startBtn.disabled = false
-    startBtn.textContent = 'Start Coaching'
+    const stopBtn = document.getElementById('revpilot-stop')
+
+    if (coachingEl) coachingEl.classList.add('hidden')
+    if (statusEl) statusEl.classList.remove('hidden')
+
+    // Reset start button
+    if (startBtn) {
+      startBtn.disabled = false
+      startBtn.textContent = 'Start Coaching'
+    }
+
+    // Reset stop button for next session
+    if (stopBtn) {
+      stopBtn.disabled = false
+      stopBtn.textContent = 'End Coaching'
+    }
+
+    // Clear suggestions container
+    const suggestionsContainer = document.getElementById('revpilot-suggestions')
+    if (suggestionsContainer) {
+      suggestionsContainer.innerHTML = `
+        <div class="revpilot-empty">
+          <p>Listening to your call...</p>
+          <p class="revpilot-subtext">Coaching suggestions will appear here</p>
+        </div>
+      `
+    }
+
+    console.log('[RevPilot] Switched to status UI')
   }
 
   function subscribeToSuggestions() {
@@ -446,9 +522,18 @@
   }
 
   function startPolling() {
-    const pollInterval = setInterval(async () => {
+    // Clear any existing polling first
+    if (pollInterval) {
+      clearInterval(pollInterval)
+    }
+
+    console.log('[RevPilot] Starting polling for suggestions')
+
+    pollInterval = setInterval(async () => {
       if (!session) {
+        console.log('[RevPilot] No session, stopping polling')
         clearInterval(pollInterval)
+        pollInterval = null
         return
       }
 
@@ -474,7 +559,7 @@
       } catch (error) {
         console.error('[RevPilot] Poll error:', error)
       }
-    }, 2000)
+    }, 3000)  // Poll every 3 seconds instead of 2
   }
 
   function addSuggestion(suggestion) {
@@ -666,6 +751,8 @@
 
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((message) => {
+    console.log('[RevPilot] Received message:', message.type)
+
     if (message.type === 'SESSION_STARTED') {
       session = message.session
       showCoachingUI()
@@ -673,13 +760,7 @@
     }
 
     if (message.type === 'SESSION_STOPPED') {
-      if (realtimeChannel) {
-        realtimeChannel.unsubscribe()
-        realtimeChannel = null
-      }
-      session = null
-      suggestions = []
-      showStatusUI()
+      cleanupSession()
     }
   })
 })()
