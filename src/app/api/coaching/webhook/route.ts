@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 async function handleTranscriptEvent(
   body: any,
   sessionId: string | null,
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   isFinal: boolean
 ) {
   console.log('[Webhook] Processing transcript event, isFinal:', isFinal)
@@ -291,7 +291,7 @@ async function handleTranscriptEvent(
 }
 
 // Handle bot status change events
-async function handleBotStatusChange(body: any, supabase: ReturnType<typeof createClient>) {
+async function handleBotStatusChange(body: any, supabase: any) {
   const botId = body.data?.bot_id || body.bot_id
   const status = body.data?.status?.code || body.data?.status || body.status
 
