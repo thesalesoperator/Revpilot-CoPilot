@@ -131,10 +131,7 @@ export async function POST(request: NextRequest) {
       .update({ status: 'active' })
       .eq('id', session.id)
 
-    // Start demo coaching if no bot (for testing)
-    if (!botId) {
-      startDemoCoaching(session.id, supabase)
-    }
+    // Note: Demo mode is handled client-side since serverless can't run background timers
 
     return NextResponse.json({
       id: session.id,

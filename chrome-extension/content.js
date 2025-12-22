@@ -3,6 +3,12 @@
 ;(function() {
   'use strict'
 
+  // Only run in top frame to avoid multiple instances
+  if (window !== window.top) {
+    console.log('[RevPilot] Skipping - not top frame')
+    return
+  }
+
   const SUPABASE_URL = 'https://eetumeyptiosseazudwk.supabase.co'
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVldHVtZXlwdGlvc3NlYXp1ZHdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyOTM0ODcsImV4cCI6MjA4MTg2OTQ4N30.7CJTB3RWuVEiGORea6CjeY6p-VeVGfyOiM6WEgFgzuI'
 
@@ -14,6 +20,7 @@
 
   // Initialize immediately
   console.log('[RevPilot] Content script loaded on:', window.location.href)
+  console.log('[RevPilot] Running in top frame')
 
   // Try to initialize now and also watch for changes
   setTimeout(init, 1000) // Delay slightly to let Zoom load
@@ -310,15 +317,25 @@
         }
 
         if (response) {
+          console.log('[RevPilot] Session started successfully:', response)
           session = response
+          console.log('[RevPilot] Switching to coaching UI...')
           showCoachingUI()
+          console.log('[RevPilot] Subscribing to realtime...')
           subscribeToSuggestions()
 
-          // Start demo mode if no bot (for testing without Recall.ai)
+          // Start demo mode if no bot (Recall.ai not configured)
           if (!response.botId) {
-            console.log('[RevPilot] No bot - starting demo mode')
+            console.log('[RevPilot] No bot ID - starting demo mode for live suggestions')
             startDemoMode()
+          } else {
+            console.log('[RevPilot] Bot ID present:', response.botId, '- waiting for real transcription')
           }
+        } else {
+          console.error('[RevPilot] Empty response received')
+          alert('Failed to start: No response from server')
+          startBtn.disabled = false
+          startBtn.textContent = 'Start Coaching'
         }
       })
     } catch (error) {
@@ -361,8 +378,18 @@
   }
 
   function showCoachingUI() {
-    document.getElementById('revpilot-status').classList.add('hidden')
-    document.getElementById('revpilot-coaching').classList.remove('hidden')
+    console.log('[RevPilot] showCoachingUI called')
+    const statusEl = document.getElementById('revpilot-status')
+    const coachingEl = document.getElementById('revpilot-coaching')
+
+    if (!statusEl || !coachingEl) {
+      console.error('[RevPilot] UI elements not found! statusEl:', !!statusEl, 'coachingEl:', !!coachingEl)
+      return
+    }
+
+    statusEl.classList.add('hidden')
+    coachingEl.classList.remove('hidden')
+    console.log('[RevPilot] Coaching UI now visible')
   }
 
   function showStatusUI() {
@@ -447,13 +474,20 @@
   }
 
   function addSuggestion(suggestion) {
+    console.log('[RevPilot] addSuggestion called with:', suggestion.type, suggestion.content?.substring(0, 30))
     suggestions.push(suggestion)
 
     const container = document.getElementById('revpilot-suggestions')
-    if (!container) return
+    if (!container) {
+      console.error('[RevPilot] Suggestions container not found!')
+      return
+    }
 
     const empty = container.querySelector('.revpilot-empty')
-    if (empty) empty.remove()
+    if (empty) {
+      console.log('[RevPilot] Removing empty placeholder')
+      empty.remove()
+    }
 
     const el = document.createElement('div')
     el.className = `revpilot-suggestion revpilot-suggestion-${suggestion.type}`
@@ -497,9 +531,13 @@
     if (listenPct) listenPct.textContent = `${listenPercent}%`
   }
 
-  // Demo mode - shows sample suggestions for testing without Recall.ai
+  // Demo mode - shows sample suggestions when Recall.ai bot is not available
   let demoInterval = null
+  let demoTimeout = null
+
   function startDemoMode() {
+    console.log('[RevPilot] Starting demo mode - will show sample suggestions')
+
     const demoSuggestions = [
       { type: 'tip', content: 'Start with a warm greeting and build rapport before diving into business.' },
       { type: 'question', content: 'Ask: "What prompted you to take this call today?"' },
@@ -516,53 +554,57 @@
     let index = 0
     let talkRatio = 50
 
-    // Show first suggestion after 3 seconds
-    setTimeout(() => {
-      if (!session) return
-      addSuggestion({
-        id: 'demo-' + Date.now(),
-        type: demoSuggestions[0].type,
-        content: demoSuggestions[0].content,
-        created_at: new Date().toISOString()
-      })
-      index = 1
-    }, 3000)
-
-    // Then show suggestions every 12-18 seconds
-    demoInterval = setInterval(() => {
+    // Helper to add a demo suggestion
+    function addDemoSuggestion() {
       if (!session) {
-        clearInterval(demoInterval)
-        return
+        console.log('[RevPilot Demo] No session, stopping')
+        return false
       }
 
-      // Add next suggestion
-      if (index < demoSuggestions.length) {
+      try {
+        const suggestion = demoSuggestions[index % demoSuggestions.length]
+        console.log('[RevPilot Demo] Adding suggestion:', suggestion.type)
+
         addSuggestion({
           id: 'demo-' + Date.now(),
-          type: demoSuggestions[index].type,
-          content: demoSuggestions[index].content,
+          type: suggestion.type,
+          content: suggestion.content,
           created_at: new Date().toISOString()
         })
+
         index++
-      } else {
-        // Loop back with random suggestions
-        const randomSuggestion = demoSuggestions[Math.floor(Math.random() * demoSuggestions.length)]
-        addSuggestion({
-          id: 'demo-' + Date.now(),
-          type: randomSuggestion.type,
-          content: randomSuggestion.content,
-          created_at: new Date().toISOString()
-        })
+
+        // Update talk ratio
+        talkRatio = Math.max(25, Math.min(75, talkRatio + (Math.random() - 0.5) * 15))
+        updateStats({ talk_ratio: Math.round(talkRatio) })
+
+        return true
+      } catch (err) {
+        console.error('[RevPilot Demo] Error adding suggestion:', err)
+        return false
       }
+    }
 
-      // Update talk ratio randomly
-      talkRatio = Math.max(25, Math.min(75, talkRatio + (Math.random() - 0.5) * 15))
-      updateStats({ talk_ratio: Math.round(talkRatio) })
+    // Show FIRST suggestion immediately (after a tiny delay for UI to render)
+    demoTimeout = setTimeout(() => {
+      console.log('[RevPilot Demo] Showing first suggestion')
+      addDemoSuggestion()
 
-    }, 12000 + Math.random() * 6000)
+      // Then show suggestions every 10 seconds
+      demoInterval = setInterval(() => {
+        if (!addDemoSuggestion()) {
+          stopDemoMode()
+        }
+      }, 10000)
+    }, 500)
   }
 
   function stopDemoMode() {
+    console.log('[RevPilot] Stopping demo mode')
+    if (demoTimeout) {
+      clearTimeout(demoTimeout)
+      demoTimeout = null
+    }
     if (demoInterval) {
       clearInterval(demoInterval)
       demoInterval = null
