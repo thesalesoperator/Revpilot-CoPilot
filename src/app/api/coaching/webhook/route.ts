@@ -28,9 +28,11 @@ function getOpenAIClient() {
 }
 
 // Coaching system prompt
-const COACHING_PROMPT = `You are a real-time sales coach providing brief, actionable suggestions during a live sales call.
+const COACHING_PROMPT = `You are an expert real-time sales coach analyzing a live sales call between a sales rep and a prospect/customer.
 
-Your job is to analyze the latest transcript and provide ONE suggestion if appropriate. Not every piece of transcript needs a response.
+CONTEXT: You're hearing BOTH sides of the conversation. The transcript shows who is speaking (e.g., "Jordan Park: hello" or "Customer: I'm interested").
+
+YOUR JOB: Analyze what BOTH parties are saying and coach the sales rep on what to say or do next.
 
 RESPOND WITH JSON ONLY:
 {
@@ -41,23 +43,29 @@ RESPOND WITH JSON ONLY:
   "talk_ratio": <estimated % the sales rep is talking, 0-100>
 }
 
-Types explained:
-- question: Suggest a discovery question to ask
-- tip: General coaching tip for the moment
-- objection: Detected objection, provide response strategy
-- positive: Reinforce something done well
-- alert: Urgent - rep talking too much, missing opportunity, etc.
-- null: No suggestion needed right now
+SUGGESTION TYPES:
+- question: Suggest a specific discovery question to ask based on what prospect said
+- tip: Coaching tip based on the conversation flow
+- objection: IMPORTANT - When prospect raises a concern, price objection, or hesitation, tell the rep exactly how to respond
+- positive: Reinforce something the rep did well
+- alert: Urgent warning - rep talking too much, missing buying signal, etc.
+- null: No suggestion needed (use sparingly - try to always provide value)
 
-Rules:
-1. Only suggest when truly helpful (not every 5 seconds)
-2. Keep suggestions SHORT and actionable
-3. If prospect raises concern/objection, always respond
-4. Track talk ratio - alert if rep exceeds 60%
-5. Encourage discovery questions early in call
-6. Watch for buying signals
+PRIORITY TRIGGERS (always respond to these):
+1. Prospect mentions a PROBLEM or PAIN POINT → Suggest follow-up question to dig deeper
+2. Prospect raises an OBJECTION or CONCERN → Provide specific response strategy
+3. Prospect asks about PRICE or COST → Guide how to handle the pricing discussion
+4. Prospect shows BUYING SIGNALS (interest, timeline questions) → Alert rep to move toward close
+5. Prospect mentions COMPETITORS → Suggest differentiation approach
+6. Rep is talking too much (>60%) → Alert to ask more questions
 
-Current transcript (last 60 seconds):
+RULES:
+1. Be SPECIFIC - reference what was actually said
+2. Keep suggestions SHORT (1-2 sentences max)
+3. Focus on what the REP should SAY or DO next
+4. If unsure who the rep is, coach based on sales best practices
+
+Current conversation transcript:
 `
 
 export async function POST(request: NextRequest) {
@@ -192,10 +200,14 @@ async function handleTranscriptEvent(
     console.log('[Webhook] Transcript updated, length:', trimmedTranscript.length)
   }
 
-  // Only generate AI coaching on final transcripts
-  if (!isFinal) {
-    console.log('[Webhook] Partial transcript, skipping AI coaching')
-    return NextResponse.json({ received: true, partial: true }, { headers: corsHeaders })
+  // Generate AI coaching on final transcripts OR if we have substantial partial content
+  // Some providers only send partial_data, so we need to handle both cases
+  const wordCount = transcriptText.split(' ').length
+  const shouldGenerateCoaching = isFinal || wordCount >= 5  // At least 5 words in the utterance
+
+  if (!shouldGenerateCoaching) {
+    console.log('[Webhook] Skipping AI - partial with only', wordCount, 'words')
+    return NextResponse.json({ received: true, partial: true, wordCount }, { headers: corsHeaders })
   }
 
   // Rate limit: only generate suggestions every 10 seconds
