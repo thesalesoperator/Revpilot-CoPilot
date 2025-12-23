@@ -597,7 +597,7 @@ export default function CallsPage() {
           </div>
 
           <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4">
-            <h4 className="font-medium text-white mb-2">What you'll get:</h4>
+            <h4 className="font-medium text-white mb-2">What you&apos;ll get:</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
