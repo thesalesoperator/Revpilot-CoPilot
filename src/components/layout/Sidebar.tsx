@@ -13,6 +13,7 @@ import {
   CheckSquare,
   Phone,
   Flame,
+  Users,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/metrics', icon: BarChart3, label: 'Metrics' },
   { href: '/calls', icon: Phone, label: 'Call Review' },
   { href: '/practice', icon: Flame, label: 'Practice Arena' },
+  { href: '/community', icon: Users, label: 'Community' },
   { href: '/journal', icon: BookOpen, label: 'Journal' },
   { href: '/habits', icon: CheckSquare, label: 'Habits' },
   { href: '/settings', icon: Settings, label: 'Settings' },
