@@ -32,18 +32,9 @@ import { cn } from '@/lib/utils'
 // Navigation sections
 const navSections = [
   {
-    title: 'Main',
-    items: [
-      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-      { href: '/projections', icon: TrendingUp, label: 'Projections' },
-      { href: '/metrics', icon: BarChart3, label: 'Metrics' },
-    ],
-  },
-  {
-    title: 'Sales Tools',
+    title: 'Coaching',
     items: [
       { href: '/calls', icon: Phone, label: 'Call Review' },
-      { href: '/objections', icon: Shield, label: 'Objection Library' },
     ],
   },
   {
@@ -52,6 +43,7 @@ const navSections = [
       { href: '/practice', icon: Flame, label: 'Practice Arena' },
       { href: '/personas', icon: UserCircle, label: 'AI Personas' },
       { href: '/skills', icon: TrendingUp, label: 'Skill Trees' },
+      { href: '/objections', icon: Shield, label: 'Objection Library' },
       { href: '/mentorship', icon: GraduationCap, label: 'Mentorship' },
     ],
   },
@@ -67,6 +59,14 @@ const navSections = [
     title: 'Social',
     items: [
       { href: '/community', icon: Users, label: 'Community' },
+    ],
+  },
+  {
+    title: 'Performance',
+    items: [
+      { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { href: '/projections', icon: TrendingUp, label: 'Projections' },
+      { href: '/metrics', icon: BarChart3, label: 'Metrics' },
     ],
   },
   {
