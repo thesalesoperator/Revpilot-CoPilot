@@ -149,12 +149,20 @@ export default function CallsPage() {
       const response = await fetch(`/api/fathom/calls?userId=${user.id}`)
       const data = await response.json()
       if (response.ok) {
-        setFathomCalls(data.meetings || data || [])
+        // Ensure we always get an array
+        const calls = Array.isArray(data.meetings)
+          ? data.meetings
+          : Array.isArray(data)
+            ? data
+            : []
+        setFathomCalls(calls)
       } else {
         showToast('error', data.error || 'Failed to fetch Fathom calls')
+        setFathomCalls([])
       }
-    } catch (error) {
+    } catch {
       showToast('error', 'Failed to connect to Fathom')
+      setFathomCalls([])
     } finally {
       setLoadingFathom(false)
     }
