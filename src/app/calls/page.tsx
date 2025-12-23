@@ -82,6 +82,8 @@ export default function CallsPage() {
   const [fathomCalls, setFathomCalls] = useState<any[]>([])
   const [loadingFathom, setLoadingFathom] = useState(false)
   const [importingCallId, setImportingCallId] = useState<string | null>(null)
+  const [importingMultiple, setImportingMultiple] = useState(false)
+  const [selectedFathomCalls, setSelectedFathomCalls] = useState<Set<string>>(new Set())
   const [fathomConnected, setFathomConnected] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -162,7 +164,71 @@ export default function CallsPage() {
 
   const handleOpenFathomModal = () => {
     setIsFathomModalOpen(true)
+    setSelectedFathomCalls(new Set())
     fetchFathomCalls()
+  }
+
+  const toggleFathomCallSelection = (callId: string) => {
+    setSelectedFathomCalls((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(callId)) {
+        newSet.delete(callId)
+      } else {
+        newSet.add(callId)
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAllFathomCalls = () => {
+    if (selectedFathomCalls.size === fathomCalls.length) {
+      setSelectedFathomCalls(new Set())
+    } else {
+      setSelectedFathomCalls(new Set(fathomCalls.map((c) => c.id)))
+    }
+  }
+
+  const handleImportSelectedFathomCalls = async () => {
+    if (!user || selectedFathomCalls.size === 0) return
+    setImportingMultiple(true)
+
+    const selectedMeetings = fathomCalls.filter((m) => selectedFathomCalls.has(m.id))
+    let successCount = 0
+    let failCount = 0
+
+    for (const meeting of selectedMeetings) {
+      try {
+        const response = await fetch('/api/fathom/transcript', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            meetingId: meeting.id,
+            userId: user.id,
+            title: meeting.title || meeting.name || `Call ${meeting.id}`,
+          }),
+        })
+
+        if (response.ok) {
+          successCount++
+        } else {
+          failCount++
+        }
+      } catch {
+        failCount++
+      }
+    }
+
+    setImportingMultiple(false)
+    setSelectedFathomCalls(new Set())
+
+    if (failCount === 0) {
+      showToast('success', `Successfully imported ${successCount} call${successCount > 1 ? 's' : ''}!`)
+    } else {
+      showToast('error', `Imported ${successCount} calls, ${failCount} failed`)
+    }
+
+    setIsFathomModalOpen(false)
+    fetchRecordings()
   }
 
   const handleImportFathomCall = async (meeting: any) => {
@@ -568,13 +634,53 @@ export default function CallsPage() {
               <p className="text-sm text-gray-500">Record some meetings with Fathom first</p>
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto space-y-3">
-              {fathomCalls.map((meeting: any) => (
-                <div
-                  key={meeting.id}
-                  className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4 flex items-center justify-between hover:border-[rgba(0,255,193,0.2)] transition-colors"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+            <>
+              {/* Select All / Import Selected Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-[rgba(255,255,255,0.05)]">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-400 hover:text-white">
+                  <input
+                    type="checkbox"
+                    checked={selectedFathomCalls.size === fathomCalls.length && fathomCalls.length > 0}
+                    onChange={toggleSelectAllFathomCalls}
+                    className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#00ffc1]"
+                  />
+                  Select All ({fathomCalls.length})
+                </label>
+                {selectedFathomCalls.size > 0 && (
+                  <button
+                    onClick={handleImportSelectedFathomCalls}
+                    disabled={importingMultiple}
+                    className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+                  >
+                    {importingMultiple ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
+                    {importingMultiple ? 'Importing...' : `Import ${selectedFathomCalls.size} Selected`}
+                  </button>
+                )}
+              </div>
+
+              {/* Calls List */}
+              <div className="max-h-80 overflow-y-auto space-y-3">
+                {fathomCalls.map((meeting: any) => (
+                  <div
+                    key={meeting.id}
+                    onClick={() => toggleFathomCallSelection(meeting.id)}
+                    className={`bg-[rgba(255,255,255,0.02)] border rounded-xl p-4 flex items-center gap-3 cursor-pointer transition-colors ${
+                      selectedFathomCalls.has(meeting.id)
+                        ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
+                        : 'border-[rgba(255,255,255,0.05)] hover:border-[rgba(0,255,193,0.2)]'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedFathomCalls.has(meeting.id)}
+                      onChange={() => toggleFathomCallSelection(meeting.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#00ffc1]"
+                    />
                     <div className="w-10 h-10 rounded-lg bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
                       <Video className="w-5 h-5 text-[#00ffc1]" />
                     </div>
@@ -588,27 +694,32 @@ export default function CallsPage() {
                           : meeting.date
                           ? new Date(meeting.date).toLocaleDateString()
                           : 'Unknown date'}
+                        {meeting.duration && (
+                          <span className="ml-2">• {formatDuration(meeting.duration)}</span>
+                        )}
                       </p>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleImportFathomCall(meeting)
+                      }}
+                      disabled={importingCallId === meeting.id || importingMultiple}
+                      className="btn-secondary text-sm py-2 px-3 flex items-center gap-2"
+                    >
+                      {importingCallId === meeting.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleImportFathomCall(meeting)}
-                    disabled={importingCallId === meeting.id}
-                    className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
-                  >
-                    {importingCallId === meeting.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Download className="w-4 h-4" />
-                    )}
-                    {importingCallId === meeting.id ? 'Importing...' : 'Import'}
-                  </button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
 
-          <div className="pt-4 border-t border-[rgba(255,255,255,0.05)]">
+          <div className="pt-4 border-t border-[rgba(255,255,255,0.05)] flex items-center justify-between">
             <a
               href="https://fathom.video/home"
               target="_blank"
@@ -617,6 +728,14 @@ export default function CallsPage() {
             >
               Open Fathom <ExternalLink className="w-3 h-3" />
             </a>
+            <button
+              onClick={fetchFathomCalls}
+              disabled={loadingFathom}
+              className="text-sm text-gray-400 hover:text-white flex items-center gap-1"
+            >
+              {loadingFathom ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+              Refresh
+            </button>
           </div>
         </div>
       </Modal>

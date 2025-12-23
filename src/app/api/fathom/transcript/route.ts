@@ -142,20 +142,34 @@ export async function POST(request: NextRequest) {
     const transcriptData = await transcriptResponse.json()
 
     // Extract transcript text - Fathom returns structured data
+    // Format: { transcript: [{ speaker: { display_name: "Name" }, text: "...", timestamp: "..." }] }
     let transcript = ''
     if (transcriptData.transcript) {
       if (typeof transcriptData.transcript === 'string') {
         transcript = transcriptData.transcript
       } else if (Array.isArray(transcriptData.transcript)) {
-        // Handle array of transcript segments
+        // Handle array of transcript segments from Fathom API
         transcript = transcriptData.transcript
-          .map((seg: { speaker?: string; text?: string }) =>
-            seg.speaker ? `${seg.speaker}: ${seg.text}` : seg.text
-          )
+          .map((seg: { speaker?: { display_name?: string } | string; text?: string }) => {
+            // Handle both { speaker: { display_name: "..." } } and { speaker: "..." }
+            const speakerName = typeof seg.speaker === 'object'
+              ? seg.speaker?.display_name
+              : seg.speaker
+            return speakerName ? `${speakerName}: ${seg.text}` : seg.text
+          })
+          .filter(Boolean)
           .join('\n')
       }
     } else if (transcriptData.text) {
       transcript = transcriptData.text
+    } else if (transcriptData.segments) {
+      // Alternative format some versions use
+      transcript = transcriptData.segments
+        .map((seg: { speaker?: string; text?: string }) =>
+          seg.speaker ? `${seg.speaker}: ${seg.text}` : seg.text
+        )
+        .filter(Boolean)
+        .join('\n')
     } else {
       transcript = JSON.stringify(transcriptData)
     }
