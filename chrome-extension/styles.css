@@ -434,3 +434,125 @@
   opacity: 0.8;
   margin-top: 4px;
 }
+
+/* Auto-start Checkbox */
+.revpilot-auto-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #9ca3af;
+  cursor: pointer;
+  user-select: none;
+}
+
+.revpilot-auto-start input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #00ffc1;
+  cursor: pointer;
+}
+
+.revpilot-auto-start:hover {
+  color: #e5e7eb;
+}
+
+/* Summary View */
+.revpilot-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.revpilot-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ffc1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.revpilot-summary-icon {
+  font-size: 18px;
+}
+
+.revpilot-summary-content {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.revpilot-summary-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: #9ca3af;
+}
+
+.revpilot-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 255, 193, 0.2);
+  border-top-color: #00ffc1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.revpilot-summary-overview {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(0, 255, 193, 0.05);
+  border: 1px solid rgba(0, 255, 193, 0.2);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.revpilot-sentiment {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.revpilot-summary-overview p {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.revpilot-summary-section {
+  margin-bottom: 12px;
+}
+
+.revpilot-summary-section h4 {
+  margin: 0 0 8px;
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.revpilot-summary-section ul {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+
+.revpilot-summary-section li {
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.revpilot-summary-section li:last-child {
+  margin-bottom: 0;
+}

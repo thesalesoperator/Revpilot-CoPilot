@@ -18,6 +18,9 @@
   let suggestions = []
   let isPinned = false
   let pollInterval = null  // Track polling interval for cleanup
+  let autoStartEnabled = false  // Track auto-start preference
+  let lastSummary = null  // Store last call summary
+  const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
 
   // Initialize immediately
   console.log('[RevPilot] Content script loaded on:', window.location.href)
@@ -28,7 +31,7 @@
   setTimeout(init, 3000) // Try again after 3s
   setTimeout(init, 5000) // Try again after 5s
 
-  function init() {
+  async function init() {
     // Don't create multiple overlays
     if (overlay) return
 
@@ -39,8 +42,62 @@
     }
 
     console.log('[RevPilot] Zoom page detected, creating overlay...')
+
+    // Load auto-start preference
+    try {
+      const stored = await chrome.storage.local.get(['autoStartCoaching'])
+      autoStartEnabled = stored.autoStartCoaching || false
+      console.log('[RevPilot] Auto-start enabled:', autoStartEnabled)
+    } catch (e) {
+      console.log('[RevPilot] Could not load auto-start preference')
+    }
+
     createOverlay()
     loadStoredSession()
+
+    // Check if we should auto-start
+    checkAutoStart()
+  }
+
+  async function checkAutoStart() {
+    // Don't auto-start if already in a session
+    if (session) return
+
+    try {
+      const stored = await chrome.storage.local.get(['authToken', 'userId', 'autoStartCoaching'])
+
+      // If user is logged in, check auto-start preference
+      if (stored.authToken && stored.userId) {
+        if (stored.autoStartCoaching) {
+          // Auto-start after a brief delay to let the meeting fully load
+          console.log('[RevPilot] Auto-starting coaching in 3 seconds...')
+          setTimeout(() => {
+            if (!session) {
+              startCoaching()
+            }
+          }, 3000)
+        } else {
+          // Show a friendly prompt to start
+          showAutoStartPrompt()
+        }
+      }
+    } catch (e) {
+      console.log('[RevPilot] Error checking auto-start:', e)
+    }
+  }
+
+  function showAutoStartPrompt() {
+    const statusEl = document.getElementById('revpilot-status')
+    if (!statusEl) return
+
+    // Update the status message to be more inviting
+    const statusText = statusEl.querySelector('p')
+    if (statusText) {
+      statusText.innerHTML = `
+        <span style="color: #00ffc1; font-weight: 600;">Meeting detected!</span><br>
+        <span style="font-size: 12px; opacity: 0.8;">Click below to get real-time AI coaching</span>
+      `
+    }
   }
 
   function isZoomPage() {
@@ -115,6 +172,26 @@
             <button id="revpilot-start" class="revpilot-btn-primary">
               Start Coaching
             </button>
+            <label class="revpilot-auto-start" id="revpilot-auto-start-label">
+              <input type="checkbox" id="revpilot-auto-start-checkbox">
+              <span>Auto-start on future calls</span>
+            </label>
+          </div>
+
+          <div class="revpilot-summary hidden" id="revpilot-summary">
+            <div class="revpilot-summary-header">
+              <span class="revpilot-summary-icon">📋</span>
+              <span>Call Summary</span>
+            </div>
+            <div class="revpilot-summary-content" id="revpilot-summary-content">
+              <div class="revpilot-summary-loading">
+                <div class="revpilot-spinner"></div>
+                <span>Generating summary...</span>
+              </div>
+            </div>
+            <button id="revpilot-new-call" class="revpilot-btn-primary">
+              Ready for Next Call
+            </button>
           </div>
 
           <div class="revpilot-coaching hidden" id="revpilot-coaching">
@@ -178,6 +255,23 @@
     document.getElementById('revpilot-expand').addEventListener('click', expand)
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
     document.getElementById('revpilot-pin').addEventListener('click', togglePin)
+    document.getElementById('revpilot-new-call').addEventListener('click', resetToReadyState)
+
+    // Auto-start checkbox
+    const autoStartCheckbox = document.getElementById('revpilot-auto-start-checkbox')
+    autoStartCheckbox.addEventListener('change', async (e) => {
+      autoStartEnabled = e.target.checked
+      await chrome.storage.local.set({ autoStartCoaching: autoStartEnabled })
+      console.log('[RevPilot] Auto-start preference saved:', autoStartEnabled)
+    })
+
+    // Load saved auto-start preference
+    chrome.storage.local.get(['autoStartCoaching']).then(stored => {
+      if (stored.autoStartCoaching) {
+        autoStartCheckbox.checked = true
+        autoStartEnabled = true
+      }
+    })
 
     console.log('[RevPilot] Overlay created successfully!')
   }
@@ -410,6 +504,7 @@
       return
     }
 
+    const currentSessionId = session.id  // Store before cleanup
     const stopBtn = document.getElementById('revpilot-stop')
     if (stopBtn) {
       stopBtn.disabled = true
@@ -419,24 +514,179 @@
     try {
       const { authToken } = await chrome.storage.local.get(['authToken'])
 
+      // Show summary UI immediately
+      showSummaryUI()
+
       chrome.runtime.sendMessage({
         type: 'STOP_COACHING',
-        sessionId: session.id,
+        sessionId: currentSessionId,
         authToken
-      }, (response) => {
-        // Clean up regardless of response
-        cleanupSession()
-
+      }, async (response) => {
         // Check for errors
         if (chrome.runtime.lastError) {
           console.error('[RevPilot] Stop error:', chrome.runtime.lastError.message)
         }
+
+        // Clean up session state (but keep summary UI visible)
+        cleanupSessionState()
+
+        // Fetch and display the summary
+        await fetchAndDisplaySummary(currentSessionId, authToken)
       })
     } catch (error) {
       console.error('[RevPilot] Stop error:', error)
-      // Still cleanup on error
-      cleanupSession()
+      cleanupSessionState()
+      showSummaryError()
     }
+  }
+
+  async function fetchAndDisplaySummary(sessionId, authToken) {
+    console.log('[RevPilot] Fetching summary for session:', sessionId)
+
+    try {
+      const response = await fetch(`${API_BASE}/api/coaching/summary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ sessionId })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch summary')
+      }
+
+      const data = await response.json()
+      lastSummary = data.summary
+      displaySummary(data.summary)
+    } catch (error) {
+      console.error('[RevPilot] Error fetching summary:', error)
+      showSummaryError()
+    }
+  }
+
+  function displaySummary(summary) {
+    const contentEl = document.getElementById('revpilot-summary-content')
+    if (!contentEl) return
+
+    const sentimentEmoji = {
+      positive: '😊',
+      neutral: '😐',
+      negative: '😟'
+    }
+
+    contentEl.innerHTML = `
+      <div class="revpilot-summary-overview">
+        <span class="revpilot-sentiment">${sentimentEmoji[summary.sentiment] || '📊'}</span>
+        <p>${summary.overview || 'Summary generated.'}</p>
+      </div>
+
+      ${summary.keyPoints && summary.keyPoints.length > 0 ? `
+        <div class="revpilot-summary-section">
+          <h4>💡 Key Points</h4>
+          <ul>${summary.keyPoints.map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+      ` : ''}
+
+      ${summary.actionItems && summary.actionItems.length > 0 ? `
+        <div class="revpilot-summary-section">
+          <h4>✅ Action Items</h4>
+          <ul>${summary.actionItems.map(a => `<li>${a}</li>`).join('')}</ul>
+        </div>
+      ` : ''}
+
+      ${summary.objections && summary.objections.length > 0 ? `
+        <div class="revpilot-summary-section">
+          <h4>⚠️ Objections Raised</h4>
+          <ul>${summary.objections.map(o => `<li>${o}</li>`).join('')}</ul>
+        </div>
+      ` : ''}
+
+      ${summary.nextSteps && summary.nextSteps.length > 0 ? `
+        <div class="revpilot-summary-section">
+          <h4>📅 Next Steps</h4>
+          <ul>${summary.nextSteps.map(n => `<li>${n}</li>`).join('')}</ul>
+        </div>
+      ` : ''}
+    `
+  }
+
+  function showSummaryError() {
+    const contentEl = document.getElementById('revpilot-summary-content')
+    if (!contentEl) return
+
+    contentEl.innerHTML = `
+      <div class="revpilot-summary-overview">
+        <p>Call ended. Summary not available for short calls or demo mode.</p>
+      </div>
+    `
+  }
+
+  function showSummaryUI() {
+    const coachingEl = document.getElementById('revpilot-coaching')
+    const statusEl = document.getElementById('revpilot-status')
+    const summaryEl = document.getElementById('revpilot-summary')
+
+    if (coachingEl) coachingEl.classList.add('hidden')
+    if (statusEl) statusEl.classList.add('hidden')
+    if (summaryEl) summaryEl.classList.remove('hidden')
+  }
+
+  function resetToReadyState() {
+    const summaryEl = document.getElementById('revpilot-summary')
+    const statusEl = document.getElementById('revpilot-status')
+
+    if (summaryEl) summaryEl.classList.add('hidden')
+    if (statusEl) statusEl.classList.remove('hidden')
+
+    // Reset summary content
+    const contentEl = document.getElementById('revpilot-summary-content')
+    if (contentEl) {
+      contentEl.innerHTML = `
+        <div class="revpilot-summary-loading">
+          <div class="revpilot-spinner"></div>
+          <span>Generating summary...</span>
+        </div>
+      `
+    }
+
+    // Reset start button
+    const startBtn = document.getElementById('revpilot-start')
+    if (startBtn) {
+      startBtn.disabled = false
+      startBtn.textContent = 'Start Coaching'
+    }
+
+    lastSummary = null
+  }
+
+  // Cleanup session state without updating UI (used when showing summary)
+  function cleanupSessionState() {
+    console.log('[RevPilot] Cleaning up session state')
+
+    // Stop realtime subscription
+    if (realtimeChannel) {
+      try {
+        realtimeChannel.unsubscribe()
+      } catch (e) {
+        console.error('[RevPilot] Error unsubscribing:', e)
+      }
+      realtimeChannel = null
+    }
+
+    // Stop polling
+    if (pollInterval) {
+      clearInterval(pollInterval)
+      pollInterval = null
+    }
+
+    // Stop demo mode
+    stopDemoMode()
+
+    // Reset state
+    session = null
+    suggestions = []
   }
 
   // Centralized cleanup function
