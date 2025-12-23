@@ -24,21 +24,23 @@ import {
   MessageSquare,
   Loader2,
   RefreshCw,
+  UserMinus,
+  Clock,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
-import type { CommunityPost, PostComment, FeedFilter } from '@/types/community'
+import type { CommunityPost, PostComment, FeedFilter, Friend, FriendRequest } from '@/types/community'
 
 // Trending tags (static for now)
 const TRENDING_TAGS = ['#coldcalling', '#discovery', '#closing', '#objections', '#enterprise', '#smb', '#nepq', '#challenger']
 
 export default function CommunityPage() {
-  // State
+  // Posts State
   const [posts, setPosts] = useState<CommunityPost[]>([])
   const [comments, setComments] = useState<Record<string, PostComment[]>>({})
-  const [activeTab, setActiveTab] = useState<'feed' | 'friends' | 'groups'>('feed')
+  const [activeTab, setActiveTab] = useState<'feed' | 'friends'>('feed')
   const [feedFilter, setFeedFilter] = useState<FeedFilter>('all')
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
   const [newPostContent, setNewPostContent] = useState('')
@@ -46,12 +48,31 @@ export default function CommunityPage() {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [newComment, setNewComment] = useState<Record<string, string>>({})
 
+  // Friends State
+  const [friends, setFriends] = useState<Friend[]>([])
+  const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([])
+  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequest[]>([])
+  const [isAddFriendOpen, setIsAddFriendOpen] = useState(false)
+  const [friendSearchQuery, setFriendSearchQuery] = useState('')
+  const [friendSearchResults, setFriendSearchResults] = useState<Array<{
+    id: string
+    full_name: string | null
+    email: string
+    title: string
+    avatar_url: string | null
+    follower_count: number
+    is_following: boolean
+  }>>([])
+  const [isSearchingFriends, setIsSearchingFriends] = useState(false)
+
   // Loading states
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
   const [isCreatingPost, setIsCreatingPost] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMorePosts, setHasMorePosts] = useState(false)
   const [nextCursor, setNextCursor] = useState<string | undefined>()
+  const [isLoadingFriends, setIsLoadingFriends] = useState(false)
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null)
 
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -93,10 +114,167 @@ export default function CommunityPage() {
     }
   }, [showToast])
 
+  // Fetch friends and requests
+  const fetchFriendsData = useCallback(async () => {
+    setIsLoadingFriends(true)
+    try {
+      const [friendsRes, requestsRes] = await Promise.all([
+        fetch('/api/community/friends'),
+        fetch('/api/community/friends/requests'),
+      ])
+
+      const friendsData = await friendsRes.json()
+      const requestsData = await requestsRes.json()
+
+      if (friendsRes.ok) {
+        setFriends(friendsData.friends || [])
+      }
+      if (requestsRes.ok) {
+        setIncomingRequests(requestsData.incoming || [])
+        setOutgoingRequests(requestsData.outgoing || [])
+      }
+    } catch (error) {
+      console.error('Error fetching friends:', error)
+    } finally {
+      setIsLoadingFriends(false)
+    }
+  }, [])
+
   // Initial load
   useEffect(() => {
     fetchPosts(feedFilter)
   }, [feedFilter, fetchPosts])
+
+  // Load friends when tab changes to friends
+  useEffect(() => {
+    if (activeTab === 'friends') {
+      fetchFriendsData()
+    }
+  }, [activeTab, fetchFriendsData])
+
+  // Search for users to add as friends
+  const searchUsers = async (query: string) => {
+    if (query.length < 2) {
+      setFriendSearchResults([])
+      return
+    }
+
+    setIsSearchingFriends(true)
+    try {
+      const response = await fetch(`/api/community/users/search?query=${encodeURIComponent(query)}`)
+      const data = await response.json()
+
+      if (response.ok) {
+        // Filter out existing friends and pending requests
+        const friendIds = new Set(friends.map(f => f.user_id))
+        const outgoingIds = new Set(outgoingRequests.map(r => r.to_user_id))
+        const incomingIds = new Set(incomingRequests.map(r => r.from_user_id))
+
+        const filtered = data.users.filter((u: { id: string }) =>
+          !friendIds.has(u.id) && !outgoingIds.has(u.id) && !incomingIds.has(u.id)
+        )
+        setFriendSearchResults(filtered)
+      }
+    } catch (error) {
+      console.error('Error searching users:', error)
+    } finally {
+      setIsSearchingFriends(false)
+    }
+  }
+
+  // Send friend request
+  const sendFriendRequest = async (toUserId: string) => {
+    try {
+      const response = await fetch('/api/community/friends', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to_user_id: toUserId }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setOutgoingRequests(prev => [...prev, data.request])
+        setFriendSearchResults(prev => prev.filter(u => u.id !== toUserId))
+        showToast('success', 'Friend request sent!')
+      } else {
+        showToast('error', data.error || 'Failed to send request')
+      }
+    } catch (error) {
+      console.error('Error sending friend request:', error)
+      showToast('error', 'Failed to send request')
+    }
+  }
+
+  // Accept friend request
+  const acceptFriendRequest = async (requestId: string) => {
+    setProcessingRequestId(requestId)
+    try {
+      const response = await fetch('/api/community/friends/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request_id: requestId, action: 'accept' }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.friendship) {
+        setFriends(prev => [data.friendship, ...prev])
+        setIncomingRequests(prev => prev.filter(r => r.id !== requestId))
+        showToast('success', 'Friend request accepted!')
+      } else {
+        showToast('error', 'Failed to accept request')
+      }
+    } catch (error) {
+      console.error('Error accepting request:', error)
+      showToast('error', 'Failed to accept request')
+    } finally {
+      setProcessingRequestId(null)
+    }
+  }
+
+  // Decline friend request
+  const declineFriendRequest = async (requestId: string) => {
+    setProcessingRequestId(requestId)
+    try {
+      const response = await fetch('/api/community/friends/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ request_id: requestId, action: 'decline' }),
+      })
+
+      if (response.ok) {
+        setIncomingRequests(prev => prev.filter(r => r.id !== requestId))
+        showToast('success', 'Friend request declined')
+      } else {
+        showToast('error', 'Failed to decline request')
+      }
+    } catch (error) {
+      console.error('Error declining request:', error)
+      showToast('error', 'Failed to decline request')
+    } finally {
+      setProcessingRequestId(null)
+    }
+  }
+
+  // Remove friend
+  const removeFriend = async (friendId: string) => {
+    try {
+      const response = await fetch(`/api/community/friends/${friendId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setFriends(prev => prev.filter(f => f.user_id !== friendId))
+        showToast('success', 'Friend removed')
+      } else {
+        showToast('error', 'Failed to remove friend')
+      }
+    } catch (error) {
+      console.error('Error removing friend:', error)
+      showToast('error', 'Failed to remove friend')
+    }
+  }
 
   // Create post
   const handleCreatePost = async () => {
@@ -133,7 +311,6 @@ export default function CommunityPage() {
     const post = posts.find(p => p.id === postId)
     if (!post) return
 
-    // Optimistic update
     setPosts(prev => prev.map(p =>
       p.id === postId
         ? { ...p, is_liked: !p.is_liked, like_count: p.is_liked ? p.like_count - 1 : p.like_count + 1 }
@@ -146,7 +323,6 @@ export default function CommunityPage() {
       })
 
       if (!response.ok) {
-        // Revert on error
         setPosts(prev => prev.map(p =>
           p.id === postId
             ? { ...p, is_liked: post.is_liked, like_count: post.like_count }
@@ -156,7 +332,6 @@ export default function CommunityPage() {
       }
     } catch (error) {
       console.error('Error toggling like:', error)
-      // Revert on error
       setPosts(prev => prev.map(p =>
         p.id === postId
           ? { ...p, is_liked: post.is_liked, like_count: post.like_count }
@@ -170,7 +345,6 @@ export default function CommunityPage() {
     const post = posts.find(p => p.id === postId)
     if (!post) return
 
-    // Optimistic update
     setPosts(prev => prev.map(p =>
       p.id === postId ? { ...p, is_saved: !p.is_saved } : p
     ))
@@ -183,7 +357,6 @@ export default function CommunityPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        // Revert on error
         setPosts(prev => prev.map(p =>
           p.id === postId ? { ...p, is_saved: post.is_saved } : p
         ))
@@ -193,7 +366,6 @@ export default function CommunityPage() {
       }
     } catch (error) {
       console.error('Error toggling save:', error)
-      // Revert on error
       setPosts(prev => prev.map(p =>
         p.id === postId ? { ...p, is_saved: post.is_saved } : p
       ))
@@ -205,7 +377,6 @@ export default function CommunityPage() {
     const post = posts.find(p => p.author.id === authorId)
     if (!post) return
 
-    // Optimistic update
     setPosts(prev => prev.map(p =>
       p.author.id === authorId
         ? { ...p, is_following_author: !p.is_following_author }
@@ -222,7 +393,6 @@ export default function CommunityPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        // Revert on error
         setPosts(prev => prev.map(p =>
           p.author.id === authorId
             ? { ...p, is_following_author: post.is_following_author }
@@ -234,7 +404,6 @@ export default function CommunityPage() {
       }
     } catch (error) {
       console.error('Error toggling follow:', error)
-      // Revert on error
       setPosts(prev => prev.map(p =>
         p.author.id === authorId
           ? { ...p, is_following_author: post.is_following_author }
@@ -353,6 +522,11 @@ export default function CommunityPage() {
           <div className="flex items-center gap-3">
             <button className="relative p-2 rounded-xl bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-colors">
               <Bell className="w-5 h-5 text-gray-400" />
+              {incomingRequests.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                  {incomingRequests.length}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setIsCreatePostOpen(true)}
@@ -368,6 +542,7 @@ export default function CommunityPage() {
         <div className="flex items-center gap-2 mb-6 border-b border-[rgba(255,255,255,0.05)] pb-4">
           {[
             { id: 'feed', label: 'Feed', icon: MessageSquare },
+            { id: 'friends', label: 'Friends', icon: Users, count: friends.length },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -380,6 +555,13 @@ export default function CommunityPage() {
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
+              {'count' in tab && tab.count !== undefined && (
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  activeTab === tab.id ? 'bg-[#00102e]/20' : 'bg-[rgba(255,255,255,0.1)]'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -387,6 +569,7 @@ export default function CommunityPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
+            {/* Feed Tab */}
             {activeTab === 'feed' && (
               <>
                 {/* Feed Filters */}
@@ -547,7 +730,6 @@ export default function CommunityPage() {
                         {/* Comments Section */}
                         {expandedComments.has(post.id) && (
                           <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
-                            {/* Comment Input */}
                             <div className="flex gap-3 mb-4">
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold text-sm flex-shrink-0">
                                 {user?.email?.[0]?.toUpperCase() || 'U'}
@@ -570,8 +752,6 @@ export default function CommunityPage() {
                                 </button>
                               </div>
                             </div>
-
-                            {/* Comments List */}
                             <div className="space-y-3">
                               {comments[post.id]?.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
@@ -621,6 +801,169 @@ export default function CommunityPage() {
                 )}
               </>
             )}
+
+            {/* Friends Tab */}
+            {activeTab === 'friends' && (
+              <div className="space-y-6">
+                {/* Friend Requests */}
+                {incomingRequests.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                      <UserPlus className="w-5 h-5 text-[#00ffc1]" />
+                      Friend Requests ({incomingRequests.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {incomingRequests.map((request) => (
+                        <div
+                          key={request.id}
+                          className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] rounded-xl"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff6b8a] to-[#ffbe57] flex items-center justify-center text-white font-bold">
+                              {getInitials(request.user.full_name, request.user.email)}
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-white">
+                                {request.user.full_name || request.user.email.split('@')[0]}
+                              </h4>
+                              <p className="text-xs text-gray-500">
+                                {request.user.title} • {formatRelativeTime(request.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => acceptFriendRequest(request.id)}
+                              disabled={processingRequestId === request.id}
+                              className="p-2 rounded-lg bg-[#00ffc1] text-[#00102e] hover:bg-[#00d9a6] disabled:opacity-50 transition-colors"
+                            >
+                              {processingRequestId === request.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Check className="w-4 h-4" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => declineFriendRequest(request.id)}
+                              disabled={processingRequestId === request.id}
+                              className="p-2 rounded-lg bg-[rgba(255,255,255,0.05)] text-gray-400 hover:bg-[rgba(255,255,255,0.1)] disabled:opacity-50 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pending Outgoing Requests */}
+                {outgoingRequests.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-yellow-400" />
+                      Pending Requests ({outgoingRequests.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {outgoingRequests.map((request) => (
+                        <div
+                          key={request.id}
+                          className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] rounded-xl"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center text-white font-bold text-sm">
+                              {getInitials(request.user.full_name, request.user.email)}
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-white text-sm">
+                                {request.user.full_name || request.user.email.split('@')[0]}
+                              </h4>
+                              <p className="text-xs text-gray-500">{request.user.title}</p>
+                            </div>
+                          </div>
+                          <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded">
+                            Pending
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Friends List */}
+                <div className="glass-card p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <Users className="w-5 h-5 text-[#00ffc1]" />
+                      Your Friends ({friends.length})
+                    </h3>
+                    <button
+                      onClick={() => setIsAddFriendOpen(true)}
+                      className="btn-secondary text-sm py-2 px-3 flex items-center gap-2"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Add Friend
+                    </button>
+                  </div>
+
+                  {isLoadingFriends ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 text-[#00ffc1] animate-spin" />
+                    </div>
+                  ) : friends.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                      <p className="text-gray-400 mb-4">No friends yet</p>
+                      <button
+                        onClick={() => setIsAddFriendOpen(true)}
+                        className="btn-primary"
+                      >
+                        Find Friends
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {friends.map((friend) => (
+                        <div
+                          key={friend.id}
+                          className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl hover:border-[rgba(0,255,193,0.2)] transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold">
+                                {getInitials(friend.full_name, friend.email)}
+                              </div>
+                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#00102e] ${
+                                friend.status === 'online' ? 'bg-green-500' :
+                                friend.status === 'busy' ? 'bg-yellow-500' : 'bg-gray-500'
+                              }`} />
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-white">
+                                {friend.full_name || friend.email.split('@')[0]}
+                              </h4>
+                              <p className="text-xs text-gray-500">{friend.title}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-[#00ffc1] transition-colors">
+                              <MessageCircle className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => removeFriend(friend.user_id)}
+                              className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-red-400 transition-colors"
+                              title="Remove friend"
+                            >
+                              <UserMinus className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -636,8 +979,43 @@ export default function CommunityPage() {
                   <Plus className="w-5 h-5" />
                   <span className="text-sm font-medium">New Post</span>
                 </button>
+                <button
+                  onClick={() => setIsAddFriendOpen(true)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-[rgba(255,255,255,0.02)] text-gray-400 hover:bg-[rgba(255,255,255,0.05)] hover:text-white transition-colors"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span className="text-sm font-medium">Add Friend</span>
+                </button>
               </div>
             </div>
+
+            {/* Online Friends */}
+            {friends.filter(f => f.status === 'online').length > 0 && (
+              <div className="glass-card p-4">
+                <h3 className="font-semibold text-white mb-3 text-sm flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  Online Now ({friends.filter(f => f.status === 'online').length})
+                </h3>
+                <div className="space-y-2">
+                  {friends.filter(f => f.status === 'online').slice(0, 5).map((friend) => (
+                    <div
+                      key={friend.id}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(255,255,255,0.02)] cursor-pointer transition-colors"
+                    >
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold text-xs">
+                          {getInitials(friend.full_name, friend.email)}
+                        </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-[#00102e]" />
+                      </div>
+                      <span className="text-sm text-gray-300 truncate">
+                        {friend.full_name || friend.email.split('@')[0]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Trending Tags */}
             <div className="glass-card p-4">
@@ -649,7 +1027,10 @@ export default function CommunityPage() {
                 {TRENDING_TAGS.map((tag) => (
                   <button
                     key={tag}
-                    onClick={() => setSearchQuery(tag)}
+                    onClick={() => {
+                      setSearchQuery(tag)
+                      setActiveTab('feed')
+                    }}
                     className="text-xs px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.05)] text-gray-400 hover:bg-[rgba(0,255,193,0.1)] hover:text-[#00ffc1] transition-colors"
                   >
                     {tag}
@@ -706,6 +1087,80 @@ export default function CommunityPage() {
               Post
             </button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Add Friend Modal */}
+      <Modal isOpen={isAddFriendOpen} onClose={() => {
+        setIsAddFriendOpen(false)
+        setFriendSearchQuery('')
+        setFriendSearchResults([])
+      }} title="Add Friend">
+        <div className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={friendSearchQuery}
+              onChange={(e) => {
+                setFriendSearchQuery(e.target.value)
+                searchUsers(e.target.value)
+              }}
+              className="input-field pl-12"
+            />
+          </div>
+
+          {isSearchingFriends && (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-5 h-5 text-[#00ffc1] animate-spin" />
+            </div>
+          )}
+
+          {!isSearchingFriends && friendSearchQuery.length >= 2 && friendSearchResults.length === 0 && (
+            <div className="text-center py-6 text-gray-500">
+              <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+              <p>No users found</p>
+            </div>
+          )}
+
+          {friendSearchResults.length > 0 && (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {friendSearchResults.map((searchUser) => (
+                <div
+                  key={searchUser.id}
+                  className="flex items-center justify-between p-3 bg-[rgba(255,255,255,0.02)] rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                      {getInitials(searchUser.full_name, searchUser.email)}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white text-sm">
+                        {searchUser.full_name || searchUser.email.split('@')[0]}
+                      </h4>
+                      <p className="text-xs text-gray-500">{searchUser.title}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => sendFriendRequest(searchUser.id)}
+                    className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {friendSearchQuery.length < 2 && (
+            <div className="text-center py-8 text-gray-500">
+              <UserPlus className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>Search for users to add as friends</p>
+              <p className="text-xs mt-1">Enter at least 2 characters</p>
+            </div>
+          )}
         </div>
       </Modal>
     </DashboardLayout>

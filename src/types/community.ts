@@ -143,3 +143,77 @@ export interface SearchUsersResponse {
 
 // Feed filter type
 export type FeedFilter = 'all' | 'following'
+
+// ============================================
+// Friends System Types
+// ============================================
+
+// Friend with profile info
+export interface Friend {
+  id: string
+  user_id: string
+  full_name: string | null
+  email: string
+  title: string
+  avatar_url: string | null
+  status: 'online' | 'offline' | 'busy'
+  last_active?: string
+  mutual_friends_count?: number
+  created_at: string
+}
+
+// Friend request
+export interface FriendRequest {
+  id: string
+  from_user_id: string
+  to_user_id: string
+  status: 'pending' | 'accepted' | 'declined'
+  created_at: string
+  // Joined data - the other user's info
+  user: {
+    id: string
+    full_name: string | null
+    email: string
+    title: string
+    avatar_url: string | null
+  }
+  mutual_friends_count: number
+}
+
+// API Request Types for Friends
+export interface SendFriendRequestRequest {
+  to_user_id: string
+}
+
+export interface RespondFriendRequestRequest {
+  request_id: string
+  action: 'accept' | 'decline'
+}
+
+export interface RemoveFriendRequest {
+  friend_id: string
+}
+
+// API Response Types for Friends
+export interface FriendsListResponse {
+  friends: Friend[]
+  total: number
+}
+
+export interface FriendRequestsResponse {
+  incoming: FriendRequest[]
+  outgoing: FriendRequest[]
+}
+
+export interface SendFriendRequestResponse {
+  request: FriendRequest
+}
+
+export interface RespondFriendRequestResponse {
+  success: boolean
+  friendship?: Friend
+}
+
+export interface RemoveFriendResponse {
+  success: boolean
+}
