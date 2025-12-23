@@ -44,11 +44,35 @@ export async function GET(request: NextRequest) {
           { status: 401 }
         )
       }
+      const errorText = await response.text()
+      console.error('Fathom API error response:', response.status, errorText)
       throw new Error(`Fathom API error: ${response.status}`)
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+
+    // Log the response structure for debugging
+    console.log('Fathom API response keys:', Object.keys(data))
+    console.log('Fathom API response type:', typeof data, Array.isArray(data))
+
+    // Handle various response formats from Fathom API
+    let calls: any[] = []
+    if (Array.isArray(data)) {
+      calls = data
+    } else if (data.meetings && Array.isArray(data.meetings)) {
+      calls = data.meetings
+    } else if (data.data && Array.isArray(data.data)) {
+      calls = data.data
+    } else if (data.results && Array.isArray(data.results)) {
+      calls = data.results
+    } else if (data.items && Array.isArray(data.items)) {
+      calls = data.items
+    }
+
+    console.log('Fathom calls count:', calls.length)
+
+    // Return in a consistent format
+    return NextResponse.json({ meetings: calls })
 
   } catch (error) {
     console.error('Fathom API error:', error)
