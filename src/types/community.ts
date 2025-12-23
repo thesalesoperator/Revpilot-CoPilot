@@ -217,3 +217,86 @@ export interface RespondFriendRequestResponse {
 export interface RemoveFriendResponse {
   success: boolean
 }
+
+// ============================================
+// Groups System Types
+// ============================================
+
+// Group
+export interface CommunityGroup {
+  id: string
+  name: string
+  description: string | null
+  avatar_url: string | null
+  cover_url: string | null
+  creator_id: string
+  is_private: boolean
+  member_count: number
+  post_count: number
+  created_at: string
+  updated_at: string
+  // User-specific state
+  is_member: boolean
+  is_admin: boolean
+  recent_activity?: string
+}
+
+// Group membership
+export interface GroupMembership {
+  id: string
+  group_id: string
+  user_id: string
+  role: 'admin' | 'moderator' | 'member'
+  joined_at: string
+  // Joined user data
+  user?: {
+    id: string
+    full_name: string | null
+    email: string
+    title: string
+    avatar_url: string | null
+  }
+}
+
+// API Request Types for Groups
+export interface CreateGroupRequest {
+  name: string
+  description?: string
+  is_private?: boolean
+}
+
+export interface UpdateGroupRequest {
+  name?: string
+  description?: string
+  avatar_url?: string
+  cover_url?: string
+  is_private?: boolean
+}
+
+export interface JoinGroupRequest {
+  group_id: string
+}
+
+// API Response Types for Groups
+export interface GroupsListResponse {
+  groups: CommunityGroup[]
+  hasMore: boolean
+}
+
+export interface MyGroupsResponse {
+  groups: CommunityGroup[]
+}
+
+export interface GroupDetailsResponse {
+  group: CommunityGroup
+  members: GroupMembership[]
+}
+
+export interface CreateGroupResponse {
+  group: CommunityGroup
+}
+
+export interface JoinLeaveGroupResponse {
+  success: boolean
+  is_member: boolean
+}
