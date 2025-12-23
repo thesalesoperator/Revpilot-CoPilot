@@ -37,14 +37,12 @@ const navSections = [
       { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
       { href: '/projections', icon: TrendingUp, label: 'Projections' },
       { href: '/metrics', icon: BarChart3, label: 'Metrics' },
-      { href: '/analytics', icon: Brain, label: 'AI Analytics' },
     ],
   },
   {
     title: 'Sales Tools',
     items: [
       { href: '/calls', icon: Phone, label: 'Call Review' },
-      { href: '/deals', icon: Briefcase, label: 'Deal Rooms' },
       { href: '/objections', icon: Shield, label: 'Objection Library' },
     ],
   },
@@ -77,6 +75,13 @@ const navSections = [
       { href: '/journal', icon: BookOpen, label: 'Journal' },
       { href: '/habits', icon: CheckSquare, label: 'Habits' },
       { href: '/settings', icon: Settings, label: 'Settings' },
+    ],
+  },
+  {
+    title: 'Coming Soon',
+    items: [
+      { href: '/deals', icon: Briefcase, label: 'Deal Rooms' },
+      { href: '/analytics', icon: Brain, label: 'AI Analytics' },
     ],
   },
 ]
