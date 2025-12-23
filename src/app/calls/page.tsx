@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Phone,
   Upload,
-  Play,
   Trash2,
   ChevronDown,
   ChevronUp,
@@ -76,7 +75,6 @@ export default function CallsPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [selectedRecording, setSelectedRecording] = useState<CallRecording | null>(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isFathomModalOpen, setIsFathomModalOpen] = useState(false)
   const [fathomCalls, setFathomCalls] = useState<any[]>([])
@@ -168,13 +166,14 @@ export default function CallsPage() {
     fetchFathomCalls()
   }
 
-  const toggleFathomCallSelection = (callId: string) => {
+  const toggleFathomCallSelection = (callId: string | number) => {
+    const id = String(callId)
     setSelectedFathomCalls((prev) => {
       const newSet = new Set(prev)
-      if (newSet.has(callId)) {
-        newSet.delete(callId)
+      if (newSet.has(id)) {
+        newSet.delete(id)
       } else {
-        newSet.add(callId)
+        newSet.add(id)
       }
       return newSet
     })
@@ -184,7 +183,7 @@ export default function CallsPage() {
     if (selectedFathomCalls.size === fathomCalls.length) {
       setSelectedFathomCalls(new Set())
     } else {
-      setSelectedFathomCalls(new Set(fathomCalls.map((c) => c.id)))
+      setSelectedFathomCalls(new Set(fathomCalls.map((c) => String(c.id))))
     }
   }
 
@@ -192,7 +191,7 @@ export default function CallsPage() {
     if (!user || selectedFathomCalls.size === 0) return
     setImportingMultiple(true)
 
-    const selectedMeetings = fathomCalls.filter((m) => selectedFathomCalls.has(m.id))
+    const selectedMeetings = fathomCalls.filter((m) => selectedFathomCalls.has(String(m.id)))
     let successCount = 0
     let failCount = 0
 
@@ -233,15 +232,16 @@ export default function CallsPage() {
 
   const handleImportFathomCall = async (meeting: any) => {
     if (!user) return
-    setImportingCallId(meeting.id)
+    const meetingId = String(meeting.id)
+    setImportingCallId(meetingId)
     try {
       const response = await fetch('/api/fathom/transcript', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          meetingId: meeting.id,
+          meetingId: meetingId,
           userId: user.id,
-          title: meeting.title || meeting.name || `Call ${meeting.id}`,
+          title: meeting.title || meeting.name || `Call ${meetingId}`,
         }),
       })
 
@@ -664,20 +664,22 @@ export default function CallsPage() {
 
               {/* Calls List */}
               <div className="max-h-80 overflow-y-auto space-y-3">
-                {fathomCalls.map((meeting: any) => (
+                {fathomCalls.map((meeting: any) => {
+                  const meetingId = String(meeting.id)
+                  return (
                   <div
-                    key={meeting.id}
-                    onClick={() => toggleFathomCallSelection(meeting.id)}
+                    key={meetingId}
+                    onClick={() => toggleFathomCallSelection(meetingId)}
                     className={`bg-[rgba(255,255,255,0.02)] border rounded-xl p-4 flex items-center gap-3 cursor-pointer transition-colors ${
-                      selectedFathomCalls.has(meeting.id)
+                      selectedFathomCalls.has(meetingId)
                         ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
                         : 'border-[rgba(255,255,255,0.05)] hover:border-[rgba(0,255,193,0.2)]'
                     }`}
                   >
                     <input
                       type="checkbox"
-                      checked={selectedFathomCalls.has(meeting.id)}
-                      onChange={() => toggleFathomCallSelection(meeting.id)}
+                      checked={selectedFathomCalls.has(meetingId)}
+                      onChange={() => toggleFathomCallSelection(meetingId)}
                       onClick={(e) => e.stopPropagation()}
                       className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#00ffc1]"
                     />
@@ -686,7 +688,7 @@ export default function CallsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-white truncate">
-                        {meeting.title || meeting.name || `Meeting ${meeting.id}`}
+                        {meeting.title || meeting.name || `Meeting ${meetingId}`}
                       </h4>
                       <p className="text-sm text-gray-400">
                         {meeting.created_at
@@ -704,17 +706,18 @@ export default function CallsPage() {
                         e.stopPropagation()
                         handleImportFathomCall(meeting)
                       }}
-                      disabled={importingCallId === meeting.id || importingMultiple}
+                      disabled={importingCallId === meetingId || importingMultiple}
                       className="btn-secondary text-sm py-2 px-3 flex items-center gap-2"
                     >
-                      {importingCallId === meeting.id ? (
+                      {importingCallId === meetingId ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Download className="w-4 h-4" />
                       )}
                     </button>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             </>
           )}
