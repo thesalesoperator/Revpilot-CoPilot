@@ -22,6 +22,8 @@ import {
   Download,
   Headphones,
   Zap,
+  BookOpen,
+  ChevronDown,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -45,6 +47,9 @@ export default function SettingsPage() {
   const [fathomApiKey, setFathomApiKey] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
   const [fathomConnected, setFathomConnected] = useState(false)
+  const [salesMethodology, setSalesMethodology] = useState<'challenger' | 'nepq' | 'hormozi' | 'custom'>('challenger')
+  const [customMethodology, setCustomMethodology] = useState('')
+  const [methodologyExpanded, setMethodologyExpanded] = useState<string | null>(null)
 
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -69,6 +74,12 @@ export default function SettingsPage() {
         if (profileRes.data.fathom_api_key) {
           setFathomApiKey(profileRes.data.fathom_api_key)
           setFathomConnected(true)
+        }
+        if (profileRes.data.sales_methodology) {
+          setSalesMethodology(profileRes.data.sales_methodology)
+        }
+        if (profileRes.data.custom_methodology) {
+          setCustomMethodology(profileRes.data.custom_methodology)
         }
       }
       if (badgesRes.data) setUserBadges(badgesRes.data)
@@ -153,6 +164,28 @@ export default function SettingsPage() {
     if (!confirm('Are you sure you want to disconnect Fathom?')) return
     setFathomApiKey('')
     await handleSaveFathom()
+  }
+
+  const handleSaveMethodology = async () => {
+    if (!user) return
+    setSaving(true)
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          sales_methodology: salesMethodology,
+          custom_methodology: salesMethodology === 'custom' ? customMethodology : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      showToast('success', 'Sales methodology saved successfully')
+    } catch (error) {
+      showToast('error', 'Failed to save methodology')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAddProduct = () => {
@@ -484,6 +517,261 @@ export default function SettingsPage() {
                 <li>• The coaching panel is only visible to you, not other call participants</li>
                 <li>• Drag the panel to reposition it on your screen</li>
               </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Sales Training Manual */}
+        <div className="glass-card overflow-hidden">
+          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] bg-gradient-to-r from-[rgba(0,255,193,0.05)] to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-[#0a0f1c]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold gradient-text">Sales Training Manual</h2>
+                <p className="text-gray-400 text-sm">Train the AI to coach you based on your preferred sales methodology</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 space-y-6">
+            <p className="text-gray-400 text-sm">
+              Select a proven sales methodology or create your own custom approach. The AI will use this framework
+              to provide relevant coaching suggestions during your calls.
+            </p>
+
+            {/* Methodology Options */}
+            <div className="space-y-3">
+              {/* Challenger Sale */}
+              <div
+                className={`border rounded-xl overflow-hidden transition-all cursor-pointer ${
+                  salesMethodology === 'challenger'
+                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                }`}
+              >
+                <div
+                  className="p-4 flex items-start gap-4"
+                  onClick={() => setSalesMethodology('challenger')}
+                >
+                  <input
+                    type="radio"
+                    name="methodology"
+                    checked={salesMethodology === 'challenger'}
+                    onChange={() => setSalesMethodology('challenger')}
+                    className="mt-1 accent-[#00ffc1]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-white">The Challenger Sale</h3>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setMethodologyExpanded(methodologyExpanded === 'challenger' ? null : 'challenger')
+                        }}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <ChevronDown className={`w-5 h-5 transition-transform ${methodologyExpanded === 'challenger' ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">Challenge customer assumptions with insights. Teach, tailor, and take control.</p>
+                    <p className="text-xs text-gray-500 mt-1">By Matthew Dixon & Brent Adamson</p>
+                  </div>
+                </div>
+                {methodologyExpanded === 'challenger' && (
+                  <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)] pt-4 ml-8">
+                    <h4 className="text-sm font-medium text-white mb-2">Key Principles:</h4>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• <strong>Teach:</strong> Bring new insights that reframe how customers think</li>
+                      <li>• <strong>Tailor:</strong> Customize your message to each stakeholder</li>
+                      <li>• <strong>Take Control:</strong> Lead the conversation assertively, not aggressively</li>
+                      <li>• <strong>Create Tension:</strong> Push prospects out of their comfort zone</li>
+                      <li>• <strong>Reframe Problems:</strong> Help them see issues in a new light</li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-3">Best for: Complex B2B sales, multiple decision-makers, differentiated solutions</p>
+                  </div>
+                )}
+              </div>
+
+              {/* NEPQ */}
+              <div
+                className={`border rounded-xl overflow-hidden transition-all cursor-pointer ${
+                  salesMethodology === 'nepq'
+                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                }`}
+              >
+                <div
+                  className="p-4 flex items-start gap-4"
+                  onClick={() => setSalesMethodology('nepq')}
+                >
+                  <input
+                    type="radio"
+                    name="methodology"
+                    checked={salesMethodology === 'nepq'}
+                    onChange={() => setSalesMethodology('nepq')}
+                    className="mt-1 accent-[#00ffc1]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-white">NEPQ (Neuro-Emotional Persuasion Questioning)</h3>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setMethodologyExpanded(methodologyExpanded === 'nepq' ? null : 'nepq')
+                        }}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <ChevronDown className={`w-5 h-5 transition-transform ${methodologyExpanded === 'nepq' ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">Let prospects sell themselves through strategic questioning sequences.</p>
+                    <p className="text-xs text-gray-500 mt-1">By Jeremy Miner (7th Level)</p>
+                  </div>
+                </div>
+                {methodologyExpanded === 'nepq' && (
+                  <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)] pt-4 ml-8">
+                    <h4 className="text-sm font-medium text-white mb-2">The NEPQ Question Sequence:</h4>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>1. <strong>Connection Questions:</strong> Build rapport and establish trust</li>
+                      <li>2. <strong>Situation Questions:</strong> Understand their current state</li>
+                      <li>3. <strong>Problem Awareness:</strong> Help them discover hidden problems</li>
+                      <li>4. <strong>Solution Awareness:</strong> Guide them to see the path forward</li>
+                      <li>5. <strong>Consequence Questions:</strong> Make them feel the cost of inaction</li>
+                      <li>6. <strong>Commitment Questions:</strong> Let them decide on their own</li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-3">Best for: High-ticket sales, reducing resistance, building trust quickly</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Hormozi Method */}
+              <div
+                className={`border rounded-xl overflow-hidden transition-all cursor-pointer ${
+                  salesMethodology === 'hormozi'
+                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                }`}
+              >
+                <div
+                  className="p-4 flex items-start gap-4"
+                  onClick={() => setSalesMethodology('hormozi')}
+                >
+                  <input
+                    type="radio"
+                    name="methodology"
+                    checked={salesMethodology === 'hormozi'}
+                    onChange={() => setSalesMethodology('hormozi')}
+                    className="mt-1 accent-[#00ffc1]"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-white">Hormozi Method (CLOSER Framework)</h3>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setMethodologyExpanded(methodologyExpanded === 'hormozi' ? null : 'hormozi')
+                        }}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <ChevronDown className={`w-5 h-5 transition-transform ${methodologyExpanded === 'hormozi' ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">Make offers so good people feel stupid saying no. Master objection handling.</p>
+                    <p className="text-xs text-gray-500 mt-1">By Alex Hormozi ($100M Offers)</p>
+                  </div>
+                </div>
+                {methodologyExpanded === 'hormozi' && (
+                  <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)] pt-4 ml-8">
+                    <h4 className="text-sm font-medium text-white mb-2">CLOSER Framework:</h4>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• <strong>C - Clarify:</strong> Who are they? Why are they here?</li>
+                      <li>• <strong>L - Label:</strong> Name their problem clearly</li>
+                      <li>• <strong>O - Overview:</strong> Explore past failures (Circle of Pain)</li>
+                      <li>• <strong>S - Sell:</strong> Present your solution with the Value Equation</li>
+                      <li>• <strong>E - Explain:</strong> Break down exactly what they get</li>
+                      <li>• <strong>R - Reinforce:</strong> Affirm their decision, build certainty</li>
+                    </ul>
+                    <h4 className="text-sm font-medium text-white mt-3 mb-2">AAA Objection Handling:</h4>
+                    <ul className="text-sm text-gray-400 space-y-1">
+                      <li>• <strong>Acknowledge:</strong> Repeat their concern neutrally</li>
+                      <li>• <strong>Associate:</strong> Connect to past success stories</li>
+                      <li>• <strong>Ask:</strong> Confidently ask for the sale again</li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-3">Best for: High-value offers, persistent closing, overcoming objections</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Custom Methodology */}
+              <div
+                className={`border rounded-xl overflow-hidden transition-all ${
+                  salesMethodology === 'custom'
+                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                }`}
+              >
+                <div
+                  className="p-4 flex items-start gap-4 cursor-pointer"
+                  onClick={() => setSalesMethodology('custom')}
+                >
+                  <input
+                    type="radio"
+                    name="methodology"
+                    checked={salesMethodology === 'custom'}
+                    onChange={() => setSalesMethodology('custom')}
+                    className="mt-1 accent-[#00ffc1]"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white">Custom Methodology</h3>
+                    <p className="text-sm text-gray-400 mt-1">Define your own sales philosophy and coaching approach</p>
+                  </div>
+                </div>
+                {salesMethodology === 'custom' && (
+                  <div className="px-4 pb-4 border-t border-[rgba(255,255,255,0.05)] pt-4 ml-8">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Describe your sales methodology and how you want the AI to coach you:
+                    </label>
+                    <textarea
+                      value={customMethodology}
+                      onChange={(e) => setCustomMethodology(e.target.value)}
+                      className="input-field min-h-[150px] resize-y"
+                      placeholder={`Example:
+- Ask discovery questions before presenting solutions
+- Focus on understanding pain points deeply
+- Use the "Feel, Felt, Found" technique for objections
+- Always confirm budget early in the conversation
+- End each call with clear next steps
+- Use assumptive closing techniques
+- Key phrases to use: "What would it mean for you if..."
+- Avoid: talking about features before understanding needs`}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      Be specific about what coaching tips you want, question styles, objection handling approaches, and closing techniques.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSaveMethodology}
+                disabled={saving}
+                className="btn-primary flex items-center gap-2"
+              >
+                {saving ? (
+                  <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Methodology
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

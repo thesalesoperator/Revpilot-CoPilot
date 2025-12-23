@@ -7,14 +7,10 @@ import {
   OPENAI_API_KEY,
   CORS_HEADERS,
 } from '@/lib/coaching/config'
+import { getMethodology, generateCoachingSystemPrompt, type MethodologyId } from '@/lib/coaching/methodologies'
 
-// AI Coaching prompt
-const COACHING_PROMPT = `You are an expert real-time sales coach analyzing a live sales call.
-
-CONTEXT: You're hearing the conversation in real-time. The transcript shows who is speaking.
-
-YOUR JOB: Provide actionable coaching tips to help the sales rep succeed.
-
+// Base coaching prompt template (methodology-agnostic parts)
+const BASE_COACHING_PROMPT = `
 RESPOND WITH JSON ONLY:
 {
   "suggestion": {
@@ -23,27 +19,6 @@ RESPOND WITH JSON ONLY:
   },
   "talk_ratio": <estimated % the sales rep is talking, 0-100>
 }
-
-SUGGESTION TYPES:
-- question: Suggest a specific discovery question to ask
-- tip: Coaching tip based on the conversation
-- objection: When prospect raises concerns, tell rep how to respond
-- positive: Reinforce something the rep did well
-- alert: Urgent warning (talking too much, missed signal, etc.)
-
-ALWAYS PROVIDE A SUGGESTION. Examples:
-1. Opening the call - suggest building rapport
-2. Rep making statements - suggest asking questions instead
-3. Rep asking questions - reinforce or suggest follow-ups
-4. Prospect raises objection - provide specific response strategy
-5. Prospect mentions price - guide pricing discussion
-6. Prospect mentions competitors - suggest differentiation
-
-RULES:
-1. ALWAYS give a suggestion
-2. Be SPECIFIC - reference what was actually said
-3. Keep it SHORT (1-2 sentences max)
-4. Focus on what the REP should SAY or DO next
 
 Current transcript:
 `
@@ -153,7 +128,7 @@ async function handleTranscriptEvent(
     .eq('id', session.id)
 
   // Generate AI coaching
-  return generateCoachingSuggestion(supabase, session.id, trimmedTranscript)
+  return generateCoachingSuggestion(supabase, session.id, session.user_id, trimmedTranscript)
 }
 
 async function findSession(supabase: any, sessionId: string | null, botId?: string) {
@@ -184,18 +159,41 @@ async function findSession(supabase: any, sessionId: string | null, botId?: stri
   return null
 }
 
-async function generateCoachingSuggestion(supabase: any, sessionId: string, transcript: string) {
+async function generateCoachingSuggestion(supabase: any, sessionId: string, userId: string, transcript: string) {
   const openai = getOpenAIClient()
   if (!openai) {
     return NextResponse.json({ received: true, skipped: 'no_openai' }, { headers: CORS_HEADERS })
   }
 
   try {
+    // Get user's methodology preference
+    let methodologyId: MethodologyId = 'challenger' // default
+    let customInstructions: string | undefined
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('sales_methodology, custom_methodology')
+      .eq('id', userId)
+      .single()
+
+    if (profile?.sales_methodology) {
+      methodologyId = profile.sales_methodology as MethodologyId
+      if (methodologyId === 'custom' && profile.custom_methodology) {
+        customInstructions = profile.custom_methodology
+      }
+    }
+
+    // Get the methodology and generate system prompt
+    const methodology = getMethodology(methodologyId)
+    const systemPrompt = generateCoachingSystemPrompt(methodology, customInstructions)
+
+    console.log(`[Webhook] Using ${methodologyId} methodology for user ${userId}`)
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'You are a real-time sales coach. Respond with JSON only.' },
-        { role: 'user', content: COACHING_PROMPT + transcript.slice(-2000) }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: BASE_COACHING_PROMPT + transcript.slice(-2000) }
       ],
       temperature: 0.7,
       max_tokens: 200,
