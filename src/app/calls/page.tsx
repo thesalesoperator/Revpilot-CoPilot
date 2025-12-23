@@ -755,13 +755,23 @@ interface AnalysisViewProps {
 function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
   const [showTranscript, setShowTranscript] = useState(false)
 
+  // Safety check for malformed analysis data
+  if (!analysis) {
+    return (
+      <div className="border-t border-[rgba(255,255,255,0.05)] p-6">
+        <p className="text-gray-400">Analysis data not available</p>
+      </div>
+    )
+  }
+
+  const defaultCategory = { score: 0, feedback: '', highlights: [] }
   const categories = [
-    { key: 'opening_rapport', label: 'Opening & Rapport', icon: MessageSquare, data: analysis.opening_rapport },
-    { key: 'discovery_questions', label: 'Discovery Questions', icon: Target, data: analysis.discovery_questions },
-    { key: 'pain_identification', label: 'Pain Identification', icon: Zap, data: analysis.pain_identification },
-    { key: 'value_proposition', label: 'Value Proposition', icon: Award, data: analysis.value_proposition },
-    { key: 'objection_handling', label: 'Objection Handling', icon: TrendingUp, data: analysis.objection_handling },
-    { key: 'closing_techniques', label: 'Closing Techniques', icon: CheckCircle, data: analysis.closing_techniques },
+    { key: 'opening_rapport', label: 'Opening & Rapport', icon: MessageSquare, data: analysis.opening_rapport || defaultCategory },
+    { key: 'discovery_questions', label: 'Discovery Questions', icon: Target, data: analysis.discovery_questions || defaultCategory },
+    { key: 'pain_identification', label: 'Pain Identification', icon: Zap, data: analysis.pain_identification || defaultCategory },
+    { key: 'value_proposition', label: 'Value Proposition', icon: Award, data: analysis.value_proposition || defaultCategory },
+    { key: 'objection_handling', label: 'Objection Handling', icon: TrendingUp, data: analysis.objection_handling || defaultCategory },
+    { key: 'closing_techniques', label: 'Closing Techniques', icon: CheckCircle, data: analysis.closing_techniques || defaultCategory },
   ]
 
   return (
@@ -769,7 +779,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
       {/* Summary */}
       <div className="p-6 bg-[rgba(0,255,193,0.02)]">
         <h4 className="font-semibold text-white mb-2">Summary</h4>
-        <p className="text-gray-300">{analysis.summary}</p>
+        <p className="text-gray-300">{analysis.summary || 'No summary available'}</p>
       </div>
 
       {/* Scores Grid */}
@@ -777,53 +787,55 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
         {categories.map(({ key, label, icon: Icon, data }) => (
           <div
             key={key}
-            className={`rounded-xl p-4 border ${getScoreBg(data.score)}`}
+            className={`rounded-xl p-4 border ${getScoreBg(data.score || 0)}`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Icon className="w-4 h-4 text-gray-400" />
               <span className="text-sm text-gray-400">{label}</span>
             </div>
-            <p className={`text-2xl font-bold ${getScoreColor(data.score)}`}>{data.score}</p>
+            <p className={`text-2xl font-bold ${getScoreColor(data.score || 0)}`}>{data.score || 0}</p>
           </div>
         ))}
       </div>
 
       {/* Talk/Listen Ratio */}
-      <div className="px-6 pb-6">
-        <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <BarChart3 className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-400">Talk/Listen Ratio</span>
-          </div>
-          <div className="flex items-center gap-4 mb-2">
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-400">You</span>
-                <span className="text-white">{analysis.talk_listen_ratio.rep_percentage}%</span>
+      {analysis.talk_listen_ratio && (
+        <div className="px-6 pb-6">
+          <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-400">Talk/Listen Ratio</span>
+            </div>
+            <div className="flex items-center gap-4 mb-2">
+              <div className="flex-1">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-400">You</span>
+                  <span className="text-white">{analysis.talk_listen_ratio.rep_percentage || 0}%</span>
+                </div>
+                <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#00ffc1]"
+                    style={{ width: `${analysis.talk_listen_ratio.rep_percentage || 0}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#00ffc1]"
-                  style={{ width: `${analysis.talk_listen_ratio.rep_percentage}%` }}
-                />
+              <div className="flex-1">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-400">Prospect</span>
+                  <span className="text-white">{analysis.talk_listen_ratio.prospect_percentage || 0}%</span>
+                </div>
+                <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#ff9855]"
+                    style={{ width: `${analysis.talk_listen_ratio.prospect_percentage || 0}%` }}
+                  />
+                </div>
               </div>
             </div>
-            <div className="flex-1">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-400">Prospect</span>
-                <span className="text-white">{analysis.talk_listen_ratio.prospect_percentage}%</span>
-              </div>
-              <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#ff9855]"
-                  style={{ width: `${analysis.talk_listen_ratio.prospect_percentage}%` }}
-                />
-              </div>
-            </div>
+            <p className="text-sm text-gray-400">{analysis.talk_listen_ratio.feedback || ''}</p>
           </div>
-          <p className="text-sm text-gray-400">{analysis.talk_listen_ratio.feedback}</p>
         </div>
-      </div>
+      )}
 
       {/* Detailed Feedback */}
       <div className="px-6 pb-6 space-y-4">
@@ -837,9 +849,9 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
                 <Icon className="w-4 h-4 text-[#00ffc1]" />
                 <span className="font-medium text-white">{label}</span>
               </div>
-              <span className={`font-bold ${getScoreColor(data.score)}`}>{data.score}/100</span>
+              <span className={`font-bold ${getScoreColor(data.score || 0)}`}>{data.score || 0}/100</span>
             </div>
-            <p className="text-gray-300 text-sm mb-3">{data.feedback}</p>
+            <p className="text-gray-300 text-sm mb-3">{data.feedback || 'No feedback available'}</p>
             {data.highlights && data.highlights.length > 0 && (
               <div className="space-y-2">
                 {data.highlights.map((highlight, i) => (
@@ -847,7 +859,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
                     key={i}
                     className="text-sm text-gray-400 pl-3 border-l-2 border-[rgba(0,255,193,0.3)] italic"
                   >
-                    "{highlight}"
+                    &quot;{highlight}&quot;
                   </div>
                 ))}
               </div>
@@ -864,12 +876,15 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
             <h4 className="font-medium text-white">Strengths</h4>
           </div>
           <ul className="space-y-2">
-            {analysis.strengths.map((strength, i) => (
+            {(analysis.strengths || []).map((strength, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
                 {strength}
               </li>
             ))}
+            {(!analysis.strengths || analysis.strengths.length === 0) && (
+              <li className="text-sm text-gray-400">No strengths identified</li>
+            )}
           </ul>
         </div>
 
@@ -879,12 +894,15 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
             <h4 className="font-medium text-white">Key Improvements</h4>
           </div>
           <ul className="space-y-2">
-            {analysis.key_improvements.map((improvement, i) => (
+            {(analysis.key_improvements || []).map((improvement, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
                 <Target className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
                 {improvement}
               </li>
             ))}
+            {(!analysis.key_improvements || analysis.key_improvements.length === 0) && (
+              <li className="text-sm text-gray-400">No improvements identified</li>
+            )}
           </ul>
         </div>
       </div>
