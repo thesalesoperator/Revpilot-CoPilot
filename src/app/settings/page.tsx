@@ -407,55 +407,43 @@ export default function SettingsPage() {
                 <Chrome className="w-5 h-5" />
                 Install Chrome Extension
               </h3>
-              <ol className="space-y-4 text-sm">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">1</span>
-                  <div>
-                    <p className="text-white font-medium">Download the extension</p>
-                    <p className="text-gray-400">Click the button below to download the extension files</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">2</span>
-                  <div>
-                    <p className="text-white font-medium">Open Chrome Extensions</p>
-                    <p className="text-gray-400">
-                      Go to <code className="bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded">chrome://extensions</code> in your browser
-                    </p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">3</span>
-                  <div>
-                    <p className="text-white font-medium">Enable Developer Mode</p>
-                    <p className="text-gray-400">Toggle "Developer mode" in the top right corner</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">4</span>
-                  <div>
-                    <p className="text-white font-medium">Load the extension</p>
-                    <p className="text-gray-400">Click "Load unpacked" and select the downloaded folder</p>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">5</span>
-                  <div>
-                    <p className="text-white font-medium">Start coaching!</p>
-                    <p className="text-gray-400">Join a Zoom call in Chrome and click "Start Coaching" in the overlay</p>
-                  </div>
-                </li>
-              </ol>
+
+              {/* Chrome Web Store - Primary Install */}
+              <div className="mb-6">
+                <p className="text-gray-400 text-sm mb-4">
+                  Install directly from the Chrome Web Store with one click:
+                </p>
+                <a
+                  href="https://chromewebstore.google.com/detail/revpilot-sales-coach/EXTENSION_ID_HERE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
+                >
+                  <Chrome className="w-5 h-5" />
+                  Add to Chrome — It&apos;s Free
+                </a>
+              </div>
+
+              {/* Quick Start Steps */}
+              <div className="border-t border-[rgba(0,255,193,0.1)] pt-4">
+                <p className="text-white font-medium mb-3">After installing:</p>
+                <ol className="space-y-2 text-sm">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">1</span>
+                    <p className="text-gray-400">Click the extension icon and log in with your RevPilot account</p>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">2</span>
+                    <p className="text-gray-400">Join a Zoom call in Chrome (use web client, not desktop app)</p>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">3</span>
+                    <p className="text-gray-400">Click &quot;Start Coaching&quot; in the overlay and get real-time tips!</p>
+                  </li>
+                </ol>
+              </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <a
-                  href="/downloads/revpilot-extension.zip"
-                  download
-                  className="btn-primary inline-flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Download Extension
-                </a>
                 <a
                   href="https://zoom.us/wc/join"
                   target="_blank"
@@ -466,6 +454,20 @@ export default function SettingsPage() {
                   Open Zoom Web
                 </a>
               </div>
+
+              {/* Manual Install Fallback */}
+              <details className="mt-6 text-sm">
+                <summary className="text-gray-500 hover:text-gray-300 cursor-pointer">
+                  Manual installation (for developers)
+                </summary>
+                <div className="mt-3 pl-4 border-l border-gray-700 text-gray-400 space-y-2">
+                  <p>1. <a href="/downloads/revpilot-extension.zip" download className="text-[#00ffc1] hover:underline">Download the extension ZIP</a></p>
+                  <p>2. Extract the ZIP file</p>
+                  <p>3. Go to <code className="bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded">chrome://extensions</code></p>
+                  <p>4. Enable &quot;Developer mode&quot; (top right)</p>
+                  <p>5. Click &quot;Load unpacked&quot; and select the extracted folder</p>
+                </div>
+              </details>
             </div>
 
             {/* Pro Tips */}
