@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-// CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import {
+  SUPABASE_URL,
+  SUPABASE_SERVICE_KEY,
+  CORS_HEADERS,
+} from '@/lib/coaching/config'
 
 export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
+  return NextResponse.json({}, { headers: CORS_HEADERS })
 }
 
 // GET /api/coaching/test?session_id=xxx - Insert a test suggestion
@@ -25,10 +20,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         error: 'session_id required',
         usage: 'GET /api/coaching/test?session_id=YOUR_SESSION_ID'
-      }, { status: 400, headers: corsHeaders })
+      }, { status: 400, headers: CORS_HEADERS })
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
     // Verify session exists
     const { data: session, error: sessionError } = await supabase
@@ -42,7 +37,7 @@ export async function GET(request: NextRequest) {
         error: 'Session not found',
         sessionId,
         sessionError
-      }, { status: 404, headers: corsHeaders })
+      }, { status: 404, headers: CORS_HEADERS })
     }
 
     // Insert a test suggestion
@@ -63,7 +58,7 @@ export async function GET(request: NextRequest) {
         error: 'Failed to insert suggestion',
         insertError,
         testSuggestion
-      }, { status: 500, headers: corsHeaders })
+      }, { status: 500, headers: CORS_HEADERS })
     }
 
     // Get all suggestions for this session
@@ -84,10 +79,10 @@ export async function GET(request: NextRequest) {
       },
       recent_suggestions: allSuggestions,
       suggestions_count: allSuggestions?.length || 0,
-    }, { headers: corsHeaders })
+    }, { headers: CORS_HEADERS })
 
   } catch (error) {
     console.error('Test endpoint error:', error)
-    return NextResponse.json({ error: 'Test failed', details: String(error) }, { status: 500, headers: corsHeaders })
+    return NextResponse.json({ error: 'Test failed', details: String(error) }, { status: 500, headers: CORS_HEADERS })
   }
 }
