@@ -20,6 +20,13 @@ export interface UserProfileExtended {
   title: string
   bio: string | null
   avatar_url: string | null
+  display_name: string | null
+  location: string | null
+  website: string | null
+  linkedin_url: string | null
+  twitter_handle: string | null
+  years_in_sales: number | null
+  is_profile_public: boolean
   total_xp: number
   post_count: number
   follower_count: number
@@ -96,6 +103,13 @@ export interface UpdateProfileRequest {
   title?: string
   bio?: string
   avatar_url?: string
+  display_name?: string
+  location?: string
+  website?: string
+  linkedin_url?: string
+  twitter_handle?: string
+  years_in_sales?: number
+  is_profile_public?: boolean
 }
 
 export interface SearchUsersRequest {

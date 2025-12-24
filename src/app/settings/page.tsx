@@ -24,6 +24,15 @@ import {
   Zap,
   BookOpen,
   ChevronDown,
+  Camera,
+  MapPin,
+  Globe,
+  Linkedin,
+  Twitter,
+  Users,
+  Upload,
+  X,
+  Loader2,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -56,6 +65,20 @@ export default function SettingsPage() {
     value_proposition: '',
     target_customers: '',
   })
+  const [socialProfile, setSocialProfile] = useState({
+    avatar_url: '' as string | null,
+    display_name: '',
+    title: '',
+    bio: '',
+    location: '',
+    website: '',
+    linkedin_url: '',
+    twitter_handle: '',
+    years_in_sales: '' as string | number,
+    is_profile_public: true,
+  })
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -65,12 +88,13 @@ export default function SettingsPage() {
     if (!user) return
 
     try {
-      const [settingsRes, productsRes, profileRes, badgesRes, streaksRes] = await Promise.all([
+      const [settingsRes, productsRes, profileRes, badgesRes, streaksRes, socialProfileRes] = await Promise.all([
         supabase.from('settings').select('*').eq('user_id', user.id).single(),
         supabase.from('products').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase.from('user_badges').select('*').eq('user_id', user.id),
         supabase.from('user_streaks').select('*').eq('user_id', user.id),
+        supabase.from('user_profiles_extended').select('*').eq('user_id', user.id).single(),
       ])
 
       if (settingsRes.data) setSettings(settingsRes.data)
@@ -97,6 +121,24 @@ export default function SettingsPage() {
       }
       if (badgesRes.data) setUserBadges(badgesRes.data)
       if (streaksRes.data) setUserStreaks(streaksRes.data)
+      // Load social profile
+      if (socialProfileRes.data) {
+        setSocialProfile({
+          avatar_url: socialProfileRes.data.avatar_url || null,
+          display_name: socialProfileRes.data.display_name || '',
+          title: socialProfileRes.data.title || '',
+          bio: socialProfileRes.data.bio || '',
+          location: socialProfileRes.data.location || '',
+          website: socialProfileRes.data.website || '',
+          linkedin_url: socialProfileRes.data.linkedin_url || '',
+          twitter_handle: socialProfileRes.data.twitter_handle || '',
+          years_in_sales: socialProfileRes.data.years_in_sales || '',
+          is_profile_public: socialProfileRes.data.is_profile_public ?? true,
+        })
+        if (socialProfileRes.data.avatar_url) {
+          setAvatarPreview(socialProfileRes.data.avatar_url)
+        }
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -225,6 +267,100 @@ export default function SettingsPage() {
     }
   }
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    // Preview
+    const reader = new FileReader()
+    reader.onload = (e) => setAvatarPreview(e.target?.result as string)
+    reader.readAsDataURL(file)
+
+    setUploadingAvatar(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/community/profile/avatar', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to upload avatar')
+      }
+
+      const data = await response.json()
+      setSocialProfile(prev => ({ ...prev, avatar_url: data.avatar_url }))
+      showToast('success', 'Profile photo updated!')
+    } catch (error) {
+      console.error('Avatar upload error:', error)
+      showToast('error', error instanceof Error ? error.message : 'Failed to upload photo')
+      // Reset preview on error
+      setAvatarPreview(socialProfile.avatar_url)
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
+  const handleRemoveAvatar = async () => {
+    if (!confirm('Are you sure you want to remove your profile photo?')) return
+
+    setUploadingAvatar(true)
+    try {
+      const response = await fetch('/api/community/profile/avatar', {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to remove avatar')
+      }
+
+      setSocialProfile(prev => ({ ...prev, avatar_url: null }))
+      setAvatarPreview(null)
+      showToast('success', 'Profile photo removed')
+    } catch (error) {
+      showToast('error', 'Failed to remove photo')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
+
+  const handleSaveSocialProfile = async () => {
+    if (!user) return
+    setSaving(true)
+
+    try {
+      const response = await fetch('/api/community/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: socialProfile.title || null,
+          bio: socialProfile.bio || null,
+          display_name: socialProfile.display_name || null,
+          location: socialProfile.location || null,
+          website: socialProfile.website || null,
+          linkedin_url: socialProfile.linkedin_url || null,
+          twitter_handle: socialProfile.twitter_handle || null,
+          years_in_sales: socialProfile.years_in_sales ? Number(socialProfile.years_in_sales) : null,
+          is_profile_public: socialProfile.is_profile_public,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to save profile')
+      }
+
+      showToast('success', 'Social profile saved successfully!')
+    } catch (error) {
+      showToast('error', error instanceof Error ? error.message : 'Failed to save profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleAddProduct = () => {
     setEditingProduct(null)
     setIsProductModalOpen(true)
@@ -315,6 +451,240 @@ export default function SettingsPage() {
                   <>
                     <Save className="w-4 h-4" />
                     Save Profile
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Profile Section */}
+        <div className="glass-card">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] bg-gradient-to-r from-[rgba(94,234,212,0.05)] to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#2dd4bf] flex items-center justify-center">
+                <Users className="w-5 h-5 text-[#0f172a]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold gradient-text">Social Profile</h2>
+                <p className="text-gray-400 text-sm">Set up your public profile for the community</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 space-y-6">
+            {/* Avatar Upload */}
+            <div className="flex items-start gap-6">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-[rgba(94,234,212,0.1)] border-2 border-[rgba(94,234,212,0.2)] flex items-center justify-center">
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-10 h-10 text-[#5eead4]" />
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#5eead4] flex items-center justify-center cursor-pointer hover:bg-[#2dd4bf] transition-colors">
+                  <Camera className="w-4 h-4 text-[#0f172a]" />
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                    disabled={uploadingAvatar}
+                  />
+                </label>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-white mb-1">Profile Photo</h3>
+                <p className="text-sm text-gray-400 mb-3">
+                  Upload a photo to personalize your profile. Max 5MB, JPEG/PNG/WebP/GIF.
+                </p>
+                <div className="flex gap-2">
+                  <label className="btn-secondary text-sm py-2 px-4 cursor-pointer inline-flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Upload Photo
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                      disabled={uploadingAvatar}
+                    />
+                  </label>
+                  {avatarPreview && (
+                    <button
+                      onClick={handleRemoveAvatar}
+                      disabled={uploadingAvatar}
+                      className="text-sm py-2 px-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Display Name</label>
+                <input
+                  type="text"
+                  value={socialProfile.display_name}
+                  onChange={(e) => setSocialProfile(prev => ({ ...prev, display_name: e.target.value }))}
+                  className="input-field"
+                  placeholder="How you want to be known"
+                />
+                <p className="text-xs text-gray-500 mt-1">Leave blank to use your full name</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Title / Headline</label>
+                <input
+                  type="text"
+                  value={socialProfile.title}
+                  onChange={(e) => setSocialProfile(prev => ({ ...prev, title: e.target.value }))}
+                  className="input-field"
+                  placeholder="e.g., Enterprise Account Executive"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Bio</label>
+              <textarea
+                value={socialProfile.bio}
+                onChange={(e) => setSocialProfile(prev => ({ ...prev, bio: e.target.value }))}
+                className="input-field min-h-[100px] resize-y"
+                placeholder="Tell the community about yourself, your sales experience, and what you're working on..."
+                maxLength={500}
+              />
+              <p className="text-xs text-gray-500 mt-1">{socialProfile.bio.length}/500 characters</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={socialProfile.location}
+                  onChange={(e) => setSocialProfile(prev => ({ ...prev, location: e.target.value }))}
+                  className="input-field"
+                  placeholder="e.g., San Francisco, CA"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <Globe className="w-4 h-4 inline mr-1" />
+                  Website
+                </label>
+                <input
+                  type="url"
+                  value={socialProfile.website}
+                  onChange={(e) => setSocialProfile(prev => ({ ...prev, website: e.target.value }))}
+                  className="input-field"
+                  placeholder="https://yourwebsite.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <Linkedin className="w-4 h-4 inline mr-1" />
+                  LinkedIn URL
+                </label>
+                <input
+                  type="url"
+                  value={socialProfile.linkedin_url}
+                  onChange={(e) => setSocialProfile(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                  className="input-field"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  <Twitter className="w-4 h-4 inline mr-1" />
+                  X (Twitter) Handle
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                  <input
+                    type="text"
+                    value={socialProfile.twitter_handle}
+                    onChange={(e) => setSocialProfile(prev => ({ ...prev, twitter_handle: e.target.value.replace('@', '') }))}
+                    className="input-field pl-8"
+                    placeholder="yourhandle"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Years in Sales</label>
+                <select
+                  value={socialProfile.years_in_sales}
+                  onChange={(e) => setSocialProfile(prev => ({ ...prev, years_in_sales: e.target.value }))}
+                  className="select-field"
+                >
+                  <option value="">Select experience level</option>
+                  <option value="1">Less than 1 year</option>
+                  <option value="2">1-2 years</option>
+                  <option value="3">3-5 years</option>
+                  <option value="7">5-10 years</option>
+                  <option value="15">10-20 years</option>
+                  <option value="25">20+ years</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Profile Visibility</label>
+                <div className="flex items-center gap-3 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setSocialProfile(prev => ({ ...prev, is_profile_public: !prev.is_profile_public }))}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      socialProfile.is_profile_public ? 'bg-[#5eead4]' : 'bg-gray-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                      socialProfile.is_profile_public ? 'left-7' : 'left-1'
+                    }`} />
+                  </button>
+                  <span className="text-gray-300">
+                    {socialProfile.is_profile_public ? 'Public' : 'Private'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {socialProfile.is_profile_public
+                    ? 'Your profile is visible to all community members'
+                    : 'Only you can see your profile'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-[rgba(94,234,212,0.1)]">
+              <button
+                onClick={handleSaveSocialProfile}
+                disabled={saving}
+                className="btn-primary flex items-center gap-2"
+              >
+                {saving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Social Profile
                   </>
                 )}
               </button>

@@ -73,6 +73,27 @@ export async function PUT(request: NextRequest) {
     if (body.avatar_url !== undefined) {
       updateData.avatar_url = body.avatar_url
     }
+    if (body.display_name !== undefined) {
+      updateData.display_name = body.display_name
+    }
+    if (body.location !== undefined) {
+      updateData.location = body.location
+    }
+    if (body.website !== undefined) {
+      updateData.website = body.website
+    }
+    if (body.linkedin_url !== undefined) {
+      updateData.linkedin_url = body.linkedin_url
+    }
+    if (body.twitter_handle !== undefined) {
+      updateData.twitter_handle = body.twitter_handle
+    }
+    if (body.years_in_sales !== undefined) {
+      updateData.years_in_sales = body.years_in_sales
+    }
+    if (body.is_profile_public !== undefined) {
+      updateData.is_profile_public = body.is_profile_public
+    }
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
