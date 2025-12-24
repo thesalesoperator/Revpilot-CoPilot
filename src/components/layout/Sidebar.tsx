@@ -88,8 +88,8 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
         <Link href="/calls" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
-            <Calculator className="w-6 h-6 text-[#00102e]" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4ee8c7] to-[#3dd4b5] flex items-center justify-center">
+            <Calculator className="w-6 h-6 text-[#0a1628]" />
           </div>
           <div>
             <h1 className="font-bold text-lg gradient-text">RevPilot</h1>
@@ -106,7 +106,7 @@ export default function Sidebar() {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center">
                 <span className="text-lg font-bold text-white">{userGameStats.level}</span>
               </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#00102e] border-2 border-yellow-500 flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0a1628] border-2 border-yellow-500 flex items-center justify-center">
                 <Star className="w-3 h-3 text-yellow-500" />
               </div>
             </div>
@@ -156,7 +156,7 @@ export default function Sidebar() {
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative group',
                     isActive
-                      ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                      ? 'bg-[rgba(0,255,193,0.1)] text-[#4ee8c7] border border-[rgba(0,255,193,0.3)]'
                       : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                   )}
                 >
@@ -184,7 +184,7 @@ export default function Sidebar() {
                   {item.progress && (
                     <div className="w-12 h-1.5 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] rounded-full"
+                        className="h-full bg-gradient-to-r from-[#4ee8c7] to-[#3dd4b5] rounded-full"
                         style={{ width: `${item.progress}%` }}
                       />
                     </div>
@@ -192,7 +192,7 @@ export default function Sidebar() {
 
                   {/* Hot/New Indicator */}
                   {item.hot && !item.streak && (
-                    <div className="w-2 h-2 rounded-full bg-[#00ffc1] animate-pulse" />
+                    <div className="w-2 h-2 rounded-full bg-[#4ee8c7] animate-pulse" />
                   )}
                 </Link>
               </li>
@@ -225,11 +225,11 @@ export default function Sidebar() {
       <div className="p-4 border-t border-[rgba(0,255,193,0.1)]">
         <div className="flex items-center gap-3 px-4 py-3 mb-2">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff0043] to-[#ffbe57] flex items-center justify-center text-white font-semibold">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b72] to-[#ffc470] flex items-center justify-center text-white font-semibold">
               {user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             {/* Online indicator */}
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-[#00102e]" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-[#0a1628]" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">
