@@ -168,19 +168,34 @@ export default function PracticePage() {
 
   // Load Vapi SDK
   useEffect(() => {
-    const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi-web.min.js'
-    script.async = true
-    script.onload = () => {
-      console.log('Vapi SDK loaded')
-    }
-    document.body.appendChild(script)
+    const loadVapiSDK = async () => {
+      // Check if already loaded
+      if (window.Vapi) {
+        console.log('Vapi SDK already loaded')
+        return
+      }
 
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
+      try {
+        // Dynamic import of the Vapi SDK
+        const script = document.createElement('script')
+        script.src = 'https://cdn.vapi.ai/vapi-web.js'
+        script.async = true
+
+        script.onload = () => {
+          console.log('Vapi SDK loaded successfully')
+        }
+
+        script.onerror = (e) => {
+          console.error('Failed to load Vapi SDK:', e)
+        }
+
+        document.head.appendChild(script)
+      } catch (error) {
+        console.error('Error loading Vapi SDK:', error)
       }
     }
+
+    loadVapiSDK()
   }, [])
 
   const formatTime = (seconds: number) => {
@@ -200,6 +215,20 @@ export default function PracticePage() {
     })
 
     try {
+      // Request microphone permission first
+      console.log('Requesting microphone permission...')
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        // Stop the stream immediately - we just need permission
+        stream.getTracks().forEach(track => track.stop())
+        console.log('Microphone permission granted')
+      } catch (micError) {
+        console.error('Microphone permission denied:', micError)
+        showToast('error', 'Microphone access is required for practice calls. Please allow microphone access and try again.')
+        setCallState((prev) => ({ ...prev, status: 'idle' }))
+        return
+      }
+
       // Create practice session
       const response = await fetch('/api/practice/session', {
         method: 'POST',
@@ -212,17 +241,23 @@ export default function PracticePage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create session')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create session')
       }
 
       const data = await response.json()
+      console.log('Session created:', data.session?.id)
       setCurrentSession(data.session)
 
       // Initialize Vapi call
       const vapiApiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY
+      console.log('Vapi API key available:', !!vapiApiKey)
+      console.log('Vapi SDK loaded:', !!window.Vapi)
+
       if (!vapiApiKey) {
         // Fallback to simulation mode if no API key
         console.warn('No Vapi API key, running in simulation mode')
+        showToast('info', 'Running in simulation mode (no API key configured)')
         setTimeout(() => {
           setCallState((prev) => ({ ...prev, status: 'active' }))
           showToast('success', 'Call connected (simulation mode)')
@@ -231,27 +266,31 @@ export default function PracticePage() {
       }
 
       if (window.Vapi) {
+        console.log('Initializing Vapi with API key...')
         vapiRef.current = new window.Vapi(vapiApiKey)
 
         // Set up event listeners
         vapiRef.current.on('call-start', () => {
+          console.log('Vapi call-start event')
           setCallState((prev) => ({ ...prev, status: 'active' }))
           showToast('success', 'Call connected!')
         })
 
         vapiRef.current.on('call-end', () => {
+          console.log('Vapi call-end event')
           handleCallEnd()
         })
 
         vapiRef.current.on('speech-start', () => {
-          // AI started speaking
+          console.log('Vapi speech-start event')
         })
 
         vapiRef.current.on('speech-end', () => {
-          // AI stopped speaking
+          console.log('Vapi speech-end event')
         })
 
         vapiRef.current.on('message', (msg: unknown) => {
+          console.log('Vapi message event:', msg)
           const message = msg as { type: string; role?: string; transcript?: string }
           if (message.type === 'transcript' && message.transcript) {
             setCallState((prev) => ({
@@ -266,15 +305,19 @@ export default function PracticePage() {
 
         vapiRef.current.on('error', (err: unknown) => {
           const error = err as Error
-          console.error('Vapi error:', error)
+          console.error('Vapi error event:', error)
           showToast('error', 'Call error: ' + (error?.message || 'Unknown error'))
           setCallState((prev) => ({ ...prev, status: 'idle' }))
         })
 
         // Start the call with the assistant config
+        console.log('Starting Vapi call with config:', JSON.stringify(data.vapi_config.assistant, null, 2))
         await vapiRef.current.start(data.vapi_config.assistant)
+        console.log('Vapi call started successfully')
       } else {
         // Vapi SDK not loaded, use simulation
+        console.warn('Vapi SDK not loaded, using simulation mode')
+        showToast('info', 'Running in simulation mode (SDK not loaded)')
         setTimeout(() => {
           setCallState((prev) => ({ ...prev, status: 'active' }))
           showToast('success', 'Call connected (simulation mode)')
@@ -282,7 +325,7 @@ export default function PracticePage() {
       }
     } catch (error) {
       console.error('Error starting call:', error)
-      showToast('error', 'Failed to start call')
+      showToast('error', 'Failed to start call: ' + (error instanceof Error ? error.message : 'Unknown error'))
       setCallState((prev) => ({ ...prev, status: 'idle' }))
     }
   }
