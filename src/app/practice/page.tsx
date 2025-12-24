@@ -104,9 +104,82 @@ export default function PracticePage() {
 
   const vapiRef = useRef<VapiInstance | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const ringAudioRef = useRef<HTMLAudioElement | null>(null)
+  const ringIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const { user } = useAuth()
   const { showToast } = useToast()
+
+  // Create ringing sound using Web Audio API
+  const playRingTone = useCallback(() => {
+    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext
+    if (!AudioContext) return null
+
+    const audioContext = new AudioContext()
+
+    const playRing = () => {
+      // Create oscillators for a phone ring sound
+      const oscillator1 = audioContext.createOscillator()
+      const oscillator2 = audioContext.createOscillator()
+      const gainNode = audioContext.createGain()
+
+      oscillator1.type = 'sine'
+      oscillator1.frequency.setValueAtTime(440, audioContext.currentTime) // A4
+      oscillator2.type = 'sine'
+      oscillator2.frequency.setValueAtTime(480, audioContext.currentTime) // B4 (ring tone freq)
+
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
+
+      oscillator1.connect(gainNode)
+      oscillator2.connect(gainNode)
+      gainNode.connect(audioContext.destination)
+
+      oscillator1.start(audioContext.currentTime)
+      oscillator2.start(audioContext.currentTime)
+      oscillator1.stop(audioContext.currentTime + 0.5)
+      oscillator2.stop(audioContext.currentTime + 0.5)
+    }
+
+    // Play ring immediately
+    playRing()
+
+    // Set up interval to ring every 2 seconds
+    const interval = setInterval(() => {
+      if (audioContext.state === 'running') {
+        playRing()
+      }
+    }, 2000)
+
+    return { audioContext, interval }
+  }, [])
+
+  // Ringing effect when connecting
+  useEffect(() => {
+    let ringContext: { audioContext: AudioContext; interval: NodeJS.Timeout } | null = null
+
+    if (callState.status === 'connecting') {
+      ringContext = playRingTone()
+      if (ringContext) {
+        ringIntervalRef.current = ringContext.interval
+      }
+    } else {
+      // Stop ringing
+      if (ringIntervalRef.current) {
+        clearInterval(ringIntervalRef.current)
+        ringIntervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (ringIntervalRef.current) {
+        clearInterval(ringIntervalRef.current)
+      }
+      if (ringContext?.audioContext) {
+        ringContext.audioContext.close()
+      }
+    }
+  }, [callState.status, playRingTone])
 
   // Fetch user stats
   const fetchUserStats = useCallback(async () => {

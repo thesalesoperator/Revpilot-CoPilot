@@ -147,6 +147,7 @@ function getVoiceIdForPersona(personaId: string): string {
     'friendly-champion': 'MF3mGyEYCl7XYWbV9V6O', // Elli - warm female
     'hostile-executive': 'TxGEqnHWrfWFTfGW9XjX', // Josh - authoritative male
     'procurement-buyer': 'XB0fDUnXU5powFXDhCwa', // Charlotte - professional female
+    'mad-scientist': 'DUnzBkwtjRWXPr6wRbmL', // Mad scientist voice - eccentric
   }
   return voiceMap[personaId] || '21m00Tcm4TlvDq8ikWAM'
 }
@@ -182,6 +183,7 @@ function getFirstMessage(persona: ReturnType<typeof getPersonaById>): string {
     'friendly-champion': "Hi there! Sarah Martinez. I've been looking forward to this call. I think there's something interesting here - help me understand how to get this through my organization.",
     'hostile-executive': "Marcus Thompson. I've got 5 minutes before my next meeting. What is this about?",
     'procurement-buyer': "Good afternoon. Jennifer Walsh from procurement. I understand you're on our shortlist. I have some questions about pricing and terms.",
+    'mad-scientist': "*sound of electricity crackling* Ah, another one... How did you get zis number? Are you with ze GOVERNMENT?! *suspicious pause* ...Speak quickly, before I release ze hounds! MWAHAHAHA!",
   }
 
   return firstMessages[persona.id] || "Hello, how can I help you today?"
