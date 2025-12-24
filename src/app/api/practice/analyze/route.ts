@@ -174,6 +174,10 @@ function buildAnalysisPrompt(
   challenge: NonNullable<ReturnType<typeof getChallengeById>>,
   persona: NonNullable<ReturnType<typeof getPersonaById>>
 ): string {
+  const durationSeconds = session.duration_seconds as number || 0
+  const transcript = session.transcript as string || ''
+  const wordCount = transcript.split(/\s+/).filter(w => w.length > 0).length
+
   return `Analyze this sales practice call.
 
 CHALLENGE: ${challenge.name}
@@ -190,14 +194,23 @@ ${challenge.objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}
 BONUS OBJECTIVES:
 ${challenge.bonusObjectives.map(b => `- ${b.id}: ${b.name} - ${b.description}`).join('\n')}
 
-CALL DURATION: ${session.duration_seconds} seconds
+CALL DURATION: ${durationSeconds} seconds
+TRANSCRIPT WORD COUNT: ${wordCount} words
 
 TRANSCRIPT:
-${session.transcript}
+${transcript}
 
 ---
 
-Analyze the sales rep's performance on this practice call. For each objective, determine if it was completed based on the transcript. Score each category 0-100 and provide specific, actionable feedback.
+CRITICAL SCORING RULES:
+1. If the call was under 60 seconds, the overall_score should be MAX 30.
+2. If the call was under 30 seconds, the overall_score should be MAX 15.
+3. Only mark an objective as completed if there is CLEAR EVIDENCE in the transcript that it was achieved.
+4. Do NOT give credit for objectives that were not explicitly demonstrated.
+5. An empty or near-empty transcript means score of 0-10.
+6. If the rep hung up early or the call ended abruptly, penalize heavily.
 
-Be tough but fair. This is practice, so honest feedback helps them improve.`
+Analyze the sales rep's performance on this practice call. For each objective, determine if it was ACTUALLY completed based on the transcript evidence. Score each category 0-100 and provide specific, actionable feedback.
+
+Be STRICT and HONEST. This is practice - giving inflated scores doesn't help the user improve. If they didn't do something well, say so. Only mark objectives_completed if there's clear transcript evidence.`
 }

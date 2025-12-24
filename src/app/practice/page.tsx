@@ -349,22 +349,22 @@ export default function PracticePage() {
       }
     } catch (error) {
       console.error('Error analyzing call:', error)
-      // Fallback results
+      // Fallback results - give low score since analysis failed
       setCallResults({
-        score: 70,
+        score: 0,
         objectivesCompleted: [],
         bonusCompleted: [],
-        xpEarned: selectedChallenge?.xpReward || 0,
+        xpEarned: 0,
         xpBreakdown: {
-          base: selectedChallenge?.xpReward || 0,
+          base: 0,
           objectives: 0,
           bonus: 0,
           streak: 0,
           difficulty_multiplier: 1,
-          total: selectedChallenge?.xpReward || 0,
+          total: 0,
         },
         analysis: null,
-        feedback: 'Unable to analyze call in detail. Please try again.',
+        feedback: 'Unable to analyze call. The call may have been too short or there was an error.',
       })
     }
 
