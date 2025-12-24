@@ -28,6 +28,7 @@ import {
   RotateCcw,
   Loader2,
 } from 'lucide-react'
+import Vapi from '@vapi-ai/web'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
@@ -35,22 +36,8 @@ import { CHALLENGES, PERSONAS, getUnlockedChallenges } from '@/lib/practice/chal
 import type { Challenge, PracticeSession, UserPracticeStats, XPBreakdown } from '@/types/practice'
 import type { CallAnalysis } from '@/types/database'
 
-// Vapi Web SDK types
-declare global {
-  interface Window {
-    Vapi?: new (apiKey: string) => VapiInstance
-  }
-}
-
-interface VapiInstance {
-  start: (config: VapiAssistantConfig) => Promise<void>
-  stop: () => void
-  send: (message: { type: string; message?: string }) => void
-  on: (event: string, callback: (...args: unknown[]) => void) => void
-  off: (event: string, callback: (...args: unknown[]) => void) => void
-  isMuted: () => boolean
-  setMuted: (muted: boolean) => void
-}
+// Vapi instance type
+type VapiInstance = InstanceType<typeof Vapi>
 
 interface VapiAssistantConfig {
   name: string
@@ -166,37 +153,6 @@ export default function PracticePage() {
     }
   }, [callState.status])
 
-  // Load Vapi SDK
-  useEffect(() => {
-    const loadVapiSDK = async () => {
-      // Check if already loaded
-      if (window.Vapi) {
-        console.log('Vapi SDK already loaded')
-        return
-      }
-
-      try {
-        // Dynamic import of the Vapi SDK
-        const script = document.createElement('script')
-        script.src = 'https://cdn.vapi.ai/vapi-web.js'
-        script.async = true
-
-        script.onload = () => {
-          console.log('Vapi SDK loaded successfully')
-        }
-
-        script.onerror = (e) => {
-          console.error('Failed to load Vapi SDK:', e)
-        }
-
-        document.head.appendChild(script)
-      } catch (error) {
-        console.error('Error loading Vapi SDK:', error)
-      }
-    }
-
-    loadVapiSDK()
-  }, [])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -252,7 +208,7 @@ export default function PracticePage() {
       // Initialize Vapi call
       const vapiApiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY
       console.log('Vapi API key available:', !!vapiApiKey)
-      console.log('Vapi SDK loaded:', !!window.Vapi)
+      console.log('Vapi API key value:', vapiApiKey?.substring(0, 8) + '...')
 
       if (!vapiApiKey) {
         // Fallback to simulation mode if no API key
@@ -265,64 +221,53 @@ export default function PracticePage() {
         return
       }
 
-      if (window.Vapi) {
-        console.log('Initializing Vapi with API key...')
-        vapiRef.current = new window.Vapi(vapiApiKey)
+      console.log('Initializing Vapi with API key...')
+      vapiRef.current = new Vapi(vapiApiKey)
 
-        // Set up event listeners
-        vapiRef.current.on('call-start', () => {
-          console.log('Vapi call-start event')
-          setCallState((prev) => ({ ...prev, status: 'active' }))
-          showToast('success', 'Call connected!')
-        })
+      // Set up event listeners
+      vapiRef.current.on('call-start', () => {
+        console.log('Vapi call-start event')
+        setCallState((prev) => ({ ...prev, status: 'active' }))
+        showToast('success', 'Call connected!')
+      })
 
-        vapiRef.current.on('call-end', () => {
-          console.log('Vapi call-end event')
-          handleCallEnd()
-        })
+      vapiRef.current.on('call-end', () => {
+        console.log('Vapi call-end event')
+        handleCallEnd()
+      })
 
-        vapiRef.current.on('speech-start', () => {
-          console.log('Vapi speech-start event')
-        })
+      vapiRef.current.on('speech-start', () => {
+        console.log('Vapi speech-start event')
+      })
 
-        vapiRef.current.on('speech-end', () => {
-          console.log('Vapi speech-end event')
-        })
+      vapiRef.current.on('speech-end', () => {
+        console.log('Vapi speech-end event')
+      })
 
-        vapiRef.current.on('message', (msg: unknown) => {
-          console.log('Vapi message event:', msg)
-          const message = msg as { type: string; role?: string; transcript?: string }
-          if (message.type === 'transcript' && message.transcript) {
-            setCallState((prev) => ({
-              ...prev,
-              transcript: [
-                ...prev.transcript,
-                { role: message.role as 'user' | 'assistant', text: message.transcript || '' },
-              ],
-            }))
-          }
-        })
+      vapiRef.current.on('message', (msg) => {
+        console.log('Vapi message event:', msg)
+        const message = msg as { type: string; role?: string; transcript?: string }
+        if (message.type === 'transcript' && message.transcript) {
+          setCallState((prev) => ({
+            ...prev,
+            transcript: [
+              ...prev.transcript,
+              { role: message.role as 'user' | 'assistant', text: message.transcript || '' },
+            ],
+          }))
+        }
+      })
 
-        vapiRef.current.on('error', (err: unknown) => {
-          const error = err as Error
-          console.error('Vapi error event:', error)
-          showToast('error', 'Call error: ' + (error?.message || 'Unknown error'))
-          setCallState((prev) => ({ ...prev, status: 'idle' }))
-        })
+      vapiRef.current.on('error', (err) => {
+        console.error('Vapi error event:', err)
+        showToast('error', 'Call error: ' + (err?.message || 'Unknown error'))
+        setCallState((prev) => ({ ...prev, status: 'idle' }))
+      })
 
-        // Start the call with the assistant config
-        console.log('Starting Vapi call with config:', JSON.stringify(data.vapi_config.assistant, null, 2))
-        await vapiRef.current.start(data.vapi_config.assistant)
-        console.log('Vapi call started successfully')
-      } else {
-        // Vapi SDK not loaded, use simulation
-        console.warn('Vapi SDK not loaded, using simulation mode')
-        showToast('info', 'Running in simulation mode (SDK not loaded)')
-        setTimeout(() => {
-          setCallState((prev) => ({ ...prev, status: 'active' }))
-          showToast('success', 'Call connected (simulation mode)')
-        }, 2000)
-      }
+      // Start the call with the assistant config
+      console.log('Starting Vapi call with config:', JSON.stringify(data.vapi_config.assistant, null, 2))
+      await vapiRef.current.start(data.vapi_config.assistant)
+      console.log('Vapi call started successfully')
     } catch (error) {
       console.error('Error starting call:', error)
       showToast('error', 'Failed to start call: ' + (error instanceof Error ? error.message : 'Unknown error'))
