@@ -72,36 +72,20 @@ export async function POST(request: NextRequest) {
       assistant: {
         name: persona.name,
         voice: {
-          provider: 'elevenlabs',
+          provider: '11labs' as const,
           voiceId: getVoiceIdForPersona(persona.id),
         },
         model: {
-          provider: 'openai',
+          provider: 'openai' as const,
           model: 'gpt-4',
           messages: [
             {
-              role: 'system',
+              role: 'system' as const,
               content: buildSystemPrompt(challenge, persona),
             },
           ],
-          temperature: 0.8,
         },
         firstMessage: getFirstMessage(persona),
-        endCallMessage: "Thank you for the call. Goodbye!",
-        endCallPhrases: ["goodbye", "bye", "end call", "hang up"],
-        transcriber: {
-          provider: 'deepgram',
-          model: 'nova-2',
-        },
-        recordingEnabled: true,
-        serverUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/practice/vapi/webhook`,
-        serverUrlSecret: process.env.VAPI_WEBHOOK_SECRET,
-        metadata: {
-          session_id: session.id,
-          user_id: user.id,
-          challenge_id: body.challenge_id,
-          persona_id: body.persona_id,
-        },
       },
     }
 

@@ -260,7 +260,11 @@ export default function PracticePage() {
 
       vapiRef.current.on('error', (err) => {
         console.error('Vapi error event:', err)
-        showToast('error', 'Call error: ' + (err?.message || 'Unknown error'))
+        console.error('Vapi error details:', JSON.stringify(err, null, 2))
+        const errorMessage = typeof err === 'object' && err !== null
+          ? (err as Record<string, unknown>).message || (err as Record<string, unknown>).error || JSON.stringify(err)
+          : String(err)
+        showToast('error', 'Call error: ' + errorMessage)
         setCallState((prev) => ({ ...prev, status: 'idle' }))
       })
 
