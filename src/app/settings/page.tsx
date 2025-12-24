@@ -50,6 +50,12 @@ export default function SettingsPage() {
   const [salesMethodology, setSalesMethodology] = useState<'challenger' | 'nepq' | 'hormozi' | 'custom'>('challenger')
   const [customMethodology, setCustomMethodology] = useState('')
   const [methodologyExpanded, setMethodologyExpanded] = useState<string | null>(null)
+  const [practiceContext, setPracticeContext] = useState({
+    company_description: '',
+    product_description: '',
+    value_proposition: '',
+    target_customers: '',
+  })
 
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -81,6 +87,13 @@ export default function SettingsPage() {
         if (profileRes.data.custom_methodology) {
           setCustomMethodology(profileRes.data.custom_methodology)
         }
+        // Load practice context
+        setPracticeContext({
+          company_description: profileRes.data.practice_company_description || '',
+          product_description: profileRes.data.practice_product_description || '',
+          value_proposition: profileRes.data.practice_value_proposition || '',
+          target_customers: profileRes.data.practice_target_customers || '',
+        })
       }
       if (badgesRes.data) setUserBadges(badgesRes.data)
       if (streaksRes.data) setUserStreaks(streaksRes.data)
@@ -188,6 +201,30 @@ export default function SettingsPage() {
     }
   }
 
+  const handleSavePracticeContext = async () => {
+    if (!user) return
+    setSaving(true)
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          practice_company_description: practiceContext.company_description || null,
+          practice_product_description: practiceContext.product_description || null,
+          practice_value_proposition: practiceContext.value_proposition || null,
+          practice_target_customers: practiceContext.target_customers || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      showToast('success', 'Practice context saved successfully')
+    } catch (error) {
+      showToast('error', 'Failed to save practice context')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleAddProduct = () => {
     setEditingProduct(null)
     setIsProductModalOpen(true)
@@ -278,6 +315,107 @@ export default function SettingsPage() {
                   <>
                     <Save className="w-4 h-4" />
                     Save Profile
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Sales Practice Context */}
+        <div className="glass-card">
+          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] bg-gradient-to-r from-[rgba(0,255,193,0.05)] to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
+                <Zap className="w-5 h-5 text-[#0a0f1c]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold gradient-text">Sales Practice Context</h2>
+                <p className="text-gray-400 text-sm">Customize AI personas to understand your product</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 space-y-6">
+            <p className="text-gray-400 text-sm">
+              Tell us about your company and product so AI personas can respond realistically to your pitch during practice calls.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  What does your company do?
+                </label>
+                <textarea
+                  value={practiceContext.company_description}
+                  onChange={(e) => setPracticeContext(prev => ({ ...prev, company_description: e.target.value }))}
+                  className="input-field min-h-[80px] resize-y"
+                  placeholder="e.g., We're a B2B SaaS company that helps sales teams automate their outreach and track performance metrics..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  What product/service do you sell?
+                </label>
+                <textarea
+                  value={practiceContext.product_description}
+                  onChange={(e) => setPracticeContext(prev => ({ ...prev, product_description: e.target.value }))}
+                  className="input-field min-h-[80px] resize-y"
+                  placeholder="e.g., Our main product is a sales engagement platform with AI-powered email sequences, call recording, and analytics dashboard..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  What&apos;s your key value proposition?
+                </label>
+                <textarea
+                  value={practiceContext.value_proposition}
+                  onChange={(e) => setPracticeContext(prev => ({ ...prev, value_proposition: e.target.value }))}
+                  className="input-field min-h-[80px] resize-y"
+                  placeholder="e.g., We help sales teams close 30% more deals by automating follow-ups and providing real-time coaching during calls..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Who are your target customers?
+                </label>
+                <textarea
+                  value={practiceContext.target_customers}
+                  onChange={(e) => setPracticeContext(prev => ({ ...prev, target_customers: e.target.value }))}
+                  className="input-field min-h-[80px] resize-y"
+                  placeholder="e.g., Mid-market B2B companies with 10-50 person sales teams, typically in tech, financial services, or professional services..."
+                />
+              </div>
+            </div>
+
+            <div className="bg-[rgba(255,152,85,0.05)] border border-[rgba(255,152,85,0.1)] rounded-xl p-4">
+              <h4 className="font-medium text-white mb-2 flex items-center gap-2">
+                <svg className="w-4 h-4 text-[#ff9855]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                How this is used
+              </h4>
+              <p className="text-sm text-gray-400">
+                During practice calls, AI personas will understand what you&apos;re selling and respond with realistic objections
+                and questions specific to your product. For example, they might ask about pricing, implementation time,
+                or how you compare to competitors in your space.
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSavePracticeContext}
+                disabled={saving}
+                className="btn-primary flex items-center gap-2"
+              >
+                {saving ? (
+                  <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Practice Context
                   </>
                 )}
               </button>

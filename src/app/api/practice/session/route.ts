@@ -27,6 +27,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Persona not found' }, { status: 404 })
     }
 
+    // Fetch user's practice context from their profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('company_name, practice_company_description, practice_product_description, practice_value_proposition, practice_target_customers')
+      .eq('id', user.id)
+      .single()
+
+    const practiceContext = {
+      companyName: profile?.company_name || null,
+      companyDescription: profile?.practice_company_description || null,
+      productDescription: profile?.practice_product_description || null,
+      valueProposition: profile?.practice_value_proposition || null,
+      targetCustomers: profile?.practice_target_customers || null,
+    }
+
     // Check for existing active session
     const { data: existingSession } = await supabase
       .from('practice_sessions')
@@ -82,7 +97,7 @@ export async function POST(request: NextRequest) {
           messages: [
             {
               role: 'system' as const,
-              content: buildSystemPrompt(challenge, persona),
+              content: buildSystemPrompt(challenge, persona, practiceContext),
             },
           ],
         },
@@ -159,12 +174,44 @@ function getVoiceIdForPersona(personaId: string): string {
   return voiceMap[personaId] || '21m00Tcm4TlvDq8ikWAM'
 }
 
-// Build system prompt combining challenge and persona
-function buildSystemPrompt(challenge: ReturnType<typeof getChallengeById>, persona: ReturnType<typeof getPersonaById>): string {
+// Define practice context type
+interface PracticeContext {
+  companyName: string | null
+  companyDescription: string | null
+  productDescription: string | null
+  valueProposition: string | null
+  targetCustomers: string | null
+}
+
+// Build system prompt combining challenge, persona, and user's product context
+function buildSystemPrompt(
+  challenge: ReturnType<typeof getChallengeById>,
+  persona: ReturnType<typeof getPersonaById>,
+  practiceContext: PracticeContext
+): string {
   if (!challenge || !persona) return ''
 
-  return `${persona.systemPrompt}
+  // Build the product context section if user has provided info
+  let productContextSection = ''
+  if (practiceContext.companyDescription || practiceContext.productDescription || practiceContext.valueProposition) {
+    productContextSection = `
 
+---
+
+THE SALES REP'S PRODUCT/COMPANY (what they're pitching to you):
+${practiceContext.companyName ? `Company: ${practiceContext.companyName}` : ''}
+${practiceContext.companyDescription ? `What they do: ${practiceContext.companyDescription}` : ''}
+${practiceContext.productDescription ? `Product/Service: ${practiceContext.productDescription}` : ''}
+${practiceContext.valueProposition ? `Their value proposition: ${practiceContext.valueProposition}` : ''}
+${practiceContext.targetCustomers ? `Their target customers: ${practiceContext.targetCustomers}` : ''}
+
+Use this information to ask realistic questions about their product, pricing, implementation, competitors, etc.
+Respond as if you're actually evaluating whether to buy this specific product.
+If they mention features or benefits, ask follow-up questions relevant to what they're actually selling.`
+  }
+
+  return `${persona.systemPrompt}
+${productContextSection}
 ---
 
 CHALLENGE CONTEXT:

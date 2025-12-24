@@ -15,6 +15,10 @@ export interface Database {
           email: string
           full_name: string | null
           company_name: string | null
+          practice_company_description: string | null
+          practice_product_description: string | null
+          practice_value_proposition: string | null
+          practice_target_customers: string | null
           created_at: string
           updated_at: string
         }
@@ -23,6 +27,10 @@ export interface Database {
           email: string
           full_name?: string | null
           company_name?: string | null
+          practice_company_description?: string | null
+          practice_product_description?: string | null
+          practice_value_proposition?: string | null
+          practice_target_customers?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -31,6 +39,10 @@ export interface Database {
           email?: string
           full_name?: string | null
           company_name?: string | null
+          practice_company_description?: string | null
+          practice_product_description?: string | null
+          practice_value_proposition?: string | null
+          practice_target_customers?: string | null
           created_at?: string
           updated_at?: string
         }
