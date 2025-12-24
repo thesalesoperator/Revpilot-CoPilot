@@ -84,6 +84,7 @@ export default function CallsPage() {
   const [selectedFathomCalls, setSelectedFathomCalls] = useState<Set<string>>(new Set())
   const [fathomConnected, setFathomConnected] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [reanalyzingId, setReanalyzingId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { user } = useAuth()
@@ -369,6 +370,48 @@ export default function CallsPage() {
     }
   }
 
+  const handleReanalyze = async (recordingId: string) => {
+    if (!user) return
+    setReanalyzingId(recordingId)
+
+    try {
+      // Update status to analyzing
+      await supabase
+        .from('call_recordings')
+        .update({ status: 'analyzing' })
+        .eq('id', recordingId)
+
+      // Trigger re-analysis
+      const response = await fetch('/api/analyze-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recordingId,
+          userId: user.id,
+          reanalyze: true,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Re-analysis failed')
+      }
+
+      showToast('success', 'Call re-analyzed successfully!')
+      fetchRecordings()
+    } catch (error) {
+      console.error('Re-analyze error:', error)
+      showToast('error', error instanceof Error ? error.message : 'Failed to re-analyze call')
+      // Reset status on error
+      await supabase
+        .from('call_recordings')
+        .update({ status: 'completed' })
+        .eq('id', recordingId)
+    } finally {
+      setReanalyzingId(null)
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -551,6 +594,16 @@ export default function CallsPage() {
                 {/* Expanded Analysis */}
                 {expandedId === recording.id && recording.status === 'completed' && recording.analysis && (
                   <AnalysisView analysis={recording.analysis} transcript={recording.transcript} />
+                )}
+
+                {/* Missing Analysis State - completed but no analysis data */}
+                {expandedId === recording.id && recording.status === 'completed' && !recording.analysis && (
+                  <MissingAnalysisView
+                    recordingId={recording.id}
+                    transcript={recording.transcript}
+                    onReanalyze={() => handleReanalyze(recording.id)}
+                    isReanalyzing={reanalyzingId === recording.id}
+                  />
                 )}
 
                 {/* Error State */}
@@ -751,6 +804,71 @@ export default function CallsPage() {
         </div>
       </Modal>
     </DashboardLayout>
+  )
+}
+
+// Missing Analysis View Component
+interface MissingAnalysisViewProps {
+  recordingId: string
+  transcript: string | null
+  onReanalyze: () => void
+  isReanalyzing?: boolean
+}
+
+function MissingAnalysisView({ recordingId, transcript, onReanalyze, isReanalyzing }: MissingAnalysisViewProps) {
+  const [showTranscript, setShowTranscript] = useState(false)
+
+  return (
+    <div className="border-t border-[rgba(255,255,255,0.05)] p-6">
+      <div className="text-center py-6">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+          <XCircle className="w-8 h-8 text-amber-500" />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2">Analysis Data Missing</h3>
+        <p className="text-gray-400 mb-6 max-w-md mx-auto">
+          This call was marked as analyzed but the analysis data is not available.
+          {transcript ? ' The transcript is available - you can re-run the analysis.' : ' No transcript data found.'}
+        </p>
+
+        {transcript && (
+          <button
+            onClick={onReanalyze}
+            disabled={isReanalyzing}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            {isReanalyzing ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Re-analyzing...
+              </>
+            ) : (
+              <>
+                <Zap className="w-5 h-5" />
+                Re-analyze Call
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Show transcript if available */}
+      {transcript && (
+        <div className="mt-6 pt-6 border-t border-[rgba(255,255,255,0.05)]">
+          <button
+            onClick={() => setShowTranscript(!showTranscript)}
+            className="flex items-center gap-2 text-[#5eead4] hover:underline text-sm"
+          >
+            {showTranscript ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {showTranscript ? 'Hide Transcript' : 'Show Transcript'}
+          </button>
+          {showTranscript && (
+            <div className="mt-4 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4 max-h-96 overflow-y-auto">
+              <pre className="text-sm text-gray-300 whitespace-pre-wrap font-sans">{transcript}</pre>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -74,7 +74,7 @@ TRANSCRIPT:
 
 export async function POST(request: NextRequest) {
   try {
-    const { recordingId, userId } = await request.json()
+    const { recordingId, userId, reanalyze } = await request.json()
 
     if (!recordingId || !userId) {
       return NextResponse.json(
@@ -101,72 +101,105 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update status to transcribing
-    await supabase
-      .from('call_recordings')
-      .update({ status: 'transcribing', updated_at: new Date().toISOString() })
-      .eq('id', recordingId)
-
-    // Download the audio file from Supabase Storage
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('Call_Recordings')
-      .download(recording.file_url)
-
-    if (downloadError || !fileData) {
-      await supabase
-        .from('call_recordings')
-        .update({
-          status: 'failed',
-          error_message: 'Failed to download audio file',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', recordingId)
-
-      return NextResponse.json(
-        { error: 'Failed to download audio file' },
-        { status: 500 }
-      )
-    }
-
-    // Convert Blob to File for OpenAI
-    const file = new File([fileData], recording.file_name, { type: fileData.type })
-
-    // Transcribe with Whisper
     let transcript: string
     const openai = getOpenAIClient()
-    try {
-      const transcription = await openai.audio.transcriptions.create({
-        file: file,
-        model: 'whisper-1',
-        response_format: 'text',
-      })
-      transcript = transcription
-    } catch (whisperError) {
-      console.error('Whisper error:', whisperError)
+
+    // If reanalyze is true and we have a transcript, skip transcription
+    if (reanalyze && recording.transcript) {
+      transcript = recording.transcript
+
+      // Update status to analyzing
+      await supabase
+        .from('call_recordings')
+        .update({ status: 'analyzing', updated_at: new Date().toISOString() })
+        .eq('id', recordingId)
+    } else {
+      // Update status to transcribing
+      await supabase
+        .from('call_recordings')
+        .update({ status: 'transcribing', updated_at: new Date().toISOString() })
+        .eq('id', recordingId)
+
+      // Check if this is a Fathom recording (can't download audio)
+      if (recording.file_url.startsWith('fathom://')) {
+        // For Fathom recordings without transcript, we can't proceed
+        if (!recording.transcript) {
+          await supabase
+            .from('call_recordings')
+            .update({
+              status: 'failed',
+              error_message: 'No transcript available for this Fathom recording',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', recordingId)
+
+          return NextResponse.json(
+            { error: 'No transcript available for this Fathom recording' },
+            { status: 400 }
+          )
+        }
+        transcript = recording.transcript
+      } else {
+        // Download the audio file from Supabase Storage
+        const { data: fileData, error: downloadError } = await supabase.storage
+          .from('Call_Recordings')
+          .download(recording.file_url)
+
+        if (downloadError || !fileData) {
+          await supabase
+            .from('call_recordings')
+            .update({
+              status: 'failed',
+              error_message: 'Failed to download audio file',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', recordingId)
+
+          return NextResponse.json(
+            { error: 'Failed to download audio file' },
+            { status: 500 }
+          )
+        }
+
+        // Convert Blob to File for OpenAI
+        const file = new File([fileData], recording.file_name, { type: fileData.type })
+
+        // Transcribe with Whisper
+        try {
+          const transcription = await openai.audio.transcriptions.create({
+            file: file,
+            model: 'whisper-1',
+            response_format: 'text',
+          })
+          transcript = transcription
+        } catch (whisperError) {
+          console.error('Whisper error:', whisperError)
+          await supabase
+            .from('call_recordings')
+            .update({
+              status: 'failed',
+              error_message: 'Failed to transcribe audio',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', recordingId)
+
+          return NextResponse.json(
+            { error: 'Failed to transcribe audio' },
+            { status: 500 }
+          )
+        }
+      }
+
+      // Update status to analyzing (only in the non-reanalyze path)
       await supabase
         .from('call_recordings')
         .update({
-          status: 'failed',
-          error_message: 'Failed to transcribe audio',
+          status: 'analyzing',
+          transcript,
           updated_at: new Date().toISOString()
         })
         .eq('id', recordingId)
-
-      return NextResponse.json(
-        { error: 'Failed to transcribe audio' },
-        { status: 500 }
-      )
     }
-
-    // Update status to analyzing
-    await supabase
-      .from('call_recordings')
-      .update({
-        status: 'analyzing',
-        transcript,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', recordingId)
 
     // Analyze with GPT-4
     let analysis
