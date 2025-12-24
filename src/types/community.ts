@@ -300,3 +300,121 @@ export interface JoinLeaveGroupResponse {
   success: boolean
   is_member: boolean
 }
+
+// ============================================
+// Call Clips System Types
+// ============================================
+
+// Clip category options
+export type ClipCategory = 'objection_handling' | 'closing' | 'discovery' | 'rapport' | 'value_prop' | 'negotiation' | 'other'
+
+// Call Clip
+export interface CallClip {
+  id: string
+  user_id: string
+  call_recording_id: string | null
+  title: string
+  description: string | null
+  transcript_excerpt: string
+  start_time: number | null
+  end_time: number | null
+  category: ClipCategory | null
+  tags: string[]
+  is_shared: boolean
+  shared_at: string | null
+  view_count: number
+  like_count: number
+  comment_count: number
+  save_count: number
+  created_at: string
+  updated_at: string
+  // Joined data
+  author: {
+    id: string
+    full_name: string | null
+    email: string
+    title: string
+    avatar_url: string | null
+  }
+  call_title?: string
+  // User-specific state
+  is_liked: boolean
+  is_saved: boolean
+}
+
+// Clip comment
+export interface ClipComment {
+  id: string
+  clip_id: string
+  user_id: string
+  content: string
+  created_at: string
+  updated_at: string
+  // Joined data
+  author: {
+    id: string
+    full_name: string | null
+    email: string
+    title: string
+    avatar_url: string | null
+  }
+}
+
+// API Request Types for Clips
+export interface CreateClipRequest {
+  call_recording_id?: string
+  title: string
+  description?: string
+  transcript_excerpt: string
+  start_time?: number
+  end_time?: number
+  category?: ClipCategory
+  tags?: string[]
+  is_shared?: boolean
+}
+
+export interface UpdateClipRequest {
+  title?: string
+  description?: string
+  category?: ClipCategory
+  tags?: string[]
+  is_shared?: boolean
+}
+
+export interface CreateClipCommentRequest {
+  content: string
+}
+
+// API Response Types for Clips
+export interface ClipsListResponse {
+  clips: CallClip[]
+  hasMore: boolean
+  nextCursor?: string
+}
+
+export interface MyClipsResponse {
+  clips: CallClip[]
+}
+
+export interface ClipDetailsResponse {
+  clip: CallClip
+  comments: ClipComment[]
+}
+
+export interface CreateClipResponse {
+  clip: CallClip
+}
+
+export interface ClipLikeResponse {
+  liked: boolean
+  like_count: number
+}
+
+export interface ClipSaveResponse {
+  saved: boolean
+}
+
+export interface ClipCommentsResponse {
+  comments: ClipComment[]
+  hasMore: boolean
+}
