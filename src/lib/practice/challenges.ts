@@ -574,7 +574,7 @@ If they handle this well, start asking buying signals like pricing for multi-yea
     ],
     timeLimit: null,
     xpReward: 400,
-    unlockRequirement: 'Complete 3 Hard challenges',
+    unlockRequirement: 'Complete 2 Hard challenges',
     systemPrompt: `This is a Hostile Executive practice call. The user is practicing handling extreme resistance.
 
 SCENARIO:
@@ -628,6 +628,7 @@ DO NOT make this too easy. They need to earn it. But if they do earn it, become 
     ],
     timeLimit: 600, // 10 minutes
     xpReward: 200,
+    unlockRequirement: 'Complete 2 Medium challenges',
     systemPrompt: `This is an Objection Gauntlet practice call. Throw multiple objections at the user.
 
 SCENARIO:
@@ -678,6 +679,7 @@ Don't pile on mercilessly - if they're clearly struggling, ease up slightly but 
     ],
     timeLimit: 600,
     xpReward: 200,
+    unlockRequirement: 'Complete 2 Medium challenges',
     systemPrompt: `This is a CEO Power Hour practice call. Test the user's executive presence.
 
 SCENARIO:
@@ -737,7 +739,7 @@ End with: "This is interesting. Let's get you 30 minutes with me and my co-found
     ],
     timeLimit: null,
     xpReward: 400,
-    unlockRequirement: 'Complete 5 Hard challenges',
+    unlockRequirement: 'Complete 2 Hard challenges',
     systemPrompt: `This is a Deal Rescue practice call. The user is trying to revive a cold deal.
 
 SCENARIO:
@@ -808,7 +810,7 @@ Reveal the path forward: "If you could put together a quick executive summary fo
     ],
     timeLimit: null,
     xpReward: 500,
-    unlockRequirement: 'Complete 3 Hard challenges',
+    unlockRequirement: 'Complete 2 Hard challenges',
     systemPrompt: `This is Operation: Secret Potion - a special ops practice call. The user is on a secret mission to acquire the legendary Elixir of Infinite Energy.
 
 SCENARIO:
@@ -860,18 +862,44 @@ const VIP_EMAILS = [
 ]
 
 // Helper to get unlocked challenges based on user stats
-export function getUnlockedChallenges(userStats: { hard_completed: number; expert_completed: number }, userEmail?: string): Challenge[] {
+export function getUnlockedChallenges(
+  userStats: {
+    easy_completed?: number
+    medium_completed?: number
+    hard_completed?: number
+    expert_completed?: number
+  },
+  userEmail?: string
+): Challenge[] {
   // VIP users get all challenges unlocked
   const isVIP = userEmail && VIP_EMAILS.includes(userEmail.toLowerCase())
+
+  const easyCompleted = userStats.easy_completed || 0
+  const mediumCompleted = userStats.medium_completed || 0
+  const hardCompleted = userStats.hard_completed || 0
 
   return CHALLENGES.map(challenge => {
     let isLocked = false
 
     if (challenge.unlockRequirement && !isVIP) {
-      if (challenge.unlockRequirement.includes('3 Hard')) {
-        isLocked = userStats.hard_completed < 3
-      } else if (challenge.unlockRequirement.includes('5 Hard')) {
-        isLocked = userStats.hard_completed < 5
+      // Parse unlock requirement
+      const requirement = challenge.unlockRequirement.toLowerCase()
+
+      if (requirement.includes('medium')) {
+        // Extract number (e.g., "Complete 2 Medium challenges" → 2)
+        const match = requirement.match(/(\d+)\s*medium/i)
+        const required = match ? parseInt(match[1], 10) : 1
+        isLocked = mediumCompleted < required
+      } else if (requirement.includes('hard')) {
+        // Extract number (e.g., "Complete 2 Hard challenges" → 2)
+        const match = requirement.match(/(\d+)\s*hard/i)
+        const required = match ? parseInt(match[1], 10) : 1
+        isLocked = hardCompleted < required
+      } else if (requirement.includes('easy')) {
+        // Extract number (e.g., "Complete 1 Easy challenge" → 1)
+        const match = requirement.match(/(\d+)\s*easy/i)
+        const required = match ? parseInt(match[1], 10) : 1
+        isLocked = easyCompleted < required
       }
     }
 

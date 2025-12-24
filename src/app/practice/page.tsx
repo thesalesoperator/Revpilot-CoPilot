@@ -192,6 +192,8 @@ export default function PracticePage() {
 
         // Update challenges with unlock status (pass user email for VIP check)
         const unlockedChallenges = getUnlockedChallenges({
+          easy_completed: data.stats.easy_completed || 0,
+          medium_completed: data.stats.medium_completed || 0,
           hard_completed: data.stats.hard_completed || 0,
           expert_completed: data.stats.expert_completed || 0,
         }, user?.email)
