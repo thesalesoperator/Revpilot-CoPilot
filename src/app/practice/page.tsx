@@ -396,17 +396,22 @@ export default function PracticePage() {
       return
     }
 
-    // Mark session as ended
+    // Mark session as ended and save transcript from frontend
+    const frontendTranscript = callState.transcript.map(t => `${t.role.toUpperCase()}: ${t.text}`).join('\n\n')
     await fetch(`/api/practice/session/${currentSession.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         status: 'ended',
-        transcript: callState.transcript.map(t => `${t.role.toUpperCase()}: ${t.text}`).join('\n\n'),
+        transcript: frontendTranscript,
+        duration_seconds: callState.duration,
       }),
     })
 
     setCallState((prev) => ({ ...prev, status: 'analyzing' }))
+
+    // Wait a moment for webhook to potentially update with better transcript
+    await new Promise(resolve => setTimeout(resolve, 2000))
 
     // Analyze the session
     try {
@@ -834,18 +839,32 @@ export default function PracticePage() {
                   )}
 
                   {(callState.status === 'ended' || callState.status === 'analyzing') && !showResults && (
-                    <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
-                        {callState.status === 'analyzing' ? (
-                          <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
-                        ) : (
-                          <CheckCircle className="w-8 h-8 text-[#00ffc1]" />
-                        )}
+                    <div className="text-center space-y-4">
+                      <div className="w-20 h-20 mx-auto rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
+                        <Loader2 className="w-10 h-10 text-[#00ffc1] animate-spin" />
                       </div>
-                      <p className="text-white font-medium">
-                        {callState.status === 'analyzing' ? 'Analyzing...' : 'Call Ended'}
-                      </p>
-                      <p className="text-sm text-gray-400">Analyzing your performance...</p>
+                      <div>
+                        <p className="text-xl font-bold text-white mb-2">Analyzing Your Call</p>
+                        <p className="text-sm text-gray-400">Please wait while our AI coach reviews your performance...</p>
+                      </div>
+                      <div className="bg-[rgba(255,255,255,0.02)] rounded-xl p-4 text-left space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                          <span className="text-gray-300">Call recorded ({formatTime(callState.duration)})</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Loader2 className="w-4 h-4 text-[#00ffc1] animate-spin" />
+                          <span className="text-gray-300">Processing transcript...</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                          <span className="text-gray-500">Evaluating objectives...</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Loader2 className="w-4 h-4 text-gray-500 animate-spin" />
+                          <span className="text-gray-500">Generating feedback...</span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
