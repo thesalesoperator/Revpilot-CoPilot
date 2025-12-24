@@ -43,11 +43,6 @@ export interface Challenge {
 // Personas (hardcoded in frontend)
 // ============================================
 
-export interface PersonaTrait {
-  name: string
-  description: string
-}
-
 export interface Persona {
   id: string
   name: string

@@ -277,17 +277,13 @@ export default function PracticePage() {
       }
 
       const data = await response.json()
-      console.log('Session created:', data.session?.id)
       setCurrentSession(data.session)
 
       // Initialize Vapi call
       const vapiApiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY
-      console.log('Vapi API key available:', !!vapiApiKey)
-      console.log('Vapi API key value:', vapiApiKey?.substring(0, 8) + '...')
 
       if (!vapiApiKey) {
         // Fallback to simulation mode if no API key
-        console.warn('No Vapi API key, running in simulation mode')
         showToast('info', 'Running in simulation mode (no API key configured)')
         setTimeout(() => {
           setCallState((prev) => ({ ...prev, status: 'active' }))
@@ -296,31 +292,27 @@ export default function PracticePage() {
         return
       }
 
-      console.log('Initializing Vapi with API key...')
       vapiRef.current = new Vapi(vapiApiKey)
 
       // Set up event listeners
       vapiRef.current.on('call-start', () => {
-        console.log('Vapi call-start event')
         setCallState((prev) => ({ ...prev, status: 'active' }))
         showToast('success', 'Call connected!')
       })
 
       vapiRef.current.on('call-end', () => {
-        console.log('Vapi call-end event')
         handleCallEnd()
       })
 
       vapiRef.current.on('speech-start', () => {
-        console.log('Vapi speech-start event')
+        // Speech started - could add visual indicator here
       })
 
       vapiRef.current.on('speech-end', () => {
-        console.log('Vapi speech-end event')
+        // Speech ended - could update visual indicator here
       })
 
       vapiRef.current.on('message', (msg) => {
-        console.log('Vapi message event:', msg)
         const message = msg as { type: string; role?: string; transcript?: string }
         if (message.type === 'transcript' && message.transcript) {
           setCallState((prev) => ({
@@ -334,19 +326,16 @@ export default function PracticePage() {
       })
 
       vapiRef.current.on('error', (err) => {
-        console.error('Vapi error event:', err)
-        console.error('Vapi error details:', JSON.stringify(err, null, 2))
+        console.error('Vapi error:', err)
         const errorMessage = typeof err === 'object' && err !== null
-          ? (err as Record<string, unknown>).message || (err as Record<string, unknown>).error || JSON.stringify(err)
+          ? (err as Record<string, unknown>).message || (err as Record<string, unknown>).error || 'Unknown error'
           : String(err)
         showToast('error', 'Call error: ' + errorMessage)
         setCallState((prev) => ({ ...prev, status: 'idle' }))
       })
 
       // Start the call with the assistant config
-      console.log('Starting Vapi call with config:', JSON.stringify(data.vapi_config.assistant, null, 2))
       await vapiRef.current.start(data.vapi_config.assistant)
-      console.log('Vapi call started successfully')
     } catch (error) {
       console.error('Error starting call:', error)
       showToast('error', 'Failed to start call: ' + (error instanceof Error ? error.message : 'Unknown error'))
@@ -358,23 +347,43 @@ export default function PracticePage() {
     setCallState((prev) => ({ ...prev, status: 'ended' }))
 
     if (!currentSession) {
-      // Simulation mode - generate mock results
+      // Simulation mode - generate mock results based on call duration
       if (selectedChallenge) {
+        // Score based on duration (penalize short calls like real analysis)
+        let baseScore = 50
+        if (callState.duration < 30) baseScore = 10
+        else if (callState.duration < 60) baseScore = 25
+        else if (callState.duration < 120) baseScore = 40
+        else baseScore = Math.floor(Math.random() * 30) + 50 // 50-80 for longer calls
+
+        const objectivesCompleted = callState.duration > 60
+          ? selectedChallenge.objectives.filter(() => Math.random() > 0.5)
+          : []
+        const bonusCompleted = callState.duration > 120
+          ? selectedChallenge.bonusObjectives.filter(() => Math.random() > 0.8).map(b => b.id)
+          : []
+
+        const objectiveXP = objectivesCompleted.length * 10
+        const bonusXP = bonusCompleted.length * 25
+        const totalXP = baseScore > 30 ? selectedChallenge.xpReward + objectiveXP + bonusXP : 0
+
         const mockResults: CallResults = {
-          score: Math.floor(Math.random() * 30) + 70,
-          objectivesCompleted: selectedChallenge.objectives.filter(() => Math.random() > 0.3),
-          bonusCompleted: selectedChallenge.bonusObjectives.filter(() => Math.random() > 0.7).map(b => b.id),
-          xpEarned: selectedChallenge.xpReward,
+          score: baseScore,
+          objectivesCompleted,
+          bonusCompleted,
+          xpEarned: totalXP,
           xpBreakdown: {
-            base: selectedChallenge.xpReward,
-            objectives: 50,
-            bonus: 0,
+            base: baseScore > 30 ? selectedChallenge.xpReward : 0,
+            objectives: objectiveXP,
+            bonus: bonusXP,
             streak: 0,
             difficulty_multiplier: 1,
-            total: selectedChallenge.xpReward + 50,
+            total: totalXP,
           },
           analysis: null,
-          feedback: 'Great job maintaining rapport! Consider asking more follow-up questions to dig deeper into their pain points.',
+          feedback: callState.duration < 60
+            ? 'The call was too short to evaluate properly. Try to have a longer conversation to practice your skills.'
+            : 'Simulation mode - connect with Vapi for real AI analysis.',
         }
         setCallResults(mockResults)
         setShowResults(true)
@@ -499,6 +508,8 @@ export default function PracticePage() {
       case 'Advanced':
       case 'Deal Recovery':
         return RotateCcw
+      case 'Special Ops':
+        return Briefcase
       default:
         return Star
     }

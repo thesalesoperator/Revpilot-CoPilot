@@ -141,13 +141,13 @@ export async function GET() {
 // Helper to get ElevenLabs voice ID for persona
 function getVoiceIdForPersona(personaId: string): string {
   const voiceMap: Record<string, string> = {
-    'skeptical-cfo': '21m00Tcm4TlvDq8ikWAM', // Rachel - professional male
+    'skeptical-cfo': '21m00Tcm4TlvDq8ikWAM', // Rachel - professional female
     'startup-founder': 'EXAVITQu4vr4xnSDxMaL', // Bella - energetic female
     'technical-gatekeeper': 'VR6AewLTigWG4xSOukaG', // Arnold - technical male
     'friendly-champion': 'MF3mGyEYCl7XYWbV9V6O', // Elli - warm female
     'hostile-executive': 'TxGEqnHWrfWFTfGW9XjX', // Josh - authoritative male
     'procurement-buyer': 'XB0fDUnXU5powFXDhCwa', // Charlotte - professional female
-    'mad-scientist': 'DUnzBkwtjRWXPr6wRbmL', // Mad scientist voice - eccentric
+    'mad-scientist': 'DUnzBkwtjRWXPr6wRbmL', // Viktor - eccentric scientist
   }
   return voiceMap[personaId] || '21m00Tcm4TlvDq8ikWAM'
 }
