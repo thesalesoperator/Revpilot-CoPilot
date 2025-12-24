@@ -67,12 +67,9 @@ export async function POST(request: NextRequest) {
 
     // Build Vapi configuration
     // The actual Vapi call will be initiated from the frontend
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000'
-
+    // Note: serverUrl is configured in Vapi Dashboard, not here
     const vapiConfig = {
-      // Vapi assistant configuration will be created dynamically
+      // Vapi assistant configuration
       assistant: {
         name: persona.name,
         voice: {
@@ -90,15 +87,12 @@ export async function POST(request: NextRequest) {
           ],
         },
         firstMessage: getFirstMessage(persona),
-        // Webhook configuration for server-side events
-        serverUrl: `${baseUrl}/api/practice/vapi/webhook`,
-        serverUrlSecret: process.env.VAPI_WEBHOOK_SECRET,
-        // Metadata to identify the session in webhooks
-        metadata: {
-          session_id: session.id,
-          user_id: user.id,
-          challenge_id: body.challenge_id,
-        },
+      },
+      // Metadata at call level (not inside assistant) to identify session in webhooks
+      metadata: {
+        session_id: session.id,
+        user_id: user.id,
+        challenge_id: body.challenge_id,
       },
     }
 

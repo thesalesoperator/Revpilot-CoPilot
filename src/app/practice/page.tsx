@@ -335,7 +335,12 @@ export default function PracticePage() {
       })
 
       // Start the call with the assistant config
-      await vapiRef.current.start(data.vapi_config.assistant)
+      // Metadata is passed to identify the session in webhooks
+      const assistantConfig = {
+        ...data.vapi_config.assistant,
+        metadata: data.vapi_config.metadata,
+      }
+      await vapiRef.current.start(assistantConfig)
     } catch (error) {
       console.error('Error starting call:', error)
       showToast('error', 'Failed to start call: ' + (error instanceof Error ? error.message : 'Unknown error'))
