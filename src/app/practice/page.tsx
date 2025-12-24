@@ -190,11 +190,11 @@ export default function PracticePage() {
         setUserStats(data.stats)
         setXpToNextLevel(data.xp_to_next_level)
 
-        // Update challenges with unlock status
+        // Update challenges with unlock status (pass user email for VIP check)
         const unlockedChallenges = getUnlockedChallenges({
           hard_completed: data.stats.hard_completed || 0,
           expert_completed: data.stats.expert_completed || 0,
-        })
+        }, user?.email)
         setChallenges(unlockedChallenges)
       }
     } catch (error) {
@@ -202,7 +202,7 @@ export default function PracticePage() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [user?.email])
 
   // Initial load
   useEffect(() => {

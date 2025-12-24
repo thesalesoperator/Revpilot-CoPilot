@@ -854,12 +854,20 @@ export function getChallengesByDifficulty(difficulty: string): Challenge[] {
   return CHALLENGES.filter(c => c.difficulty === difficulty)
 }
 
+// VIP users who have all challenges unlocked
+const VIP_EMAILS = [
+  'mariah@revpilot.co',
+]
+
 // Helper to get unlocked challenges based on user stats
-export function getUnlockedChallenges(userStats: { hard_completed: number; expert_completed: number }): Challenge[] {
+export function getUnlockedChallenges(userStats: { hard_completed: number; expert_completed: number }, userEmail?: string): Challenge[] {
+  // VIP users get all challenges unlocked
+  const isVIP = userEmail && VIP_EMAILS.includes(userEmail.toLowerCase())
+
   return CHALLENGES.map(challenge => {
     let isLocked = false
 
-    if (challenge.unlockRequirement) {
+    if (challenge.unlockRequirement && !isVIP) {
       if (challenge.unlockRequirement.includes('3 Hard')) {
         isLocked = userStats.hard_completed < 3
       } else if (challenge.unlockRequirement.includes('5 Hard')) {
