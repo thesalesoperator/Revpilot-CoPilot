@@ -58,6 +58,7 @@ interface CallState {
   duration: number
   isMuted: boolean
   transcript: Array<{ role: 'user' | 'assistant'; text: string }>
+  liveObjectivesCompleted: string[] // Real-time objective tracking
 }
 
 interface CallResults {
@@ -94,6 +95,7 @@ export default function PracticePage() {
     duration: 0,
     isMuted: false,
     transcript: [],
+    liveObjectivesCompleted: [],
   })
   const [userStats, setUserStats] = useState<UserPracticeStats | null>(null)
   const [xpToNextLevel, setXpToNextLevel] = useState(0)
@@ -106,6 +108,8 @@ export default function PracticePage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const ringAudioRef = useRef<HTMLAudioElement | null>(null)
   const ringIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const lastObjectiveCheckRef = useRef<number>(0)
+  const objectiveCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const { user } = useAuth()
   const { showToast } = useToast()
@@ -228,6 +232,69 @@ export default function PracticePage() {
     }
   }, [callState.status])
 
+  // Real-time objective checking
+  const checkObjectivesRealTime = useCallback(async () => {
+    if (!selectedChallenge || callState.transcript.length < 2) return
+
+    // Debounce: only check every 8 seconds minimum
+    const now = Date.now()
+    if (now - lastObjectiveCheckRef.current < 8000) return
+    lastObjectiveCheckRef.current = now
+
+    const transcriptText = callState.transcript
+      .map(t => `${t.role.toUpperCase()}: ${t.text}`)
+      .join('\n\n')
+
+    try {
+      const response = await fetch('/api/practice/objectives', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcript: transcriptText,
+          objectives: selectedChallenge.objectives,
+          challenge_context: `Challenge: ${selectedChallenge.name}\nDescription: ${selectedChallenge.description}`,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.completed && Array.isArray(data.completed)) {
+          setCallState(prev => ({
+            ...prev,
+            liveObjectivesCompleted: data.completed,
+          }))
+        }
+      }
+    } catch (error) {
+      console.error('Error checking objectives:', error)
+    }
+  }, [selectedChallenge, callState.transcript])
+
+  // Run objective checking during active calls
+  useEffect(() => {
+    if (callState.status === 'active' && selectedChallenge) {
+      // Check objectives every 10 seconds during active call
+      objectiveCheckIntervalRef.current = setInterval(() => {
+        checkObjectivesRealTime()
+      }, 10000)
+
+      // Also check when transcript changes significantly
+      if (callState.transcript.length >= 4) {
+        checkObjectivesRealTime()
+      }
+    } else {
+      if (objectiveCheckIntervalRef.current) {
+        clearInterval(objectiveCheckIntervalRef.current)
+        objectiveCheckIntervalRef.current = null
+      }
+    }
+    return () => {
+      if (objectiveCheckIntervalRef.current) {
+        clearInterval(objectiveCheckIntervalRef.current)
+      }
+    }
+  }, [callState.status, callState.transcript.length, selectedChallenge, checkObjectivesRealTime])
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -243,7 +310,9 @@ export default function PracticePage() {
       duration: 0,
       isMuted: false,
       transcript: [],
+      liveObjectivesCompleted: [],
     })
+    lastObjectiveCheckRef.current = 0
 
     try {
       // Request microphone permission first
@@ -490,7 +559,9 @@ export default function PracticePage() {
       duration: 0,
       isMuted: false,
       transcript: [],
+      liveObjectivesCompleted: [],
     })
+    lastObjectiveCheckRef.current = 0
     setShowResults(false)
     setCallResults(null)
     setCurrentSession(null)
@@ -729,16 +800,36 @@ export default function PracticePage() {
                   <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
                     <Target className="w-4 h-4 text-[#00ffc1]" />
                     Objectives
+                    {callState.status === 'active' && callState.liveObjectivesCompleted.length > 0 && (
+                      <span className="text-xs text-[#00ffc1] ml-auto">
+                        {callState.liveObjectivesCompleted.length}/{selectedChallenge.objectives.length}
+                      </span>
+                    )}
                   </h4>
                   <ul className="space-y-2">
-                    {selectedChallenge.objectives.map((obj, i) => (
-                      <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center text-xs text-gray-500 mt-0.5">
-                          {i + 1}
-                        </div>
-                        {obj}
-                      </li>
-                    ))}
+                    {selectedChallenge.objectives.map((obj, i) => {
+                      const isCompleted = callState.liveObjectivesCompleted.includes(obj)
+                      const isActive = callState.status === 'active'
+                      return (
+                        <li
+                          key={i}
+                          className={`text-sm flex items-start gap-2 transition-all duration-300 ${
+                            isCompleted ? 'text-[#00ffc1]' : 'text-gray-400'
+                          }`}
+                        >
+                          {isActive && isCompleted ? (
+                            <div className="w-5 h-5 rounded-full bg-[#00ffc1]/20 flex items-center justify-center mt-0.5">
+                              <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                            </div>
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center text-xs text-gray-500 mt-0.5">
+                              {i + 1}
+                            </div>
+                          )}
+                          <span className={isCompleted ? 'font-medium' : ''}>{obj}</span>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
 
