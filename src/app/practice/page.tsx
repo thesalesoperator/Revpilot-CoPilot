@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import Vapi from '@vapi-ai/web'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import ActiveCallOverlay from '@/components/practice/ActiveCallOverlay'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { CHALLENGES, PERSONAS, getUnlockedChallenges } from '@/lib/practice/challenges'
@@ -103,6 +104,7 @@ export default function PracticePage() {
   const [callResults, setCallResults] = useState<CallResults | null>(null)
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [callNotes, setCallNotes] = useState('')
 
   const vapiRef = useRef<VapiInstance | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -313,6 +315,7 @@ export default function PracticePage() {
       liveObjectivesCompleted: [],
     })
     lastObjectiveCheckRef.current = 0
+    setCallNotes('')
 
     try {
       // Request microphone permission first
@@ -614,8 +617,29 @@ export default function PracticePage() {
     )
   }
 
+  // Determine if we should show the full-screen call overlay
+  const showCallOverlay = selectedChallenge &&
+    (callState.status === 'connecting' || callState.status === 'active' ||
+     ((callState.status === 'ended' || callState.status === 'analyzing') && !showResults))
+
   return (
     <DashboardLayout>
+      {/* Full-screen call overlay */}
+      {showCallOverlay && (
+        <ActiveCallOverlay
+          challenge={selectedChallenge}
+          callStatus={callState.status as 'connecting' | 'active' | 'ended' | 'analyzing'}
+          duration={callState.duration}
+          isMuted={callState.isMuted}
+          transcript={callState.transcript}
+          liveObjectivesCompleted={callState.liveObjectivesCompleted}
+          notes={callNotes}
+          onNotesChange={setCallNotes}
+          onToggleMute={toggleMute}
+          onEndCall={endCall}
+        />
+      )}
+
       <div className="space-y-6 max-w-7xl">
         {/* Header */}
         <div className="flex items-center justify-between">
