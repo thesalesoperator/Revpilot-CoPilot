@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
           // ElevenLabs v3 settings for more natural speech
           stability: 0.4, // Lower = more emotional range
           similarityBoost: 0.75,
+          speed: 0.92, // Slightly slower for natural pacing
         },
         model: {
           provider: 'openai' as const,
@@ -113,6 +114,7 @@ export async function POST(request: NextRequest) {
         backgroundSound: 'off', // No background noise
         backchannelingEnabled: true, // Natural "mm-hmm" responses
         interruptionsEnabled: true, // Allow persona to interrupt
+        responseDelaySeconds: 0.5, // Slight pause before responding (feels like thinking)
       },
       // Metadata at call level (not inside assistant) to identify session in webhooks
       metadata: {
