@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         firstMessage: getFirstMessage(persona),
         // Conversation settings for realism
         silenceTimeoutSeconds: 10, // Wait longer before assuming they're done
-        maxDurationSeconds: 1200, // 20 min max
+        maxDurationSeconds: 2700, // 45 min max
         backgroundSound: 'off', // No background noise
         backchannelingEnabled: true, // Natural "mm-hmm" responses
         interruptionsEnabled: true, // Allow persona to interrupt
