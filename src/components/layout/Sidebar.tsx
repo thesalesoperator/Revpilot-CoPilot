@@ -15,9 +15,11 @@ import {
   Zap,
   Trophy,
   Star,
+  Building2,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
+import OrganizationSwitcher from '@/components/organization/OrganizationSwitcher'
 
 // Simplified navigation - 6 main items with enhanced data
 const navItems = [
@@ -140,6 +142,11 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Organization Switcher */}
+      <div className="px-4 py-3 border-b border-[rgba(94,234,212,0.1)]">
+        <OrganizationSwitcher />
       </div>
 
       {/* Navigation */}
