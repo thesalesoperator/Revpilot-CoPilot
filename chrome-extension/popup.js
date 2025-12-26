@@ -1,6 +1,6 @@
 // RevPilot Sales Coach - Popup Script
 
-const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
+const API_BASE = 'https://revpilot-copilot.netlify.app'
 
 document.addEventListener('DOMContentLoaded', init)
 

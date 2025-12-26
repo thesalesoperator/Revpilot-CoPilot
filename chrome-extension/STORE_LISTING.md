@@ -78,10 +78,10 @@ English
 ---
 
 ## Privacy Policy URL
-https://revpilot-commission-calculator.netlify.app/privacy
+https://revpilot-copilot.netlify.app/privacy
 
 ## Support URL (optional)
-https://revpilot-commission-calculator.netlify.app/settings
+https://revpilot-copilot.netlify.app/settings
 
 ---
 

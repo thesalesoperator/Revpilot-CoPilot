@@ -1,6 +1,6 @@
 // RevPilot Sales Coach - Background Service Worker
 
-const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
+const API_BASE = 'https://revpilot-copilot.netlify.app'
 
 // Listen for messages from content script or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

@@ -5,8 +5,8 @@ import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RevPilot - Commission Calculator & Tracker",
-  description: "Track your sales commissions and project your earnings with RevPilot",
+  title: "RevPilot Copilot - AI Sales Performance Platform",
+  description: "AI-powered sales enablement platform with commission tracking, roleplay practice, and real-time call coaching",
 };
 
 export default function RootLayout({

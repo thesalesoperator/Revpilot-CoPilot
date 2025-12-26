@@ -77,4 +77,4 @@ Then follow steps 3-7 above.
 
 ## Support
 
-For help or feedback, visit [RevPilot Dashboard](https://revpilot-commission-calculator.netlify.app) or contact support.
+For help or feedback, visit [RevPilot Dashboard](https://revpilot-copilot.netlify.app) or contact support.
