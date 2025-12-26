@@ -14,6 +14,7 @@ async function init() {
 
   if (authToken && userId) {
     showLoggedIn(userEmail)
+    await loadOrganizations()
     loadStats()
   } else {
     showLoginForm()
@@ -29,6 +30,7 @@ async function init() {
   document.getElementById('openDashboard').addEventListener('click', () => {
     chrome.tabs.create({ url: `${API_BASE}/settings` })
   })
+  document.getElementById('orgSelect').addEventListener('change', handleOrgChange)
 
   // Enter key to submit
   document.getElementById('password').addEventListener('keypress', (e) => {
@@ -99,6 +101,7 @@ async function handleLogin() {
     })
 
     showLoggedIn(data.user.email)
+    await loadOrganizations()
     loadStats()
 
     // Sync keywords to content script
@@ -113,7 +116,14 @@ async function handleLogin() {
 }
 
 async function handleLogout() {
-  await chrome.storage.local.remove(['authToken', 'userId', 'userEmail', 'keywords'])
+  await chrome.storage.local.remove([
+    'authToken',
+    'userId',
+    'userEmail',
+    'keywords',
+    'organizations',
+    'selectedOrganizationId'
+  ])
   showLoginForm()
 }
 
@@ -145,9 +155,87 @@ function updateOverlayButton(isActive) {
   }
 }
 
+// Load and populate organizations dropdown
+async function loadOrganizations() {
+  const { authToken, selectedOrganizationId } = await chrome.storage.local.get([
+    'authToken',
+    'selectedOrganizationId'
+  ])
+
+  if (!authToken) return
+
+  try {
+    const response = await fetch(`${API_BASE}/api/close/organizations`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      const organizations = data.organizations || []
+
+      // Store orgs locally
+      await chrome.storage.local.set({ organizations })
+
+      // Populate dropdown
+      populateOrgDropdown(organizations, selectedOrganizationId)
+    }
+  } catch (error) {
+    console.error('Error loading organizations:', error)
+  }
+}
+
+function populateOrgDropdown(organizations, selectedId) {
+  const select = document.getElementById('orgSelect')
+
+  // Clear existing options except the first one (Personal)
+  while (select.options.length > 1) {
+    select.remove(1)
+  }
+
+  // Add organization options
+  organizations.forEach(org => {
+    const option = document.createElement('option')
+    option.value = org.id
+    option.textContent = org.name
+    if (org.role === 'owner') {
+      option.textContent += ' (Owner)'
+    } else if (org.role === 'admin') {
+      option.textContent += ' (Admin)'
+    }
+    select.appendChild(option)
+  })
+
+  // Set selected value
+  if (selectedId) {
+    select.value = selectedId
+  }
+}
+
+// Handle organization change
+async function handleOrgChange(e) {
+  const selectedOrgId = e.target.value || null
+
+  // Store selection
+  await chrome.storage.local.set({
+    selectedOrganizationId: selectedOrgId
+  })
+
+  // Refresh keywords for new org
+  const { authToken } = await chrome.storage.local.get(['authToken'])
+  if (authToken) {
+    syncKeywords(authToken, selectedOrgId)
+  }
+}
+
 async function loadStats() {
   try {
-    const { authToken, keywords } = await chrome.storage.local.get(['authToken', 'keywords'])
+    const { authToken, keywords, selectedOrganizationId } = await chrome.storage.local.get([
+      'authToken',
+      'keywords',
+      'selectedOrganizationId'
+    ])
 
     // Show keyword count
     const keywordList = keywords || []
@@ -155,15 +243,7 @@ async function loadStats() {
 
     // Fetch fresh keywords from API
     if (authToken) {
-      chrome.runtime.sendMessage(
-        { action: 'fetchKeywords', authToken },
-        (response) => {
-          if (response?.keywords) {
-            chrome.storage.local.set({ keywords: response.keywords })
-            document.getElementById('keywordCount').textContent = response.keywords.length
-          }
-        }
-      )
+      syncKeywords(authToken, selectedOrganizationId)
     }
 
     // Chat count would come from analytics - for now show 0
@@ -173,9 +253,14 @@ async function loadStats() {
   }
 }
 
-async function syncKeywords(authToken) {
+async function syncKeywords(authToken, organizationId = null) {
   try {
-    const response = await fetch(`${API_BASE}/api/close/keywords`, {
+    let url = `${API_BASE}/api/close/keywords`
+    if (organizationId) {
+      url += `?organization_id=${organizationId}`
+    }
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${authToken}`,

@@ -5,27 +5,40 @@ const API_BASE = 'https://revpilot-copilot.netlify.app'
 let authToken = null
 let userEmail = null
 let keywords = []
+let organizations = []
+let selectedOrganizationId = null
+let canManageOrgKeywords = false
 
 // Initialize
 document.addEventListener('DOMContentLoaded', init)
 
 async function init() {
   // Load auth state
-  const storage = await chrome.storage.local.get(['authToken', 'userEmail', 'keywords'])
+  const storage = await chrome.storage.local.get([
+    'authToken',
+    'userEmail',
+    'keywords',
+    'organizations',
+    'selectedOrganizationId'
+  ])
   authToken = storage.authToken
   userEmail = storage.userEmail
   keywords = storage.keywords || []
+  organizations = storage.organizations || []
+  selectedOrganizationId = storage.selectedOrganizationId || null
 
   updateAuthUI()
-  renderKeywords()
+
+  if (authToken) {
+    await loadOrganizations()
+    updateOrgUI()
+    fetchKeywords()
+  } else {
+    renderKeywords()
+  }
 
   // Event listeners
   setupEventListeners()
-
-  // Fetch fresh keywords if authenticated
-  if (authToken) {
-    fetchKeywords()
-  }
 }
 
 function setupEventListeners() {
@@ -42,6 +55,9 @@ function setupEventListeners() {
 
   // Auth button
   document.getElementById('authBtn').addEventListener('click', handleAuthClick)
+
+  // Organization selector
+  document.getElementById('orgSelect').addEventListener('change', handleOrgChange)
 
   // Edit modal
   document.getElementById('closeModal').addEventListener('click', () => hideModal('editModal'))
@@ -68,17 +84,20 @@ function updateAuthUI() {
   const authDot = document.getElementById('authDot')
   const authText = document.getElementById('authText')
   const authBtn = document.getElementById('authBtn')
+  const orgSection = document.getElementById('orgSelectorSection')
 
   if (authToken && userEmail) {
     authDot.classList.remove('disconnected')
     authDot.classList.add('connected')
     authText.innerHTML = `Signed in as <strong>${escapeHtml(userEmail)}</strong>`
     authBtn.textContent = 'Sign Out'
+    orgSection.style.display = 'block'
   } else {
     authDot.classList.remove('connected')
     authDot.classList.add('disconnected')
     authText.textContent = 'Not signed in'
     authBtn.textContent = 'Sign In'
+    orgSection.style.display = 'none'
   }
 }
 
@@ -86,10 +105,19 @@ function updateAuthUI() {
 function handleAuthClick() {
   if (authToken) {
     // Sign out
-    chrome.storage.local.remove(['authToken', 'userId', 'userEmail', 'keywords'])
+    chrome.storage.local.remove([
+      'authToken',
+      'userId',
+      'userEmail',
+      'keywords',
+      'organizations',
+      'selectedOrganizationId'
+    ])
     authToken = null
     userEmail = null
     keywords = []
+    organizations = []
+    selectedOrganizationId = null
     updateAuthUI()
     renderKeywords()
     showMessage('Signed out successfully', 'success')
@@ -99,12 +127,106 @@ function handleAuthClick() {
   }
 }
 
+// Load organizations
+async function loadOrganizations() {
+  if (!authToken) return
+
+  try {
+    const response = await fetch(`${API_BASE}/api/close/organizations`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      organizations = data.organizations || []
+      await chrome.storage.local.set({ organizations })
+    }
+  } catch (error) {
+    console.error('Error loading organizations:', error)
+  }
+}
+
+// Update organization UI
+function updateOrgUI() {
+  const select = document.getElementById('orgSelect')
+  const orgInfo = document.getElementById('orgInfo')
+
+  // Clear existing options except the first one
+  while (select.options.length > 1) {
+    select.remove(1)
+  }
+
+  // Add organization options
+  organizations.forEach(org => {
+    const option = document.createElement('option')
+    option.value = org.id
+    option.textContent = org.name
+    if (org.role === 'owner') {
+      option.textContent += ' (Owner)'
+    } else if (org.role === 'admin') {
+      option.textContent += ' (Admin)'
+    }
+    select.appendChild(option)
+  })
+
+  // Set selected value
+  if (selectedOrganizationId) {
+    select.value = selectedOrganizationId
+  }
+
+  // Update info text and permissions
+  updateOrgInfoText()
+}
+
+function updateOrgInfoText() {
+  const orgInfo = document.getElementById('orgInfo')
+
+  if (selectedOrganizationId) {
+    const org = organizations.find(o => o.id === selectedOrganizationId)
+    if (org) {
+      canManageOrgKeywords = org.can_manage_keywords
+      if (canManageOrgKeywords) {
+        orgInfo.textContent = `You can add keywords for "${org.name}" (shared with all members).`
+        orgInfo.classList.add('admin')
+      } else {
+        orgInfo.textContent = `Viewing keywords for "${org.name}". Only admins can add org keywords.`
+        orgInfo.classList.remove('admin')
+      }
+    }
+  } else {
+    canManageOrgKeywords = false
+    orgInfo.textContent = 'Keywords will be saved to your personal account.'
+    orgInfo.classList.remove('admin')
+  }
+}
+
+// Handle organization change
+async function handleOrgChange(e) {
+  selectedOrganizationId = e.target.value || null
+
+  // Store selection
+  await chrome.storage.local.set({ selectedOrganizationId })
+
+  // Update info text
+  updateOrgInfoText()
+
+  // Fetch keywords for new org
+  await fetchKeywords()
+}
+
 // Fetch keywords from API
 async function fetchKeywords() {
   if (!authToken) return
 
   try {
-    const response = await fetch(`${API_BASE}/api/close/keywords`, {
+    let url = `${API_BASE}/api/close/keywords`
+    if (selectedOrganizationId) {
+      url += `?organization_id=${selectedOrganizationId}`
+    }
+
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${authToken}`
       }
@@ -115,6 +237,7 @@ async function fetchKeywords() {
       keywords = data.keywords || []
       await chrome.storage.local.set({ keywords })
       renderKeywords()
+      syncToContentScript()
     } else if (response.status === 401) {
       // Token expired
       handleAuthClick()
@@ -143,18 +266,36 @@ async function handleAddKeyword(e) {
     return
   }
 
+  // Check if adding org keyword without permission
+  if (selectedOrganizationId && !canManageOrgKeywords) {
+    showMessage('Only organization admins can add keywords for the organization', 'error')
+    return
+  }
+
   const addBtn = document.getElementById('addBtn')
   addBtn.disabled = true
   addBtn.textContent = 'Adding...'
 
   try {
+    const payload = {
+      keyword,
+      video_title: videoTitle,
+      video_url: videoUrl,
+      description
+    }
+
+    // Add organization_id if selected and user has permission
+    if (selectedOrganizationId && canManageOrgKeywords) {
+      payload.organization_id = selectedOrganizationId
+    }
+
     const response = await fetch(`${API_BASE}/api/close/keywords`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ keyword, video_title: videoTitle, video_url: videoUrl, description })
+      body: JSON.stringify(payload)
     })
 
     if (response.ok) {
@@ -213,37 +354,48 @@ function renderKeywords(searchQuery = '') {
     return
   }
 
-  container.innerHTML = filteredKeywords.map(kw => `
-    <div class="keyword-item" data-id="${kw.id}">
-      <div class="keyword-color" style="background: ${kw.highlight_color || '#5eead4'}"></div>
-      <div class="keyword-info">
-        <div class="keyword-text">${escapeHtml(kw.keyword)}</div>
-        <div class="keyword-meta">
-          <a href="${escapeHtml(kw.video_url)}" target="_blank">${escapeHtml(kw.video_title)}</a>
+  container.innerHTML = filteredKeywords.map(kw => {
+    const isOrgKeyword = !!kw.organization_id
+    const orgBadge = isOrgKeyword ? '<span class="keyword-org-badge">Org</span>' : ''
+
+    return `
+      <div class="keyword-item" data-id="${kw.id}">
+        <div class="keyword-color" style="background: ${kw.highlight_color || '#5eead4'}"></div>
+        <div class="keyword-info">
+          <div class="keyword-text">${escapeHtml(kw.keyword)}${orgBadge}</div>
+          <div class="keyword-meta">
+            <a href="${escapeHtml(kw.video_url)}" target="_blank">${escapeHtml(kw.video_title)}</a>
+          </div>
+        </div>
+        <div class="keyword-actions">
+          <button class="keyword-btn edit" title="Edit" onclick="editKeyword('${kw.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="keyword-btn delete" title="Delete" onclick="deleteKeyword('${kw.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+            </svg>
+          </button>
         </div>
       </div>
-      <div class="keyword-actions">
-        <button class="keyword-btn edit" title="Edit" onclick="editKeyword('${kw.id}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-          </svg>
-        </button>
-        <button class="keyword-btn delete" title="Delete" onclick="deleteKeyword('${kw.id}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-  `).join('')
+    `
+  }).join('')
 }
 
 // Edit keyword
 window.editKeyword = function(id) {
   const kw = keywords.find(k => k.id === id)
   if (!kw) return
+
+  // Check if user can edit org keywords
+  if (kw.organization_id && !canManageOrgKeywords) {
+    showMessage('Only organization admins can edit organization keywords', 'error')
+    return
+  }
 
   document.getElementById('editId').value = kw.id
   document.getElementById('editKeyword').value = kw.keyword
@@ -310,6 +462,15 @@ async function handleSaveEdit() {
 // Delete keyword
 window.deleteKeyword = async function(id) {
   if (!authToken) return
+
+  const kw = keywords.find(k => k.id === id)
+
+  // Check if user can delete org keywords
+  if (kw && kw.organization_id && !canManageOrgKeywords) {
+    showMessage('Only organization admins can delete organization keywords', 'error')
+    return
+  }
+
   if (!confirm('Are you sure you want to delete this keyword?')) return
 
   try {
@@ -398,18 +559,25 @@ async function handleImport() {
     }
 
     try {
+      const payload = {
+        keyword: item.keyword,
+        video_title: item.video_title,
+        video_url: item.video_url,
+        description: item.description || ''
+      }
+
+      // Add org if selected and user has permission
+      if (selectedOrganizationId && canManageOrgKeywords) {
+        payload.organization_id = selectedOrganizationId
+      }
+
       const response = await fetch(`${API_BASE}/api/close/keywords`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          keyword: item.keyword,
-          video_title: item.video_title,
-          video_url: item.video_url,
-          description: item.description || ''
-        })
+        body: JSON.stringify(payload)
       })
 
       if (response.ok) {

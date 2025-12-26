@@ -521,6 +521,86 @@
       padding: 16px 20px;
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
+
+    /* Organization Selector */
+    .org-selector-section {
+      background: #141415;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .org-selector-section label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .org-select-wrapper {
+      position: relative;
+      max-width: 400px;
+    }
+
+    .org-select {
+      width: 100%;
+      background: #0a0a0b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 40px 12px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .org-select:focus {
+      border-color: rgba(94, 234, 212, 0.5);
+    }
+
+    .org-select option {
+      background: #141415;
+      color: #fff;
+      padding: 10px;
+    }
+
+    .org-select-arrow {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: #6b7280;
+    }
+
+    .org-select-arrow svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .org-info {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .org-info.admin {
+      color: #5eead4;
+    }
+
+    .keyword-org-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 6px;
+      margin-left: 8px;
+      background: rgba(94, 234, 212, 0.1);
+      color: #5eead4;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 <body>
@@ -544,6 +624,22 @@
         <span class="auth-text" id="authText">Not signed in</span>
       </div>
       <button class="auth-btn" id="authBtn">Sign In</button>
+    </div>
+
+    <!-- Organization Selector -->
+    <div class="org-selector-section" id="orgSelectorSection" style="display: none;">
+      <label for="orgSelect">Select Organization</label>
+      <div class="org-select-wrapper">
+        <select class="org-select" id="orgSelect">
+          <option value="">Personal (No Organization)</option>
+        </select>
+        <span class="org-select-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+      </div>
+      <p class="org-info" id="orgInfo">Keywords will be saved to your personal account.</p>
     </div>
 
     <!-- Message -->
