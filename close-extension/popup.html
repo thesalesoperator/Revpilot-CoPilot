@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevPilot Close Co-Pilot</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0b;
+      color: #e5e7eb;
+    }
+
+    .popup-container {
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(94, 234, 212, 0.1);
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: #5eead4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo svg {
+      width: 24px;
+      height: 24px;
+      color: #0a0a0b;
+    }
+
+    .title h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 2px;
+    }
+
+    .title p {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* Login Form */
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .login-form.hidden {
+      display: none;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    .form-group input {
+      background: #141415;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: rgba(94, 234, 212, 0.5);
+    }
+
+    .form-group input::placeholder {
+      color: #6b7280;
+    }
+
+    .btn-primary {
+      background: #5eead4;
+      color: #0a0a0b;
+      border: none;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #4fd1c5;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9ca3af;
+      padding: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #f87171;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    /* Logged In State */
+    .logged-in {
+      display: none;
+    }
+
+    .logged-in.show {
+      display: block;
+    }
+
+    .user-info {
+      background: rgba(94, 234, 212, 0.05);
+      border: 1px solid rgba(94, 234, 212, 0.1);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .user-email {
+      font-size: 14px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .user-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #5eead4;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #5eead4;
+    }
+
+    /* Toggle Section */
+    .toggle-section {
+      margin-bottom: 16px;
+    }
+
+    .toggle-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #141415;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn:hover {
+      border-color: rgba(94, 234, 212, 0.3);
+    }
+
+    .toggle-btn.active {
+      border-color: #5eead4;
+      background: rgba(94, 234, 212, 0.05);
+    }
+
+    .toggle-btn .label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .toggle-btn .icon {
+      font-size: 18px;
+    }
+
+    .toggle-indicator {
+      width: 40px;
+      height: 22px;
+      background: #374151;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle-indicator::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: #9ca3af;
+      transition: all 0.2s;
+    }
+
+    .toggle-btn.active .toggle-indicator {
+      background: #5eead4;
+    }
+
+    .toggle-btn.active .toggle-indicator::after {
+      left: 21px;
+      background: #0a0a0b;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 14px;
+      color: #9ca3af;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .action-btn .icon {
+      font-size: 16px;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: #141415;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-number {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      color: #5eead4;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+
+    .footer a {
+      color: #5eead4;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-text {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+      <div class="title">
+        <h1>Close CRM Co-Pilot</h1>
+        <p>AI-powered sales assistant</p>
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="login-form" id="loginForm">
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="your@email.com" />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Your password" />
+      </div>
+
+      <button class="btn-primary" id="loginBtn">Sign In</button>
+
+      <div class="footer">
+        <a href="https://revpilot-copilot.netlify.app/signup" target="_blank">
+          Don't have an account? Sign up
+        </a>
+      </div>
+    </div>
+
+    <!-- Logged In State -->
+    <div class="logged-in" id="loggedIn">
+      <div class="user-info">
+        <div class="user-email" id="userEmail">user@example.com</div>
+        <div class="user-status">
+          <span class="status-dot"></span>
+          <span>Connected to RevPilot</span>
+        </div>
+      </div>
+
+      <div class="toggle-section">
+        <button class="toggle-btn" id="toggleOverlay">
+          <span class="label">
+            <span class="icon">💬</span>
+            <span>AI Assistant</span>
+          </span>
+          <span class="toggle-indicator"></span>
+        </button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <span class="stat-number" id="keywordCount">0</span>
+          <span class="stat-label">Keywords</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="chatCount">0</span>
+          <span class="stat-label">Chats Today</span>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-btn" id="manageKeywords">
+          <span class="icon">🏷️</span>
+          <span>Manage Keywords</span>
+        </button>
+        <button class="action-btn" id="openDashboard">
+          <span class="icon">📊</span>
+          <span>Open Dashboard</span>
+        </button>
+      </div>
+
+      <button class="btn-secondary" id="logoutBtn">Sign Out</button>
+
+      <div class="footer">
+        <a href="https://revpilot-copilot.netlify.app/settings" target="_blank">
+          RevPilot Settings
+        </a>
+        <p class="footer-text">Close CRM Co-Pilot v1.0.0</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

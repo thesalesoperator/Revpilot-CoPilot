@@ -1,0 +1,553 @@
+/* RevPilot Close CRM Co-Pilot - Content Script Styles */
+
+/* CSS Variables */
+:root {
+  --revpilot-bg: #0a0a0b;
+  --revpilot-bg-secondary: #141415;
+  --revpilot-bg-tertiary: #1f1f21;
+  --revpilot-accent: #5eead4;
+  --revpilot-accent-hover: #4fd1c5;
+  --revpilot-text: #e5e7eb;
+  --revpilot-text-muted: #9ca3af;
+  --revpilot-text-dim: #6b7280;
+  --revpilot-border: rgba(255, 255, 255, 0.1);
+  --revpilot-border-accent: rgba(94, 234, 212, 0.3);
+  --revpilot-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --revpilot-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Floating Overlay Container */
+.revpilot-overlay {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 380px;
+  max-height: 550px;
+  background: var(--revpilot-bg);
+  border: 1px solid var(--revpilot-border);
+  box-shadow: var(--revpilot-shadow);
+  font-family: var(--revpilot-font);
+  z-index: 2147483647;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.revpilot-overlay.minimized {
+  width: 60px;
+  height: 60px;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.revpilot-overlay.minimized .revpilot-header,
+.revpilot-overlay.minimized .revpilot-content {
+  display: none;
+}
+
+/* Minimized Button */
+.revpilot-minimized-btn {
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: var(--revpilot-accent);
+  border: none;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.revpilot-overlay.minimized .revpilot-minimized-btn {
+  display: flex;
+}
+
+.revpilot-minimized-btn:hover {
+  background: var(--revpilot-accent-hover);
+}
+
+.revpilot-minimized-btn svg {
+  width: 28px;
+  height: 28px;
+  color: var(--revpilot-bg);
+}
+
+/* Header */
+.revpilot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--revpilot-bg-secondary);
+  border-bottom: 1px solid var(--revpilot-border);
+  cursor: move;
+  user-select: none;
+}
+
+.revpilot-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.revpilot-logo {
+  width: 32px;
+  height: 32px;
+  background: var(--revpilot-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.revpilot-logo svg {
+  width: 18px;
+  height: 18px;
+  color: var(--revpilot-bg);
+}
+
+.revpilot-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.revpilot-subtitle {
+  font-size: 11px;
+  color: var(--revpilot-text-dim);
+  margin: 0;
+}
+
+.revpilot-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.revpilot-header-btn {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--revpilot-border);
+  color: var(--revpilot-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.revpilot-header-btn:hover {
+  background: var(--revpilot-bg-tertiary);
+  color: #fff;
+  border-color: var(--revpilot-border-accent);
+}
+
+.revpilot-header-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Content Area */
+.revpilot-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Tabs */
+.revpilot-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--revpilot-border);
+}
+
+.revpilot-tab {
+  flex: 1;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: var(--revpilot-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.revpilot-tab:hover {
+  color: var(--revpilot-text);
+  background: var(--revpilot-bg-secondary);
+}
+
+.revpilot-tab.active {
+  color: var(--revpilot-accent);
+}
+
+.revpilot-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--revpilot-accent);
+}
+
+/* Tab Panels */
+.revpilot-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.revpilot-panel.active {
+  display: flex;
+}
+
+/* Chat Panel */
+.revpilot-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.revpilot-message {
+  max-width: 90%;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+.revpilot-message.bot {
+  background: var(--revpilot-bg-secondary);
+  border: 1px solid var(--revpilot-border);
+  color: var(--revpilot-text);
+  align-self: flex-start;
+}
+
+.revpilot-message.user {
+  background: var(--revpilot-accent);
+  color: var(--revpilot-bg);
+  align-self: flex-end;
+}
+
+.revpilot-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.revpilot-message.typing {
+  display: flex;
+  gap: 4px;
+  padding: 14px;
+}
+
+.revpilot-typing-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--revpilot-text-muted);
+  border-radius: 50%;
+  animation: revpilot-typing 1.4s infinite;
+}
+
+.revpilot-typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.revpilot-typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes revpilot-typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* Chat Input */
+.revpilot-chat-input-container {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--revpilot-border);
+  background: var(--revpilot-bg-secondary);
+}
+
+.revpilot-chat-input {
+  flex: 1;
+  background: var(--revpilot-bg);
+  border: 1px solid var(--revpilot-border);
+  color: var(--revpilot-text);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: var(--revpilot-font);
+  resize: none;
+  outline: none;
+  min-height: 40px;
+  max-height: 100px;
+  transition: border-color 0.2s;
+}
+
+.revpilot-chat-input:focus {
+  border-color: var(--revpilot-border-accent);
+}
+
+.revpilot-chat-input::placeholder {
+  color: var(--revpilot-text-dim);
+}
+
+.revpilot-chat-send {
+  width: 40px;
+  height: 40px;
+  background: var(--revpilot-accent);
+  border: none;
+  color: var(--revpilot-bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.revpilot-chat-send:hover {
+  background: var(--revpilot-accent-hover);
+}
+
+.revpilot-chat-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.revpilot-chat-send svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Videos Panel */
+.revpilot-videos-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.revpilot-video-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--revpilot-bg-secondary);
+  border: 1px solid var(--revpilot-border);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.revpilot-video-item:hover {
+  border-color: var(--revpilot-border-accent);
+  background: var(--revpilot-bg-tertiary);
+}
+
+.revpilot-video-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(94, 234, 212, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.revpilot-video-icon svg {
+  width: 18px;
+  height: 18px;
+  color: var(--revpilot-accent);
+}
+
+.revpilot-video-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.revpilot-video-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.revpilot-video-keyword {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--revpilot-accent);
+  background: rgba(94, 234, 212, 0.1);
+  padding: 2px 6px;
+  margin-top: 4px;
+}
+
+.revpilot-video-description {
+  font-size: 12px;
+  color: var(--revpilot-text-dim);
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+.revpilot-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--revpilot-text-dim);
+}
+
+.revpilot-empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.revpilot-empty-state p {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Keyword Highlighting */
+.revpilot-keyword-highlight {
+  background: rgba(94, 234, 212, 0.2);
+  border-bottom: 2px solid var(--revpilot-accent);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.revpilot-keyword-highlight:hover {
+  background: rgba(94, 234, 212, 0.35);
+}
+
+/* Keyword Tooltip */
+.revpilot-tooltip {
+  position: fixed;
+  background: var(--revpilot-bg);
+  border: 1px solid var(--revpilot-border-accent);
+  box-shadow: var(--revpilot-shadow);
+  padding: 12px;
+  min-width: 220px;
+  max-width: 300px;
+  z-index: 2147483647;
+  font-family: var(--revpilot-font);
+  animation: revpilot-tooltip-fade 0.2s ease;
+}
+
+@keyframes revpilot-tooltip-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.revpilot-tooltip-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.revpilot-tooltip-description {
+  font-size: 12px;
+  color: var(--revpilot-text-muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.revpilot-tooltip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  background: var(--revpilot-accent);
+  border: none;
+  color: var(--revpilot-bg);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.revpilot-tooltip-btn:hover {
+  background: var(--revpilot-accent-hover);
+}
+
+.revpilot-tooltip-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Connection Status */
+.revpilot-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 11px;
+  border-top: 1px solid var(--revpilot-border);
+}
+
+.revpilot-status.connected {
+  color: var(--revpilot-accent);
+}
+
+.revpilot-status.disconnected {
+  color: #f87171;
+}
+
+.revpilot-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Scrollbar */
+.revpilot-chat-messages::-webkit-scrollbar,
+.revpilot-videos-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.revpilot-chat-messages::-webkit-scrollbar-track,
+.revpilot-videos-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.revpilot-chat-messages::-webkit-scrollbar-thumb,
+.revpilot-videos-list::-webkit-scrollbar-thumb {
+  background: var(--revpilot-bg-tertiary);
+}
+
+.revpilot-chat-messages::-webkit-scrollbar-thumb:hover,
+.revpilot-videos-list::-webkit-scrollbar-thumb:hover {
+  background: #2a2a2d;
+}
