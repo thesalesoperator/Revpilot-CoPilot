@@ -893,7 +893,7 @@ export default function SettingsPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
+                        className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

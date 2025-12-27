@@ -7,8 +7,6 @@ interface StatCardProps {
   value: string
   subtitle?: string
   icon: LucideIcon
-  trend?: 'up' | 'down' | 'neutral'
-  trendValue?: string
   variant?: 'default' | 'success' | 'warning' | 'danger'
 }
 
@@ -23,7 +21,7 @@ export default function StatCard({
     default: 'text-[#5eead4]',
     success: 'text-[#5eead4]',
     warning: 'text-[#5eead4]',
-    danger: 'text-[gray-400]',
+    danger: 'text-gray-400',
   }
 
   const bgColors = {

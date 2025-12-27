@@ -58,7 +58,7 @@ export default function ProjectionsPage() {
 
   const addProjectedSale = () => {
     const newSale: ProjectedSale = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       productName: '',
       totalPrice: 0,
       upfrontPayment: 0,
@@ -157,7 +157,7 @@ export default function ProjectionsPage() {
           <button
             onClick={() => {
               const newSales: ProjectedSale[] = Array(5).fill(null).map(() => ({
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).substring(2, 11),
                 productName: 'Standard Package',
                 totalPrice: 3000,
                 upfrontPayment: 1000,
@@ -181,7 +181,7 @@ export default function ProjectionsPage() {
           <button
             onClick={() => {
               const newSales: ProjectedSale[] = Array(10).fill(null).map(() => ({
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).substring(2, 11),
                 productName: 'Standard Package',
                 totalPrice: 3000,
                 upfrontPayment: 1000,
@@ -208,7 +208,7 @@ export default function ProjectionsPage() {
           >
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 rounded-lg bg-[rgba(160,160,176,0.1)] group-hover:bg-[rgba(160,160,176,0.2)] transition-colors">
-                <Sparkles className="w-5 h-5 text-[gray-400]" />
+                <Sparkles className="w-5 h-5 text-gray-400" />
               </div>
               <span className="text-sm text-gray-400">Reset</span>
             </div>
@@ -287,7 +287,7 @@ export default function ProjectionsPage() {
                     <span className="text-sm text-gray-400">Projection #{index + 1}</span>
                     <button
                       onClick={() => removeProjectedSale(sale.id)}
-                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

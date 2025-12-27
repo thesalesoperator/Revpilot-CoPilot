@@ -312,7 +312,7 @@ export default function DashboardPage() {
                             onChange={(e) => handleStatusChange(sale, e.target.value)}
                             className={`status-select text-sm font-medium rounded-full px-3 py-1.5 border cursor-pointer transition-colors focus:outline-none ${
                               sale.status === 'refunded'
-                                ? 'bg-[rgba(160,160,176,0.15)] text-[gray-400] border-[rgba(160,160,176,0.3)]'
+                                ? 'bg-[rgba(160,160,176,0.15)] text-gray-400 border-[rgba(160,160,176,0.3)]'
                                 : sale.status === 'paid'
                                 ? 'bg-[rgba(94,234,212,0.15)] text-[#5eead4] border-[rgba(94,234,212,0.3)]'
                                 : 'bg-[rgba(94,234,212,0.15)] text-[#5eead4] border-[rgba(94,234,212,0.3)]'
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteSale(sale.id)}
-                              className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
+                              className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -774,7 +774,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
               <div>
                 <h4 className="text-sm font-medium text-[#5eead4]">Future Payment Schedule</h4>
                 <p className="text-xs text-gray-400 mt-1">
-                  Remaining balance: <span className={remainingBalance > 0.01 ? 'text-[gray-400]' : 'text-[#5eead4]'}>{formatCurrency(remainingBalance)}</span>
+                  Remaining balance: <span className={remainingBalance > 0.01 ? 'text-gray-400' : 'text-[#5eead4]'}>{formatCurrency(remainingBalance)}</span>
                 </p>
               </div>
               <button
@@ -819,7 +819,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
                     <button
                       type="button"
                       onClick={() => removeFuturePayment(payment.id)}
-                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

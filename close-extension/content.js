@@ -493,13 +493,21 @@ function showTooltip(e) {
   tooltip.innerHTML = `
     <h4 class="revpilot-tooltip-title">${escapeHtml(videoTitle || 'Training Video')}</h4>
     ${description ? `<p class="revpilot-tooltip-description">${escapeHtml(description)}</p>` : ''}
-    <button class="revpilot-tooltip-btn" ${videoUrl ? `onclick="window.open('${escapeHtml(videoUrl)}', '_blank')"` : 'disabled'}>
+    <button class="revpilot-tooltip-btn" ${videoUrl ? '' : 'disabled'}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polygon points="5 3 19 12 5 21 5 3"/>
       </svg>
       Watch Video
     </button>
   `
+
+  // Add click handler safely (avoids XSS from inline onclick)
+  if (videoUrl) {
+    const btn = tooltip.querySelector('.revpilot-tooltip-btn')
+    btn.addEventListener('click', () => {
+      window.open(videoUrl, '_blank', 'noopener,noreferrer')
+    })
+  }
 
   document.body.appendChild(tooltip)
 

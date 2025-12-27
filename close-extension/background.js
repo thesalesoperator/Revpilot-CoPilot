@@ -19,12 +19,12 @@ chrome.runtime.onInstalled.addListener((details) => {
         chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ['content.js']
-        }).catch(() => {})
+        }).catch(err => console.error('[RevPilot] Failed to inject script:', err))
 
         chrome.scripting.insertCSS({
           target: { tabId: tab.id },
           files: ['content.css']
-        }).catch(() => {})
+        }).catch(err => console.error('[RevPilot] Failed to inject CSS:', err))
       }
     })
   })
@@ -44,7 +44,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.tabs.sendMessage(tabs[0].id, {
           action: 'toggleOverlay',
           state: request.state
-        }).catch(() => {})
+        }).catch(err => console.error('[RevPilot] Failed to toggle overlay:', err))
       }
     })
     sendResponse({ success: true })
@@ -72,9 +72,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) {
         chrome.tabs.sendMessage(tabs[0].id, {
-          action: 'updateKeywords',
+          action: 'syncKeywords',
           keywords: request.keywords
-        }).catch(() => {})
+        }).catch(err => console.error('[RevPilot] Failed to sync keywords:', err))
       }
     })
     sendResponse({ success: true })

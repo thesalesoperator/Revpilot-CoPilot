@@ -14,7 +14,7 @@ interface CelebrationProps {
 
 // Confetti particle component
 const ConfettiParticle = ({ delay, left }: { delay: number; left: number }) => {
-  const colors = ['#5eead4', '#5eead4', 'gray-400', '#a78bfa', '#60a5fa', '#fbbf24']
+  const colors = ['#5eead4', '#5eead4', '#9ca3af', '#a78bfa', '#60a5fa', '#fbbf24']
   const color = colors[Math.floor(Math.random() * colors.length)]
   const size = Math.random() * 10 + 5
   const duration = Math.random() * 2 + 2
@@ -79,7 +79,7 @@ export default function Celebration({
       <div className="pointer-events-auto relative w-full max-w-md animate-celebration-bounce">
         <div className="glass-card p-8 relative overflow-hidden text-center">
           {/* Gradient border */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#5eead4] via-[#5eead4] to-[gray-400]" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#5eead4] via-[#5eead4] to-gray-400" />
 
           {/* Close button */}
           <button

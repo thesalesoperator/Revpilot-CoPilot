@@ -471,7 +471,7 @@ export default function MetricsPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteMetric(metric.id)}
-                          className="p-2 rounded-lg text-gray-500 hover:text-[gray-400] hover:bg-[rgba(160,160,176,0.1)] transition-colors"
+                          className="p-2 rounded-lg text-gray-500 hover:text-gray-400 hover:bg-[rgba(160,160,176,0.1)] transition-colors"
                           title="Delete metric"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -494,7 +494,7 @@ export default function MetricsPage() {
                           <span className="text-xs text-gray-500">Month Comparison</span>
                           {comparison.percentChange !== null && (
                             <div className={`flex items-center gap-1 text-xs font-medium ${
-                              comparison.percentChange > 0 ? 'text-[#5eead4]' : comparison.percentChange < 0 ? 'text-[gray-400]' : 'text-gray-400'
+                              comparison.percentChange > 0 ? 'text-[#5eead4]' : comparison.percentChange < 0 ? 'text-gray-400' : 'text-gray-400'
                             }`}>
                               {comparison.percentChange > 0 ? (
                                 <ArrowUp className="w-3 h-3" />
