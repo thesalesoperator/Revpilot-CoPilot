@@ -5,6 +5,14 @@ import { CORS_HEADERS } from '@/lib/coaching/config'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+// Type for organization from Supabase join
+interface OrganizationData {
+  id: string
+  name: string
+  slug: string
+  logo_url: string | null
+}
+
 // Handle CORS preflight
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: CORS_HEADERS })
@@ -57,14 +65,17 @@ export async function GET(request: Request) {
     }
 
     // Transform the data to a cleaner format
-    const organizations = memberships?.map(m => ({
-      id: (m.organization as { id: string }).id,
-      name: (m.organization as { name: string }).name,
-      slug: (m.organization as { slug: string }).slug,
-      logo_url: (m.organization as { logo_url: string | null }).logo_url,
-      role: m.role,
-      can_manage_keywords: m.role === 'owner' || m.role === 'admin'
-    })) || []
+    const organizations = (memberships ?? []).map(m => {
+      const org = m.organization as OrganizationData
+      return {
+        id: org.id,
+        name: org.name,
+        slug: org.slug,
+        logo_url: org.logo_url,
+        role: m.role,
+        can_manage_keywords: m.role === 'owner' || m.role === 'admin'
+      }
+    })
 
     return NextResponse.json({ organizations }, { headers: CORS_HEADERS })
   } catch (error) {
