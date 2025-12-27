@@ -1,19 +1,42 @@
 /* RevPilot Close CRM Co-Pilot - Content Script Styles */
+/* Updated with new design system */
 
 /* CSS Variables */
 :root {
-  --revpilot-bg: #0a0a0b;
-  --revpilot-bg-secondary: #141415;
-  --revpilot-bg-tertiary: #1f1f21;
+  /* Brand Accent (Teal) */
   --revpilot-accent: #5eead4;
   --revpilot-accent-hover: #4fd1c5;
-  --revpilot-text: #e5e7eb;
-  --revpilot-text-muted: #9ca3af;
-  --revpilot-text-dim: #6b7280;
-  --revpilot-border: rgba(255, 255, 255, 0.1);
+  --revpilot-accent-light-bg: rgba(94, 234, 212, 0.1);
+  --revpilot-accent-border: rgba(94, 234, 212, 0.3);
+  --revpilot-accent-focus: rgba(94, 234, 212, 0.5);
+
+  /* Backgrounds (Dark) */
+  --revpilot-bg: #0a0a0f;
+  --revpilot-bg-secondary: #111118;
+  --revpilot-bg-tertiary: #18181f;
+
+  /* Text */
+  --revpilot-text: #f0f0f5;
+  --revpilot-text-muted: #a0a0b0;
+  --revpilot-text-dim: #6b6b7b;
+
+  /* Borders & Effects */
+  --revpilot-border: rgba(255, 255, 255, 0.08);
   --revpilot-border-accent: rgba(94, 234, 212, 0.3);
   --revpilot-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  --revpilot-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Glassmorphism */
+  --revpilot-glass-bg: rgba(255, 255, 255, 0.03);
+  --revpilot-glass-border: rgba(255, 255, 255, 0.08);
+  --revpilot-glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+  /* Typography */
+  --revpilot-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Border Radius */
+  --revpilot-radius-sm: 4px;
+  --revpilot-radius: 8px;
+  --revpilot-radius-lg: 12px;
 }
 
 /* Floating Overlay Container */
@@ -24,14 +47,27 @@
   width: 380px;
   max-height: 550px;
   background: var(--revpilot-bg);
-  border: 1px solid var(--revpilot-border);
-  box-shadow: var(--revpilot-shadow);
+  border: 1px solid var(--revpilot-glass-border);
+  border-radius: var(--revpilot-radius-lg);
+  box-shadow: var(--revpilot-glass-shadow);
   font-family: var(--revpilot-font);
   z-index: 2147483647;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: revpilot-slideIn 0.3s ease-out;
+}
+
+@keyframes revpilot-slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .revpilot-overlay.minimized {
@@ -55,10 +91,12 @@
   height: 100%;
   background: var(--revpilot-accent);
   border: none;
+  border-radius: 50%;
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(94, 234, 212, 0.3);
 }
 
 .revpilot-overlay.minimized .revpilot-minimized-btn {
@@ -67,6 +105,8 @@
 
 .revpilot-minimized-btn:hover {
   background: var(--revpilot-accent-hover);
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(94, 234, 212, 0.4);
 }
 
 .revpilot-minimized-btn svg {
@@ -83,6 +123,7 @@
   padding: 14px 16px;
   background: var(--revpilot-bg-secondary);
   border-bottom: 1px solid var(--revpilot-border);
+  border-radius: var(--revpilot-radius-lg) var(--revpilot-radius-lg) 0 0;
   cursor: move;
   user-select: none;
 }
@@ -97,6 +138,7 @@
   width: 32px;
   height: 32px;
   background: var(--revpilot-accent);
+  border-radius: var(--revpilot-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,6 +155,7 @@
   font-weight: 600;
   color: #fff;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .revpilot-subtitle {
@@ -131,12 +174,13 @@
   height: 28px;
   background: transparent;
   border: 1px solid var(--revpilot-border);
+  border-radius: var(--revpilot-radius-sm);
   color: var(--revpilot-text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .revpilot-header-btn:hover {
@@ -173,8 +217,9 @@
   color: var(--revpilot-text-muted);
   font-size: 13px;
   font-weight: 500;
+  font-family: var(--revpilot-font);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   position: relative;
 }
 
@@ -226,6 +271,19 @@
   font-size: 13px;
   line-height: 1.5;
   word-wrap: break-word;
+  border-radius: var(--revpilot-radius);
+  animation: revpilot-messageIn 0.2s ease-out;
+}
+
+@keyframes revpilot-messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .revpilot-message.bot {
@@ -287,12 +345,14 @@
   padding: 12px 16px;
   border-top: 1px solid var(--revpilot-border);
   background: var(--revpilot-bg-secondary);
+  border-radius: 0 0 var(--revpilot-radius-lg) var(--revpilot-radius-lg);
 }
 
 .revpilot-chat-input {
   flex: 1;
   background: var(--revpilot-bg);
   border: 1px solid var(--revpilot-border);
+  border-radius: var(--revpilot-radius);
   color: var(--revpilot-text);
   padding: 10px 12px;
   font-size: 13px;
@@ -301,11 +361,11 @@
   outline: none;
   min-height: 40px;
   max-height: 100px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease;
 }
 
 .revpilot-chat-input:focus {
-  border-color: var(--revpilot-border-accent);
+  border-color: var(--revpilot-accent-focus);
 }
 
 .revpilot-chat-input::placeholder {
@@ -317,22 +377,25 @@
   height: 40px;
   background: var(--revpilot-accent);
   border: none;
+  border-radius: var(--revpilot-radius);
   color: var(--revpilot-bg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .revpilot-chat-send:hover {
   background: var(--revpilot-accent-hover);
+  transform: scale(1.02);
 }
 
 .revpilot-chat-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .revpilot-chat-send svg {
@@ -354,20 +417,23 @@
   padding: 12px;
   background: var(--revpilot-bg-secondary);
   border: 1px solid var(--revpilot-border);
+  border-radius: var(--revpilot-radius);
   margin-bottom: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .revpilot-video-item:hover {
   border-color: var(--revpilot-border-accent);
   background: var(--revpilot-bg-tertiary);
+  transform: translateY(-1px);
 }
 
 .revpilot-video-icon {
   width: 36px;
   height: 36px;
-  background: rgba(94, 234, 212, 0.1);
+  background: var(--revpilot-accent-light-bg);
+  border-radius: var(--revpilot-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,8 +465,9 @@
   display: inline-block;
   font-size: 11px;
   color: var(--revpilot-accent);
-  background: rgba(94, 234, 212, 0.1);
+  background: var(--revpilot-accent-light-bg);
   padding: 2px 6px;
+  border-radius: var(--revpilot-radius-sm);
   margin-top: 4px;
 }
 
@@ -433,9 +500,10 @@
 .revpilot-keyword-highlight {
   background: rgba(94, 234, 212, 0.2);
   border-bottom: 2px solid var(--revpilot-accent);
+  border-radius: 2px;
   cursor: pointer;
   position: relative;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
 }
 
 .revpilot-keyword-highlight:hover {
@@ -447,13 +515,16 @@
   position: fixed;
   background: var(--revpilot-bg);
   border: 1px solid var(--revpilot-border-accent);
-  box-shadow: var(--revpilot-shadow);
+  border-radius: var(--revpilot-radius);
+  box-shadow: var(--revpilot-glass-shadow);
   padding: 12px;
   min-width: 220px;
   max-width: 300px;
   z-index: 2147483647;
   font-family: var(--revpilot-font);
   animation: revpilot-tooltip-fade 0.2s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 @keyframes revpilot-tooltip-fade {
@@ -490,15 +561,18 @@
   padding: 10px;
   background: var(--revpilot-accent);
   border: none;
+  border-radius: var(--revpilot-radius-sm);
   color: var(--revpilot-bg);
   font-size: 12px;
   font-weight: 600;
+  font-family: var(--revpilot-font);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
 .revpilot-tooltip-btn:hover {
   background: var(--revpilot-accent-hover);
+  transform: translateY(-1px);
 }
 
 .revpilot-tooltip-btn svg {
@@ -545,6 +619,7 @@
 .revpilot-chat-messages::-webkit-scrollbar-thumb,
 .revpilot-videos-list::-webkit-scrollbar-thumb {
   background: var(--revpilot-bg-tertiary);
+  border-radius: 3px;
 }
 
 .revpilot-chat-messages::-webkit-scrollbar-thumb:hover,
