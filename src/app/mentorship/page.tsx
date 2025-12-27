@@ -220,7 +220,7 @@ export default function MentorshipPage() {
           <div className="glass-card p-4 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Calendar className="w-6 h-6 text-[#00ffc1]" />
+                <Calendar className="w-6 h-6 text-[#5eead4]" />
                 <div>
                   <p className="text-white font-medium">Next Session</p>
                   <p className="text-sm text-gray-400">
@@ -232,7 +232,7 @@ export default function MentorshipPage() {
                 <span className="text-gray-400">
                   {upcomingSessions[0].date} at {upcomingSessions[0].time}
                 </span>
-                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                   Join Call
                 </button>
               </div>
@@ -252,7 +252,7 @@ export default function MentorshipPage() {
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-2 rounded-xl transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -272,7 +272,7 @@ export default function MentorshipPage() {
                   placeholder="Search mentors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+                  className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
                 />
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function MentorshipPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
                     selectedCategory === cat.id
-                      ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                      ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                       : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                   }`}
                 >
@@ -351,7 +351,7 @@ export default function MentorshipPage() {
 
                   {/* Actions */}
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
-                    <span className="text-[#00ffc1] font-semibold">${mentor.hourlyRate}/hr</span>
+                    <span className="text-[#5eead4] font-semibold">${mentor.hourlyRate}/hr</span>
                     <div className="flex gap-2">
                       <button className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.1)] text-gray-400 transition-colors">
                         <Bookmark className="w-5 h-5" />
@@ -361,7 +361,7 @@ export default function MentorshipPage() {
                           setSelectedMentor(mentor)
                           setShowMentorModal(true)
                         }}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity"
                       >
                         View Profile
                       </button>
@@ -408,7 +408,7 @@ export default function MentorshipPage() {
 
                 <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
                   <span className="text-2xl font-bold text-white">${program.price}</span>
-                  <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                  <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                     Enroll Now
                   </button>
                 </div>
@@ -443,7 +443,7 @@ export default function MentorshipPage() {
                       <p className="text-white">{session.date}</p>
                       <p className="text-sm text-gray-400">{session.time}</p>
                     </div>
-                    <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                    <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                       Join
                     </button>
                   </div>
@@ -545,7 +545,7 @@ export default function MentorshipPage() {
               </div>
               <button
                 onClick={() => bookSession(selectedMentor)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
               >
                 <Calendar className="w-5 h-5" />
                 Book Session

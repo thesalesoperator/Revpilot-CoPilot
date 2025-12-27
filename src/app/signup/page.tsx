@@ -68,8 +68,8 @@ export default function SignupPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] mb-4">
-            <Calculator className="w-8 h-8 text-[#00102e]" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] mb-4">
+            <Calculator className="w-8 h-8 text-[#0a0a0f]" />
           </div>
           <h1 className="text-3xl font-bold gradient-text mb-2">Create Account</h1>
           <p className="text-gray-400">Start tracking your sales commissions today</p>
@@ -161,7 +161,7 @@ export default function SignupPage() {
               className="btn-primary w-full flex items-center justify-center gap-2"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   Create Account with Email
@@ -174,7 +174,7 @@ export default function SignupPage() {
           <div className="mt-6 text-center">
             <p className="text-gray-400">
               Already have an account?{' '}
-              <Link href="/login" className="text-[#00ffc1] hover:underline font-medium">
+              <Link href="/login" className="text-[#5eead4] hover:underline font-medium">
                 Sign in
               </Link>
             </p>

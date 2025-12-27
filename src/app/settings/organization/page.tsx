@@ -309,9 +309,9 @@ export default function OrganizationSettingsPage() {
 
         {/* Organization Details */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] flex items-center justify-between">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Building2 className="w-5 h-5 text-[#00ffc1]" />
+              <Building2 className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Organization Details</h2>
             </div>
             {isOrgAdmin && !isEditingOrg && (
@@ -401,9 +401,9 @@ export default function OrganizationSettingsPage() {
 
         {/* Members Section */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] flex items-center justify-between">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-[#00ffc1]" />
+              <Users className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">
                 Team Members ({members.length})
               </h2>
@@ -422,7 +422,7 @@ export default function OrganizationSettingsPage() {
             {members.map((member) => (
               <div key={member.id} className="p-4 flex items-center justify-between hover:bg-[rgba(255,255,255,0.02)]">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center text-[#00ffc1] font-medium">
+                  <div className="w-10 h-10 rounded-full bg-[rgba(94,234,212,0.1)] flex items-center justify-center text-[#5eead4] font-medium">
                     {((member as { display_name?: string }).display_name || (member as { full_name?: string }).full_name || (member as { email?: string }).email || '?')[0].toUpperCase()}
                   </div>
                   <div>
@@ -475,9 +475,9 @@ export default function OrganizationSettingsPage() {
         {/* Invite Links Section */}
         {isOrgAdmin && (
           <div className="glass-card">
-            <div className="p-6 border-b border-[rgba(0,255,193,0.1)] flex items-center justify-between">
+            <div className="p-6 border-b border-[rgba(94,234,212,0.1)] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <LinkIcon className="w-5 h-5 text-[#00ffc1]" />
+                <LinkIcon className="w-5 h-5 text-[#5eead4]" />
                 <h2 className="text-xl font-semibold gradient-text">Invite Links</h2>
               </div>
               <button
@@ -519,7 +519,7 @@ export default function OrganizationSettingsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <code className="text-[#00ffc1] font-mono text-sm">{invite.invite_code}</code>
+                              <code className="text-[#5eead4] font-mono text-sm">{invite.invite_code}</code>
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
                                 invite.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-gray-500/20 text-gray-400'
                               }`}>
@@ -543,7 +543,7 @@ export default function OrganizationSettingsPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleCopyInvite(inviteUrl)}
-                              className="p-2 rounded-lg hover:bg-[rgba(0,255,193,0.1)] text-gray-400 hover:text-[#00ffc1] transition-colors"
+                              className="p-2 rounded-lg hover:bg-[rgba(94,234,212,0.1)] text-gray-400 hover:text-[#5eead4] transition-colors"
                             >
                               <Copy className="w-4 h-4" />
                             </button>
@@ -566,9 +566,9 @@ export default function OrganizationSettingsPage() {
 
         {/* Billing Section */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <div className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-[#00ffc1]" />
+              <CreditCard className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Billing & Subscription</h2>
             </div>
           </div>
@@ -608,14 +608,14 @@ export default function OrganizationSettingsPage() {
       >
         {createdInviteUrl ? (
           <div className="space-y-4">
-            <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.2)] rounded-xl p-4">
+            <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.2)] rounded-xl p-4">
               <p className="text-sm text-gray-400 mb-2">Share this link with your team:</p>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={createdInviteUrl}
                   readOnly
-                  className="input-field flex-1 text-[#00ffc1] font-mono text-sm"
+                  className="input-field flex-1 text-[#5eead4] font-mono text-sm"
                 />
                 <button
                   onClick={() => handleCopyInvite(createdInviteUrl)}
@@ -829,13 +829,13 @@ function CreateOrganizationButton({ onSuccess }: { onSuccess: () => void }) {
             <label className="block text-sm font-medium text-gray-300 mb-2">Billing Model</label>
             <div className="space-y-2">
               <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                billingType === 'org_pays' ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]' : 'border-[rgba(255,255,255,0.1)]'
+                billingType === 'org_pays' ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]' : 'border-[rgba(255,255,255,0.1)]'
               }`}>
                 <input
                   type="radio"
                   checked={billingType === 'org_pays'}
                   onChange={() => setBillingType('org_pays')}
-                  className="mt-1 accent-[#00ffc1]"
+                  className="mt-1 accent-[#5eead4]"
                 />
                 <div>
                   <p className="font-medium text-white">Organization Pays</p>
@@ -843,13 +843,13 @@ function CreateOrganizationButton({ onSuccess }: { onSuccess: () => void }) {
                 </div>
               </label>
               <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                billingType === 'user_pays' ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]' : 'border-[rgba(255,255,255,0.1)]'
+                billingType === 'user_pays' ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]' : 'border-[rgba(255,255,255,0.1)]'
               }`}>
                 <input
                   type="radio"
                   checked={billingType === 'user_pays'}
                   onChange={() => setBillingType('user_pays')}
-                  className="mt-1 accent-[#00ffc1]"
+                  className="mt-1 accent-[#5eead4]"
                 />
                 <div>
                   <p className="font-medium text-white">Members Pay Individually</p>

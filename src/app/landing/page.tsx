@@ -29,10 +29,10 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-[#00102e] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
       {/* Gradient background effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#00ffc1]/10 rounded-full blur-[150px]" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#5eead4]/10 rounded-full blur-[150px]" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[150px]" />
       </div>
 
@@ -41,8 +41,8 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00ffc1]/50 flex items-center justify-center">
-                <Zap className="w-6 h-6 text-[#00102e]" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#5eead4]/50 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-[#0a0a0f]" />
               </div>
               <span className="text-xl font-bold">RevPilot</span>
             </div>
@@ -60,7 +60,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/signup"
-                className="px-5 py-2.5 bg-[#00ffc1] text-[#00102e] font-semibold rounded-xl hover:bg-[#00ffc1]/90 transition-all"
+                className="px-5 py-2.5 bg-[#5eead4] text-[#0a0a0f] font-semibold rounded-xl hover:bg-[#5eead4]/90 transition-all"
               >
                 Start Free Trial
               </Link>
@@ -85,7 +85,7 @@ export default function LandingPage() {
                 <Link href="/login" className="block text-gray-400 hover:text-white">Log In</Link>
                 <Link
                   href="/signup"
-                  className="block w-full text-center px-5 py-2.5 bg-[#00ffc1] text-[#00102e] font-semibold rounded-xl"
+                  className="block w-full text-center px-5 py-2.5 bg-[#5eead4] text-[#0a0a0f] font-semibold rounded-xl"
                 >
                   Start Free Trial
                 </Link>
@@ -100,15 +100,15 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl mx-auto text-center">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ffc1]/10 border border-[#00ffc1]/20 mb-8">
-              <Sparkles className="w-4 h-4 text-[#00ffc1]" />
-              <span className="text-sm text-[#00ffc1] font-medium">The Sales Rep Operating System</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5eead4]/10 border border-[#5eead4]/20 mb-8">
+              <Sparkles className="w-4 h-4 text-[#5eead4]" />
+              <span className="text-sm text-[#5eead4] font-medium">The Sales Rep Operating System</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
               Turn Every Rep Into{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffc1] to-cyan-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5eead4] to-cyan-400">
                 Their Own Top-Performing Manager
               </span>
             </h1>
@@ -123,7 +123,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <Link
                 href="/signup"
-                className="w-full sm:w-auto px-8 py-4 bg-[#00ffc1] text-[#00102e] font-bold rounded-xl hover:bg-[#00ffc1]/90 transition-all flex items-center justify-center gap-2 text-lg"
+                className="w-full sm:w-auto px-8 py-4 bg-[#5eead4] text-[#0a0a0f] font-bold rounded-xl hover:bg-[#5eead4]/90 transition-all flex items-center justify-center gap-2 text-lg"
               >
                 Start 14-Day Free Trial
                 <ArrowRight className="w-5 h-5" />
@@ -137,15 +137,15 @@ export default function LandingPage() {
             {/* Social Proof */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-gray-400">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 <span>Setup in 5 minutes</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 <span>Works with Zoom, Fathom & more</span>
               </div>
             </div>
@@ -153,10 +153,10 @@ export default function LandingPage() {
 
           {/* Hero Screenshot */}
           <div className="mt-20 relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#00102e] via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] overflow-hidden shadow-2xl shadow-[#00ffc1]/10">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent z-10 pointer-events-none" />
+            <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] overflow-hidden shadow-2xl shadow-[#5eead4]/10">
               {/* Browser Chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-[#00102e]">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-[#0a0a0f]">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
@@ -167,14 +167,14 @@ export default function LandingPage() {
                 </div>
               </div>
               {/* App Screenshot Placeholder */}
-              <div className="aspect-[16/9] bg-gradient-to-br from-[#001a3d] to-[#00102e] p-8">
+              <div className="aspect-[16/9] bg-gradient-to-br from-[#001a3d] to-[#0a0a0f] p-8">
                 <div className="grid grid-cols-3 gap-6 h-full">
                   {/* Metrics Cards */}
                   <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-[#00102e] border border-white/10">
+                    <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-lg bg-[#00ffc1]/20 flex items-center justify-center">
-                          <TrendingUp className="w-5 h-5 text-[#00ffc1]" />
+                        <div className="w-10 h-10 rounded-lg bg-[#5eead4]/20 flex items-center justify-center">
+                          <TrendingUp className="w-5 h-5 text-[#5eead4]" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">This Week</p>
@@ -182,10 +182,10 @@ export default function LandingPage() {
                         </div>
                       </div>
                       <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-[#00ffc1] to-cyan-400" />
+                        <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-[#5eead4] to-cyan-400" />
                       </div>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#00102e] border border-white/10">
+                    <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
                           <Flame className="w-5 h-5 text-orange-400" />
@@ -196,7 +196,7 @@ export default function LandingPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#00102e] border border-white/10">
+                    <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
                           <Trophy className="w-5 h-5 text-purple-400" />
@@ -209,14 +209,14 @@ export default function LandingPage() {
                     </div>
                   </div>
                   {/* Main Content */}
-                  <div className="col-span-2 p-6 rounded-xl bg-[#00102e] border border-white/10">
+                  <div className="col-span-2 p-6 rounded-xl bg-[#0a0a0f] border border-white/10">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      <Phone className="w-5 h-5 text-[#00ffc1]" />
+                      <Phone className="w-5 h-5 text-[#5eead4]" />
                       Live Call Coaching
                     </h3>
                     <div className="space-y-3">
-                      <div className="p-3 rounded-lg bg-[#00ffc1]/10 border border-[#00ffc1]/30">
-                        <p className="text-sm text-[#00ffc1]">
+                      <div className="p-3 rounded-lg bg-[#5eead4]/10 border border-[#5eead4]/30">
+                        <p className="text-sm text-[#5eead4]">
                           <span className="font-semibold">AI Coach:</span> They mentioned budget concerns. Try: "I understand budget is a factor. What would the cost of NOT solving this be over the next 12 months?"
                         </p>
                       </div>
@@ -231,7 +231,7 @@ export default function LandingPage() {
                             {[...Array(20)].map((_, i) => (
                               <div
                                 key={i}
-                                className="w-1 bg-[#00ffc1] rounded-full"
+                                className="w-1 bg-[#5eead4] rounded-full"
                                 style={{ height: `${Math.random() * 20 + 5}px` }}
                               />
                             ))}
@@ -318,9 +318,9 @@ export default function LandingPage() {
       <section id="features" className="relative z-10 py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00ffc1]/10 border border-[#00ffc1]/20 mb-6">
-              <Zap className="w-4 h-4 text-[#00ffc1]" />
-              <span className="text-sm text-[#00ffc1] font-medium">The RevPilot Difference</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5eead4]/10 border border-[#5eead4]/20 mb-6">
+              <Zap className="w-4 h-4 text-[#5eead4]" />
+              <span className="text-sm text-[#5eead4] font-medium">The RevPilot Difference</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
               Four Pillars That Transform Performance
@@ -333,7 +333,7 @@ export default function LandingPage() {
           {/* Feature 1 - Live Coaching */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-32">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#00ffc1]/10 text-[#00ffc1] text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#5eead4]/10 text-[#5eead4] text-sm font-medium mb-6">
                 <Phone className="w-4 h-4" />
                 Pillar 1
               </div>
@@ -351,14 +351,14 @@ export default function LandingPage() {
                   "Integrates with Zoom, Fathom & more",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-[#00ffc1] flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-[#5eead4] flex-shrink-0" />
                     <span className="text-gray-300">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div className="relative">
-              <div className="absolute inset-0 bg-[#00ffc1]/20 rounded-3xl blur-3xl" />
+              <div className="absolute inset-0 bg-[#5eead4]/20 rounded-3xl blur-3xl" />
               <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -368,11 +368,11 @@ export default function LandingPage() {
                   <span className="text-2xl font-mono font-bold">18:42</span>
                 </div>
                 <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-[#00ffc1]/10 border border-[#00ffc1]/30">
+                  <div className="p-4 rounded-xl bg-[#5eead4]/10 border border-[#5eead4]/30">
                     <div className="flex items-start gap-3">
-                      <Brain className="w-5 h-5 text-[#00ffc1] mt-0.5" />
+                      <Brain className="w-5 h-5 text-[#5eead4] mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-[#00ffc1] mb-1">AI Coach Suggestion</p>
+                        <p className="text-sm font-medium text-[#5eead4] mb-1">AI Coach Suggestion</p>
                         <p className="text-sm text-gray-300">
                           They're asking about competitors. Pivot to: "What's most important to you when evaluating solutions—is it [feature they mentioned] or something else?"
                         </p>
@@ -402,29 +402,29 @@ export default function LandingPage() {
               <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] p-6 overflow-hidden">
                 <h4 className="text-lg font-semibold mb-4">This Week's Performance</h4>
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="p-4 rounded-xl bg-[#00102e]">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <p className="text-sm text-gray-400 mb-1">Projected</p>
-                    <p className="text-3xl font-bold text-[#00ffc1]">$52,400</p>
+                    <p className="text-3xl font-bold text-[#5eead4]">$52,400</p>
                     <p className="text-xs text-green-400 mt-1">↑ 12% vs last week</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-[#00102e]">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <p className="text-sm text-gray-400 mb-1">Commission</p>
                     <p className="text-3xl font-bold">$4,192</p>
                     <p className="text-xs text-gray-400 mt-1">8% rate</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#00102e]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#0a0a0f]">
                     <span className="text-sm">Calls Made</span>
                     <span className="font-semibold">47 / 60</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#00102e]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#0a0a0f]">
                     <span className="text-sm">Demos Booked</span>
                     <span className="font-semibold">12 / 15</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#00102e]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#0a0a0f]">
                     <span className="text-sm">Close Rate</span>
-                    <span className="font-semibold text-[#00ffc1]">34%</span>
+                    <span className="font-semibold text-[#5eead4]">34%</span>
                   </div>
                 </div>
               </div>
@@ -497,7 +497,7 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-[#00102e] border border-purple-500/30">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f] border border-purple-500/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">The Budget Objection</span>
                       <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">Medium</span>
@@ -513,7 +513,7 @@ export default function LandingPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-[#00102e] border border-white/10">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">The Hostile Executive</span>
                       <span className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400">Hard</span>
@@ -544,7 +544,7 @@ export default function LandingPage() {
                   Team Activity
                 </h4>
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-[#00102e]">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold">
                         SK
@@ -566,7 +566,7 @@ export default function LandingPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-[#00102e]">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center text-sm font-bold">
                         MJ
@@ -625,8 +625,8 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-[#00ffc1]/10 to-transparent border border-[#00ffc1]/20">
-              <div className="text-5xl md:text-6xl font-bold text-[#00ffc1] mb-4">50%</div>
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-[#5eead4]/10 to-transparent border border-[#5eead4]/20">
+              <div className="text-5xl md:text-6xl font-bold text-[#5eead4] mb-4">50%</div>
               <h3 className="text-xl font-semibold mb-2">Faster Ramp Time</h3>
               <p className="text-gray-400">New reps get better in weeks, not quarters. Live coaching accelerates the learning curve.</p>
             </div>
@@ -680,8 +680,8 @@ export default function LandingPage() {
               <div key={i} className="relative">
                 <div className="text-8xl font-bold text-white/5 absolute -top-4 -left-2">{item.step}</div>
                 <div className="relative p-6 rounded-2xl bg-[rgba(255,255,255,0.02)] border border-white/10">
-                  <div className="w-12 h-12 rounded-xl bg-[#00ffc1]/10 flex items-center justify-center mb-4">
-                    <item.icon className="w-6 h-6 text-[#00ffc1]" />
+                  <div className="w-12 h-12 rounded-xl bg-[#5eead4]/10 flex items-center justify-center mb-4">
+                    <item.icon className="w-6 h-6 text-[#5eead4]" />
                   </div>
                   <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                   <p className="text-gray-400">{item.description}</p>
@@ -724,7 +724,7 @@ export default function LandingPage() {
                   "Mobile app access",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
-                    <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                    <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                     {item}
                   </li>
                 ))}
@@ -738,8 +738,8 @@ export default function LandingPage() {
             </div>
 
             {/* Team - Highlighted */}
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-[#00ffc1]/10 to-blue-500/10 border-2 border-[#00ffc1]/50 relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#00ffc1] text-[#00102e] text-sm font-bold rounded-full">
+            <div className="p-8 rounded-2xl bg-gradient-to-br from-[#5eead4]/10 to-blue-500/10 border-2 border-[#5eead4]/50 relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5eead4] text-[#0a0a0f] text-sm font-bold rounded-full">
                 Most Popular
               </div>
               <div className="mb-6">
@@ -761,14 +761,14 @@ export default function LandingPage() {
                   "Custom methodologies",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
-                    <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                    <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                     {item}
                   </li>
                 ))}
               </ul>
               <Link
                 href="/signup"
-                className="block w-full py-3 text-center bg-[#00ffc1] text-[#00102e] rounded-xl hover:bg-[#00ffc1]/90 transition-all font-bold"
+                className="block w-full py-3 text-center bg-[#5eead4] text-[#0a0a0f] rounded-xl hover:bg-[#5eead4]/90 transition-all font-bold"
               >
                 Start 14-Day Team Pilot
               </Link>
@@ -794,7 +794,7 @@ export default function LandingPage() {
                   "Custom integrations",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
-                    <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                    <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                     {item}
                   </li>
                 ))}
@@ -810,7 +810,7 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="relative z-10 py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="p-12 rounded-3xl bg-gradient-to-br from-[#00ffc1]/20 via-blue-500/10 to-purple-500/10 border border-[#00ffc1]/30">
+          <div className="p-12 rounded-3xl bg-gradient-to-br from-[#5eead4]/20 via-blue-500/10 to-purple-500/10 border border-[#5eead4]/30">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
               Ready to Transform Your Sales Team?
             </h2>
@@ -820,7 +820,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/signup"
-                className="w-full sm:w-auto px-8 py-4 bg-[#00ffc1] text-[#00102e] font-bold rounded-xl hover:bg-[#00ffc1]/90 transition-all flex items-center justify-center gap-2 text-lg"
+                className="w-full sm:w-auto px-8 py-4 bg-[#5eead4] text-[#0a0a0f] font-bold rounded-xl hover:bg-[#5eead4]/90 transition-all flex items-center justify-center gap-2 text-lg"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5" />
@@ -840,8 +840,8 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00ffc1]/50 flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-[#00102e]" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#5eead4]/50 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-[#0a0a0f]" />
                 </div>
                 <span className="text-xl font-bold">RevPilot</span>
               </div>

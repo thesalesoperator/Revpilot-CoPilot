@@ -315,8 +315,8 @@ export default function HabitsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00ffc1]/20 to-[#a78bfa]/20 flex items-center justify-center">
-              <Target className="w-6 h-6 text-[#00ffc1]" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5eead4]/20 to-[#a78bfa]/20 flex items-center justify-center">
+              <Target className="w-6 h-6 text-[#5eead4]" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Daily Habits</h1>
@@ -342,7 +342,7 @@ export default function HabitsPage() {
               <div className="flex-1">
                 <div className="h-4 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] transition-all duration-500"
                     style={{ width: `${todayProgress}%` }}
                   />
                 </div>
@@ -350,7 +350,7 @@ export default function HabitsPage() {
                   {todayCompletedCount} of {habits.length} completed
                 </p>
               </div>
-              <div className="text-4xl font-bold text-[#00ffc1]">
+              <div className="text-4xl font-bold text-[#5eead4]">
                 {Math.round(todayProgress)}%
               </div>
             </div>
@@ -385,12 +385,12 @@ export default function HabitsPage() {
               {weekDates.map((date, i) => (
                 <div
                   key={i}
-                  className={`text-center ${isToday(date) ? 'text-[#00ffc1]' : 'text-gray-400'}`}
+                  className={`text-center ${isToday(date) ? 'text-[#5eead4]' : 'text-gray-400'}`}
                 >
                   <p className="text-xs uppercase">
                     {date.toLocaleDateString('en-US', { weekday: 'short' })}
                   </p>
-                  <p className={`text-lg font-bold ${isToday(date) ? 'text-[#00ffc1]' : 'text-white'}`}>
+                  <p className={`text-lg font-bold ${isToday(date) ? 'text-[#5eead4]' : 'text-white'}`}>
                     {date.getDate()}
                   </p>
                 </div>
@@ -433,12 +433,12 @@ export default function HabitsPage() {
                   <div
                     className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       habit.category === 'professional'
-                        ? 'bg-[#00ffc1]/20'
+                        ? 'bg-[#5eead4]/20'
                         : 'bg-[#a78bfa]/20'
                     }`}
                   >
                     {habit.category === 'professional' ? (
-                      <Briefcase className="w-5 h-5 text-[#00ffc1]" />
+                      <Briefcase className="w-5 h-5 text-[#5eead4]" />
                     ) : (
                       <User className="w-5 h-5 text-[#a78bfa]" />
                     )}
@@ -465,7 +465,7 @@ export default function HabitsPage() {
                         disabled={isDisabled}
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                           isCompleted
-                            ? 'bg-[#00ffc1] text-[#00102e]'
+                            ? 'bg-[#5eead4] text-[#0a0a0f]'
                             : isDisabled
                             ? 'bg-[rgba(255,255,255,0.03)] text-gray-600 cursor-not-allowed'
                             : 'bg-[rgba(255,255,255,0.05)] text-gray-500 hover:bg-[rgba(255,255,255,0.1)]'

@@ -231,7 +231,7 @@ export default function TrainingPage() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-2xl font-bold text-white group-hover:text-[#00ffc1] transition-colors">
+                  <h3 className="text-2xl font-bold text-white group-hover:text-[#5eead4] transition-colors">
                     Practice Arena
                   </h3>
                   <span className="px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-bold animate-pulse">
@@ -255,8 +255,8 @@ export default function TrainingPage() {
                   <p className="text-sm text-gray-400">Progress</p>
                   <p className="text-2xl font-bold text-white">5/8</p>
                 </div>
-                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Play className="w-6 h-6 text-[#00102e] ml-1" />
+                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Play className="w-6 h-6 text-[#0a0a0f] ml-1" />
                 </div>
               </div>
             </div>
@@ -284,7 +284,7 @@ export default function TrainingPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-white group-hover:text-[#00ffc1] transition-colors">
+                      <h3 className="font-semibold text-white group-hover:text-[#5eead4] transition-colors">
                         {section.title}
                       </h3>
                       {section.premium && (
@@ -317,7 +317,7 @@ export default function TrainingPage() {
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-[#00ffc1] group-hover:translate-x-1 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-[#5eead4] group-hover:translate-x-1 transition-all" />
                 </div>
               </Link>
             ))}

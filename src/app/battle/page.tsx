@@ -193,7 +193,7 @@ export default function BattlePage() {
               onClick={() => setActiveTab(tab as typeof activeTab)}
               className={`px-6 py-2 rounded-xl transition-all capitalize ${
                 activeTab === tab
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -209,7 +209,7 @@ export default function BattlePage() {
               {/* Player Card */}
               <div className="glass-card p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-2xl font-bold text-[#00102e]">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-2xl font-bold text-[#0a0a0f]">
                     {user?.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <div>
@@ -232,7 +232,7 @@ export default function BattlePage() {
                     <p className="text-xs text-gray-400">Losses</p>
                   </div>
                   <div className="bg-[rgba(255,255,255,0.05)] rounded-xl p-3 text-center">
-                    <p className="text-2xl font-bold text-[#00ffc1]">{userStats.winRate}%</p>
+                    <p className="text-2xl font-bold text-[#5eead4]">{userStats.winRate}%</p>
                     <p className="text-xs text-gray-400">Win Rate</p>
                   </div>
                   <div className="bg-[rgba(255,255,255,0.05)] rounded-xl p-3 text-center">
@@ -246,7 +246,7 @@ export default function BattlePage() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-white">Online Players</h3>
-                  <span className="text-sm text-[#00ffc1]">
+                  <span className="text-sm text-[#5eead4]">
                     {onlinePlayers.filter((p) => p.status === 'online').length} online
                   </span>
                 </div>
@@ -258,7 +258,7 @@ export default function BattlePage() {
                     placeholder="Search players..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
                   />
                 </div>
 
@@ -275,7 +275,7 @@ export default function BattlePage() {
                             {player.avatar}
                           </div>
                           <div
-                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#00102e] ${
+                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-[#0a0a0f] ${
                               player.status === 'online'
                                 ? 'bg-green-500'
                                 : player.status === 'in-battle'
@@ -291,7 +291,7 @@ export default function BattlePage() {
                           </p>
                         </div>
                         {player.status === 'online' && (
-                          <button className="p-2 rounded-lg bg-[rgba(0,255,193,0.1)] text-[#00ffc1] hover:bg-[rgba(0,255,193,0.2)] transition-colors">
+                          <button className="p-2 rounded-lg bg-[rgba(94,234,212,0.1)] text-[#5eead4] hover:bg-[rgba(94,234,212,0.2)] transition-colors">
                             <Swords className="w-4 h-4" />
                           </button>
                         )}
@@ -315,7 +315,7 @@ export default function BattlePage() {
                     onClick={() => setSelectedMode(mode)}
                     className={`p-6 rounded-xl text-left transition-all ${
                       selectedMode.id === mode.id
-                        ? 'glass-card border-[rgba(0,255,193,0.3)] scale-[1.02]'
+                        ? 'glass-card border-[rgba(94,234,212,0.3)] scale-[1.02]'
                         : 'bg-[rgba(255,255,255,0.02)] border border-transparent hover:bg-[rgba(255,255,255,0.05)]'
                     }`}
                   >
@@ -340,8 +340,8 @@ export default function BattlePage() {
                         </div>
                       </div>
                       {selectedMode.id === mode.id && (
-                        <div className="w-6 h-6 rounded-full bg-[#00ffc1] flex items-center justify-center">
-                          <Star className="w-4 h-4 text-[#00102e]" />
+                        <div className="w-6 h-6 rounded-full bg-[#5eead4] flex items-center justify-center">
+                          <Star className="w-4 h-4 text-[#0a0a0f]" />
                         </div>
                       )}
                     </div>
@@ -365,7 +365,7 @@ export default function BattlePage() {
                 <div className="flex gap-4">
                   <button
                     onClick={startMatchmaking}
-                    className="flex-1 py-4 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="flex-1 py-4 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-bold text-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   >
                     <Swords className="w-5 h-5" />
                     Find Opponent
@@ -436,7 +436,7 @@ export default function BattlePage() {
                       <span className="text-red-400">{player.losses}</span>
                     </td>
                     <td className="p-4 text-center">
-                      <span className="text-[#00ffc1] font-semibold">{player.winRate}%</span>
+                      <span className="text-[#5eead4] font-semibold">{player.winRate}%</span>
                     </td>
                     <td className="p-4 text-right">
                       <span className="text-yellow-400 font-semibold">
@@ -503,7 +503,7 @@ export default function BattlePage() {
         <div className="text-center py-8">
           {!matchFound ? (
             <>
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-[#00ffc1] border-t-transparent animate-spin" />
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full border-4 border-[#5eead4] border-t-transparent animate-spin" />
               <h3 className="text-xl font-bold text-white mb-2">Finding Opponent...</h3>
               <p className="text-gray-400 mb-4">{selectedMode.name}</p>
               <p className="text-sm text-gray-500">Searching for players at your skill level</p>
@@ -512,13 +512,13 @@ export default function BattlePage() {
             <>
               <div className="flex items-center justify-center gap-8 mb-6">
                 <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-2 rounded-2xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-3xl font-bold text-[#00102e]">
+                  <div className="w-20 h-20 mx-auto mb-2 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-3xl font-bold text-[#0a0a0f]">
                     {user?.email?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <p className="font-medium text-white">You</p>
                   <p className={`text-sm ${rankColors[userStats.rank]}`}>{userStats.rank}</p>
                 </div>
-                <div className="text-4xl font-bold text-[#00ffc1]">VS</div>
+                <div className="text-4xl font-bold text-[#5eead4]">VS</div>
                 <div className="text-center">
                   <div className="w-20 h-20 mx-auto mb-2 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl font-bold text-white">
                     {opponent?.avatar}
@@ -533,7 +533,7 @@ export default function BattlePage() {
               <p className="text-gray-400 mb-6">{selectedMode.name}</p>
               <button
                 onClick={startBattle}
-                className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-bold hover:opacity-90 transition-opacity"
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-bold hover:opacity-90 transition-opacity"
               >
                 Start Battle
               </button>
@@ -548,12 +548,12 @@ export default function BattlePage() {
           {/* Battle Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-xl font-bold text-[#00102e]">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-xl font-bold text-[#0a0a0f]">
                 {user?.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
                 <p className="font-medium text-white">You</p>
-                <p className="text-sm text-[#00ffc1]">Score: 0</p>
+                <p className="text-sm text-[#5eead4]">Score: 0</p>
               </div>
             </div>
             <div className="text-center">
@@ -585,7 +585,7 @@ export default function BattlePage() {
               {Array.from({ length: 40 }).map((_, i) => (
                 <div
                   key={i}
-                  className="w-1 bg-[#00ffc1] rounded-full animate-pulse"
+                  className="w-1 bg-[#5eead4] rounded-full animate-pulse"
                   style={{
                     height: `${Math.random() * 100}%`,
                     animationDelay: `${i * 50}ms`,
@@ -619,8 +619,8 @@ export default function BattlePage() {
           </div>
 
           {/* Battle Tips */}
-          <div className="bg-[rgba(0,255,193,0.1)] rounded-xl p-4">
-            <p className="text-sm text-[#00ffc1] font-medium mb-1">💡 Battle Tip</p>
+          <div className="bg-[rgba(94,234,212,0.1)] rounded-xl p-4">
+            <p className="text-sm text-[#5eead4] font-medium mb-1">💡 Battle Tip</p>
             <p className="text-sm text-gray-400">
               Focus on differentiating value, not features. Lead with outcomes and ROI.
             </p>

@@ -62,12 +62,12 @@ export default function ActiveCallOverlay({
   const isAnalyzing = callStatus === 'analyzing' || callStatus === 'ended'
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#00102e] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-[#0a0a0f] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.1)]">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00ffc1]/20 to-[#00ffc1]/5 flex items-center justify-center">
-            <Phone className={`w-6 h-6 ${isActive ? 'text-[#00ffc1]' : 'text-gray-400'}`} />
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/5 flex items-center justify-center">
+            <Phone className={`w-6 h-6 ${isActive ? 'text-[#5eead4]' : 'text-gray-400'}`} />
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">{challenge.persona}</h2>
@@ -95,7 +95,7 @@ export default function ActiveCallOverlay({
             </>
           )}
           {isAnalyzing && (
-            <div className="flex items-center gap-2 text-[#00ffc1]">
+            <div className="flex items-center gap-2 text-[#5eead4]">
               <Loader2 className="w-5 h-5 animate-spin" />
               <span className="font-medium">Analyzing call...</span>
             </div>
@@ -121,10 +121,10 @@ export default function ActiveCallOverlay({
           {/* Objectives */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-[#00ffc1]" />
+              <Target className="w-4 h-4 text-[#5eead4]" />
               Objectives
               {liveObjectivesCompleted.length > 0 && (
-                <span className="text-xs text-[#00ffc1] ml-auto bg-[#00ffc1]/10 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-[#5eead4] ml-auto bg-[#5eead4]/10 px-2 py-0.5 rounded-full">
                   {liveObjectivesCompleted.length}/{challenge.objectives.length}
                 </span>
               )}
@@ -136,12 +136,12 @@ export default function ActiveCallOverlay({
                   <li
                     key={i}
                     className={`flex items-start gap-3 transition-all duration-300 ${
-                      isCompleted ? 'text-[#00ffc1]' : 'text-gray-400'
+                      isCompleted ? 'text-[#5eead4]' : 'text-gray-400'
                     }`}
                   >
                     {isCompleted ? (
-                      <div className="w-6 h-6 rounded-full bg-[#00ffc1]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                      <div className="w-6 h-6 rounded-full bg-[#5eead4]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                       </div>
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center text-xs text-gray-500 flex-shrink-0 mt-0.5">
@@ -182,15 +182,15 @@ export default function ActiveCallOverlay({
         <div className="flex-1 flex flex-col border-r border-[rgba(255,255,255,0.1)]">
           <div className="px-6 py-4 border-b border-[rgba(255,255,255,0.1)]">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#00ffc1]" />
+              <MessageSquare className="w-4 h-4 text-[#5eead4]" />
               Live Transcript
             </h3>
           </div>
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {isConnecting && (
               <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-20 h-20 rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center mb-4 animate-pulse">
-                  <Phone className="w-10 h-10 text-[#00ffc1]" />
+                <div className="w-20 h-20 rounded-full bg-[rgba(94,234,212,0.1)] flex items-center justify-center mb-4 animate-pulse">
+                  <Phone className="w-10 h-10 text-[#5eead4]" />
                 </div>
                 <p className="text-white font-medium text-lg">Connecting to {challenge.persona}...</p>
                 <p className="text-gray-400 text-sm mt-2">Preparing your AI prospect</p>
@@ -210,7 +210,7 @@ export default function ActiveCallOverlay({
                 <div
                   className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     message.role === 'user'
-                      ? 'bg-[#00ffc1] text-[#00102e]'
+                      ? 'bg-[#5eead4] text-[#0a0a0f]'
                       : 'bg-[rgba(255,255,255,0.05)] text-white'
                   }`}
                 >
@@ -226,7 +226,7 @@ export default function ActiveCallOverlay({
         <div className="w-96 flex flex-col">
           <div className="px-6 py-4 border-b border-[rgba(255,255,255,0.1)]">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#00ffc1]" />
+              <FileText className="w-4 h-4 text-[#5eead4]" />
               Call Notes
             </h3>
           </div>
@@ -240,7 +240,7 @@ export default function ActiveCallOverlay({
 • Pain points mentioned
 • Next steps discussed
 • Questions to follow up on"
-              className="w-full h-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4 text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#00ffc1]/50 focus:ring-1 focus:ring-[#00ffc1]/20"
+              className="w-full h-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4 text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#5eead4]/50 focus:ring-1 focus:ring-[#5eead4]/20"
             />
           </div>
         </div>
@@ -285,11 +285,11 @@ export default function ActiveCallOverlay({
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                  <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                   Call recorded ({formatTime(duration)})
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Loader2 className="w-4 h-4 text-[#00ffc1] animate-spin" />
+                  <Loader2 className="w-4 h-4 text-[#5eead4] animate-spin" />
                   Processing transcript...
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">

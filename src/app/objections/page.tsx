@@ -245,7 +245,7 @@ export default function ObjectionsPage() {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity"
           >
             <Plus className="w-5 h-5" />
             Add Objection
@@ -261,7 +261,7 @@ export default function ObjectionsPage() {
               placeholder="Search objections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ export default function ObjectionsPage() {
                 onClick={() => setSortBy(sort as typeof sortBy)}
                 className={`px-4 py-2 rounded-xl transition-all capitalize ${
                   sortBy === sort
-                    ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                    ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                     : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                 }`}
               >
@@ -296,7 +296,7 @@ export default function ObjectionsPage() {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
                       selectedCategory === cat.id
-                        ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1]'
+                        ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4]'
                         : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                     }`}
                   >
@@ -332,7 +332,7 @@ export default function ObjectionsPage() {
                       <p className="text-sm font-medium text-white">{contributor.name}</p>
                       <p className="text-xs text-gray-500">Lv.{contributor.level}</p>
                     </div>
-                    <span className="text-sm text-[#00ffc1]">{contributor.contributions}</span>
+                    <span className="text-sm text-[#5eead4]">{contributor.contributions}</span>
                   </div>
                 ))}
               </div>
@@ -379,7 +379,7 @@ export default function ObjectionsPage() {
                           }}
                           className={`p-2 rounded-lg transition-colors ${
                             savedObjections.has(objection.id)
-                              ? 'bg-[#00ffc1]/20 text-[#00ffc1]'
+                              ? 'bg-[#5eead4]/20 text-[#5eead4]'
                               : 'hover:bg-[rgba(255,255,255,0.1)] text-gray-400'
                           }`}
                         >
@@ -408,7 +408,7 @@ export default function ObjectionsPage() {
                             index < objection.responses.length - 1
                               ? 'border-b border-[rgba(255,255,255,0.05)]'
                               : ''
-                          } ${response.isTopResponse ? 'bg-[rgba(0,255,193,0.02)]' : ''}`}
+                          } ${response.isTopResponse ? 'bg-[rgba(94,234,212,0.02)]' : ''}`}
                         >
                           {response.isTopResponse && (
                             <div className="flex items-center gap-2 mb-3">
@@ -460,7 +460,7 @@ export default function ObjectionsPage() {
                                   </>
                                 )}
                               </button>
-                              <button className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[rgba(0,255,193,0.1)] text-[#00ffc1] hover:bg-[rgba(0,255,193,0.2)] transition-colors">
+                              <button className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[rgba(94,234,212,0.1)] text-[#5eead4] hover:bg-[rgba(94,234,212,0.2)] transition-colors">
                                 <Play className="w-4 h-4" />
                                 <span className="text-sm">Practice</span>
                               </button>
@@ -493,12 +493,12 @@ export default function ObjectionsPage() {
             <input
               type="text"
               placeholder='e.g., "We need to see more case studies"'
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">Category</label>
-            <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00ffc1]">
+            <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#5eead4]">
               {categories.slice(1).map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.label}
@@ -511,7 +511,7 @@ export default function ObjectionsPage() {
             <textarea
               rows={4}
               placeholder="Share your best response to this objection..."
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1] resize-none"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4] resize-none"
             />
           </div>
           <div className="flex gap-3 pt-4">
@@ -521,7 +521,7 @@ export default function ObjectionsPage() {
             >
               Cancel
             </button>
-            <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+            <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
               Submit
             </button>
           </div>

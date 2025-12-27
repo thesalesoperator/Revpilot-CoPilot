@@ -111,13 +111,13 @@ export default function PerformancePage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-[#00ffc1]" />
+                <Target className="w-4 h-4 text-[#5eead4]" />
                 <span className="text-sm text-gray-400">Quota</span>
               </div>
               <p className="text-2xl font-bold text-white">{quickStats.quotaPercent}%</p>
               <div className="w-full bg-[rgba(255,255,255,0.1)] rounded-full h-2 mt-1">
                 <div
-                  className="bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] h-2 rounded-full"
+                  className="bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] h-2 rounded-full"
                   style={{ width: `${quickStats.quotaPercent}%` }}
                 />
               </div>
@@ -153,10 +153,10 @@ export default function PerformancePage() {
                 <section.icon className="w-6 h-6 text-white" />
               </div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-white group-hover:text-[#00ffc1] transition-colors">
+                <h3 className="text-lg font-semibold text-white group-hover:text-[#5eead4] transition-colors">
                   {section.title}
                 </h3>
-                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-[#00ffc1] group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-[#5eead4] group-hover:translate-x-1 transition-all" />
               </div>
               <p className="text-gray-400 text-sm mb-4">{section.description}</p>
               <div className="flex flex-wrap gap-2">

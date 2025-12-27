@@ -193,7 +193,7 @@ export default function SkillsPage() {
           </div>
           <div className="w-full bg-[rgba(255,255,255,0.1)] rounded-full h-4">
             <div
-              className="bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] h-4 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] h-4 rounded-full transition-all duration-500"
               style={{ width: `${overallProgress}%` }}
             />
           </div>
@@ -209,7 +209,7 @@ export default function SkillsPage() {
                 onClick={() => setSelectedTree(tree)}
                 className={`w-full p-4 rounded-xl transition-all text-left ${
                   selectedTree.id === tree.id
-                    ? 'glass-card border-[rgba(0,255,193,0.3)]'
+                    ? 'glass-card border-[rgba(94,234,212,0.3)]'
                     : 'bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-transparent'
                 }`}
               >
@@ -235,7 +235,7 @@ export default function SkillsPage() {
                   </div>
                   <ChevronRight
                     className={`w-5 h-5 transition-colors ${
-                      selectedTree.id === tree.id ? 'text-[#00ffc1]' : 'text-gray-500'
+                      selectedTree.id === tree.id ? 'text-[#5eead4]' : 'text-gray-500'
                     }`}
                   />
                 </div>
@@ -272,7 +272,7 @@ export default function SkillsPage() {
                       key={skill.level}
                       className={`relative flex items-center gap-4 p-4 rounded-xl transition-all ${
                         skill.unlocked
-                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.2)]'
+                          ? 'bg-[rgba(94,234,212,0.1)] border border-[rgba(94,234,212,0.2)]'
                           : isNext
                             ? 'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] animate-pulse'
                             : 'bg-[rgba(255,255,255,0.02)] opacity-50'
@@ -282,7 +282,7 @@ export default function SkillsPage() {
                       {index < selectedTree.skills.length - 1 && (
                         <div
                           className={`absolute left-[2.25rem] top-[4rem] w-0.5 h-6 ${
-                            skill.unlocked ? 'bg-[#00ffc1]' : 'bg-gray-700'
+                            skill.unlocked ? 'bg-[#5eead4]' : 'bg-gray-700'
                           }`}
                         />
                       )}
@@ -347,7 +347,7 @@ export default function SkillsPage() {
 
               {/* Unlock Next Skill */}
               {selectedTree.currentLevel < selectedTree.maxLevel && (
-                <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[rgba(0,255,193,0.1)] to-[rgba(0,217,166,0.1)] border border-[rgba(0,255,193,0.2)]">
+                <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[rgba(94,234,212,0.1)] to-[rgba(0,217,166,0.1)] border border-[rgba(94,234,212,0.2)]">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-400">Next skill to unlock</p>
@@ -355,7 +355,7 @@ export default function SkillsPage() {
                         {selectedTree.skills[selectedTree.currentLevel].name}
                       </p>
                     </div>
-                    <button className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                    <button className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                       Start Training
                     </button>
                   </div>

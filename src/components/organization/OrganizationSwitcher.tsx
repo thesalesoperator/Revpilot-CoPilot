@@ -63,7 +63,7 @@ export default function OrganizationSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.05)] transition-colors"
       >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00ffc1]/20 to-[#00ffc1]/5 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/5 flex items-center justify-center flex-shrink-0">
           {currentOrganization ? (
             currentOrganization.logo_url ? (
               <img
@@ -72,7 +72,7 @@ export default function OrganizationSwitcher() {
                 className="w-5 h-5 rounded"
               />
             ) : (
-              <Building2 className="w-4 h-4 text-[#00ffc1]" />
+              <Building2 className="w-4 h-4 text-[#5eead4]" />
             )
           ) : (
             <User className="w-4 h-4 text-gray-400" />
@@ -109,14 +109,14 @@ export default function OrganizationSwitcher() {
                     setIsOpen(false)
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors ${
-                    currentOrganization?.id === org.id ? 'bg-[rgba(0,255,193,0.05)]' : ''
+                    currentOrganization?.id === org.id ? 'bg-[rgba(94,234,212,0.05)]' : ''
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00ffc1]/20 to-[#00ffc1]/5 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/5 flex items-center justify-center flex-shrink-0">
                     {org.logo_url ? (
                       <img src={org.logo_url} alt={org.name} className="w-5 h-5 rounded" />
                     ) : (
-                      <Building2 className="w-4 h-4 text-[#00ffc1]" />
+                      <Building2 className="w-4 h-4 text-[#5eead4]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0 text-left">
@@ -129,7 +129,7 @@ export default function OrganizationSwitcher() {
                     </p>
                   </div>
                   {currentOrganization?.id === org.id && (
-                    <Check className="w-4 h-4 text-[#00ffc1] flex-shrink-0" />
+                    <Check className="w-4 h-4 text-[#5eead4] flex-shrink-0" />
                   )}
                 </button>
               ))
@@ -157,8 +157,8 @@ export default function OrganizationSwitcher() {
               }}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.05)] transition-colors"
             >
-              <Plus className="w-4 h-4 text-[#00ffc1]" />
-              <span className="text-sm text-[#00ffc1]">Create Organization</span>
+              <Plus className="w-4 h-4 text-[#5eead4]" />
+              <span className="text-sm text-[#5eead4]">Create Organization</span>
             </button>
           </div>
         </div>

@@ -20,15 +20,15 @@ export default function StatCard({
   variant = 'default',
 }: StatCardProps) {
   const iconColors = {
-    default: 'text-[#00ffc1]',
-    success: 'text-[#00ffc1]',
+    default: 'text-[#5eead4]',
+    success: 'text-[#5eead4]',
     warning: 'text-[#ffbe57]',
     danger: 'text-[#ff6b8a]',
   }
 
   const bgColors = {
-    default: 'bg-[rgba(0,255,193,0.1)]',
-    success: 'bg-[rgba(0,255,193,0.1)]',
+    default: 'bg-[rgba(94,234,212,0.1)]',
+    success: 'bg-[rgba(94,234,212,0.1)]',
     warning: 'bg-[rgba(255,190,87,0.1)]',
     danger: 'bg-[rgba(255,0,67,0.1)]',
   }

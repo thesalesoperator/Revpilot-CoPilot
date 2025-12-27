@@ -159,11 +159,11 @@ export default function TerritoryWarsPage() {
         </div>
 
         {/* Season Banner */}
-        <div className="glass-card p-6 mb-8 bg-gradient-to-r from-[rgba(0,255,193,0.1)] to-[rgba(0,217,166,0.05)]">
+        <div className="glass-card p-6 mb-8 bg-gradient-to-r from-[rgba(94,234,212,0.1)] to-[rgba(0,217,166,0.05)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
-                <Crown className="w-8 h-8 text-[#00102e]" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center">
+                <Crown className="w-8 h-8 text-[#0a0a0f]" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">Season 3: Winter Conquest</h2>
@@ -196,7 +196,7 @@ export default function TerritoryWarsPage() {
             </div>
             <div className="flex items-center gap-8">
               <div className="text-center">
-                <p className="text-2xl font-bold text-[#00ffc1]">{yourTeam.contribution}</p>
+                <p className="text-2xl font-bold text-[#5eead4]">{yourTeam.contribution}</p>
                 <p className="text-xs text-gray-400">Your Contribution</p>
               </div>
               <div className="text-center">
@@ -221,7 +221,7 @@ export default function TerritoryWarsPage() {
               onClick={() => setActiveTab(tab as typeof activeTab)}
               className={`px-6 py-2 rounded-xl transition-all capitalize ${
                 activeTab === tab
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -240,7 +240,7 @@ export default function TerritoryWarsPage() {
                   <div
                     key={team.id}
                     className={`glass-card p-4 cursor-pointer transition-all hover:scale-[1.01] ${
-                      team.id === yourTeam.id ? 'border-[rgba(0,255,193,0.3)]' : ''
+                      team.id === yourTeam.id ? 'border-[rgba(94,234,212,0.3)]' : ''
                     }`}
                     onClick={() => setSelectedTeam(team)}
                   >
@@ -270,7 +270,7 @@ export default function TerritoryWarsPage() {
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold text-white">{team.name}</h4>
                           {team.id === yourTeam.id && (
-                            <span className="text-xs text-[#00ffc1]">(Your Team)</span>
+                            <span className="text-xs text-[#5eead4]">(Your Team)</span>
                           )}
                         </div>
                         <p className="text-sm text-gray-400">{team.members} members</p>
@@ -285,7 +285,7 @@ export default function TerritoryWarsPage() {
                           <p className="text-xs text-gray-500">W-L</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-lg font-bold text-[#00ffc1]">{team.territory}%</p>
+                          <p className="text-lg font-bold text-[#5eead4]">{team.territory}%</p>
                           <p className="text-xs text-gray-500">Territory</p>
                         </div>
                         <div className="text-center">
@@ -325,7 +325,7 @@ export default function TerritoryWarsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Territory Gained</span>
-                    <span className="text-[#00ffc1] font-semibold">+12%</span>
+                    <span className="text-[#5eead4] font-semibold">+12%</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Points Earned</span>

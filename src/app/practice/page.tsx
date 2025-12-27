@@ -611,7 +611,7 @@ export default function PracticePage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin" />
         </div>
       </DashboardLayout>
     )
@@ -645,7 +645,7 @@ export default function PracticePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <Flame className="w-8 h-8 text-[#00ffc1]" />
+              <Flame className="w-8 h-8 text-[#5eead4]" />
               Sales Sparring Arena
             </h1>
             <p className="text-gray-400">Practice your skills against AI prospects. Level up. Dominate.</p>
@@ -677,7 +677,7 @@ export default function PracticePage() {
                 onClick={() => setDifficultyFilter(null)}
                 className={`px-3 py-1 rounded-lg text-sm transition-all ${
                   difficultyFilter === null
-                    ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
+                    ? 'bg-[#5eead4] text-[#0a0a0f] font-semibold'
                     : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
                 }`}
               >
@@ -717,14 +717,14 @@ export default function PracticePage() {
                         : callState.status !== 'idle'
                         ? 'opacity-50 cursor-not-allowed'
                         : isSelected
-                        ? 'border-[#00ffc1] ring-2 ring-[#00ffc1]/20'
-                        : 'hover:border-[rgba(0,255,193,0.3)]'
+                        ? 'border-[#5eead4] ring-2 ring-[#5eead4]/20'
+                        : 'hover:border-[rgba(94,234,212,0.3)]'
                     }`}
                   >
                     {/* Best Score Badge */}
                     {bestScore && (
                       <div className="absolute top-2 right-2">
-                        <div className="flex items-center gap-1 bg-[rgba(0,255,193,0.1)] px-2 py-1 rounded-full">
+                        <div className="flex items-center gap-1 bg-[rgba(94,234,212,0.1)] px-2 py-1 rounded-full">
                           <Trophy className="w-3 h-3 text-yellow-400" />
                           <span className="text-xs text-yellow-400">{bestScore}</span>
                         </div>
@@ -733,7 +733,7 @@ export default function PracticePage() {
 
                     {/* Locked Overlay */}
                     {challenge.isLocked && (
-                      <div className="absolute inset-0 bg-[#00102e]/80 flex items-center justify-center z-10">
+                      <div className="absolute inset-0 bg-[#0a0a0f]/80 flex items-center justify-center z-10">
                         <div className="text-center">
                           <Lock className="w-8 h-8 text-gray-500 mx-auto mb-2" />
                           <p className="text-sm text-gray-400">{challenge.unlockRequirement}</p>
@@ -770,7 +770,7 @@ export default function PracticePage() {
                           </span>
                         </div>
                       </div>
-                      <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-[#00ffc1]' : 'text-gray-600'}`} />
+                      <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-[#5eead4]' : 'text-gray-600'}`} />
                     </div>
 
                     {/* Bonus Objectives Preview */}
@@ -822,10 +822,10 @@ export default function PracticePage() {
                 {/* Objectives */}
                 <div>
                   <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
-                    <Target className="w-4 h-4 text-[#00ffc1]" />
+                    <Target className="w-4 h-4 text-[#5eead4]" />
                     Objectives
                     {callState.status === 'active' && callState.liveObjectivesCompleted.length > 0 && (
-                      <span className="text-xs text-[#00ffc1] ml-auto">
+                      <span className="text-xs text-[#5eead4] ml-auto">
                         {callState.liveObjectivesCompleted.length}/{selectedChallenge.objectives.length}
                       </span>
                     )}
@@ -838,12 +838,12 @@ export default function PracticePage() {
                         <li
                           key={i}
                           className={`text-sm flex items-start gap-2 transition-all duration-300 ${
-                            isCompleted ? 'text-[#00ffc1]' : 'text-gray-400'
+                            isCompleted ? 'text-[#5eead4]' : 'text-gray-400'
                           }`}
                         >
                           {isActive && isCompleted ? (
-                            <div className="w-5 h-5 rounded-full bg-[#00ffc1]/20 flex items-center justify-center mt-0.5">
-                              <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                            <div className="w-5 h-5 rounded-full bg-[#5eead4]/20 flex items-center justify-center mt-0.5">
+                              <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                             </div>
                           ) : (
                             <div className="w-5 h-5 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center text-xs text-gray-500 mt-0.5">
@@ -890,8 +890,8 @@ export default function PracticePage() {
 
                   {callState.status === 'connecting' && (
                     <div className="text-center">
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center animate-pulse">
-                        <Phone className="w-8 h-8 text-[#00ffc1]" />
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-[rgba(94,234,212,0.1)] flex items-center justify-center animate-pulse">
+                        <Phone className="w-8 h-8 text-[#5eead4]" />
                       </div>
                       <p className="text-white font-medium">Connecting...</p>
                       <p className="text-sm text-gray-400">Preparing your AI prospect</p>
@@ -919,7 +919,7 @@ export default function PracticePage() {
                         {[...Array(5)].map((_, i) => (
                           <div
                             key={i}
-                            className="w-1 bg-[#00ffc1] rounded-full animate-pulse"
+                            className="w-1 bg-[#5eead4] rounded-full animate-pulse"
                             style={{
                               height: `${Math.random() * 20 + 10}px`,
                               animationDelay: `${i * 0.1}s`,
@@ -955,8 +955,8 @@ export default function PracticePage() {
 
                   {(callState.status === 'ended' || callState.status === 'analyzing') && !showResults && (
                     <div className="text-center space-y-4">
-                      <div className="w-20 h-20 mx-auto rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
-                        <Loader2 className="w-10 h-10 text-[#00ffc1] animate-spin" />
+                      <div className="w-20 h-20 mx-auto rounded-full bg-[rgba(94,234,212,0.1)] flex items-center justify-center">
+                        <Loader2 className="w-10 h-10 text-[#5eead4] animate-spin" />
                       </div>
                       <div>
                         <p className="text-xl font-bold text-white mb-2">Analyzing Your Call</p>
@@ -964,11 +964,11 @@ export default function PracticePage() {
                       </div>
                       <div className="bg-[rgba(255,255,255,0.02)] rounded-xl p-4 text-left space-y-2">
                         <div className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                          <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                           <span className="text-gray-300">Call recorded ({formatTime(callState.duration)})</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Loader2 className="w-4 h-4 text-[#00ffc1] animate-spin" />
+                          <Loader2 className="w-4 h-4 text-[#5eead4] animate-spin" />
                           <span className="text-gray-300">Processing transcript...</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
@@ -986,8 +986,8 @@ export default function PracticePage() {
               </div>
             ) : (
               <div className="glass-card p-8 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
-                  <Target className="w-8 h-8 text-[#00ffc1]" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[rgba(94,234,212,0.1)] flex items-center justify-center">
+                  <Target className="w-8 h-8 text-[#5eead4]" />
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Select a Challenge</h3>
                 <p className="text-gray-400 text-sm">Choose a challenge from the list to start practicing</p>
@@ -1003,8 +1003,8 @@ export default function PracticePage() {
                 </div>
 
                 {/* XP Earned */}
-                <div className="bg-[rgba(0,255,193,0.1)] rounded-xl p-4 text-center">
-                  <div className="flex items-center justify-center gap-2 text-[#00ffc1]">
+                <div className="bg-[rgba(94,234,212,0.1)] rounded-xl p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 text-[#5eead4]">
                     <Star className="w-5 h-5" />
                     <span className="text-2xl font-bold">+{callResults.xpEarned} XP</span>
                   </div>

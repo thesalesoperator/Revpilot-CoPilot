@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-2 text-white focus:outline-none focus:border-[#00ffc1]"
+              className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-2 text-white focus:outline-none focus:border-[#5eead4]"
             >
               <option value="30d">Last 30 days</option>
               <option value="90d">Last 90 days</option>
@@ -177,7 +177,7 @@ export default function AnalyticsPage() {
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-2 px-6 py-2 rounded-xl transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
                     {Math.abs(winLossData.trends.winRate)}%
                   </span>
                 </div>
-                <p className="text-3xl font-bold text-[#00ffc1]">{winLossData.winRate}%</p>
+                <p className="text-3xl font-bold text-[#5eead4]">{winLossData.winRate}%</p>
                 <p className="text-sm text-gray-500 mt-1">
                   {winLossData.won} won / {winLossData.lost} lost
                 </p>
@@ -292,13 +292,13 @@ export default function AnalyticsPage() {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm text-gray-400">{factor.factor}</span>
-                          <span className="text-sm text-[#00ffc1] font-medium">
+                          <span className="text-sm text-[#5eead4] font-medium">
                             {factor.correlation}% correlation
                           </span>
                         </div>
                         <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] rounded-full"
+                            className="h-full bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] rounded-full"
                             style={{ width: `${factor.correlation}%` }}
                           />
                         </div>
@@ -373,7 +373,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-400">AI Forecast</p>
-                  <p className="text-3xl font-bold text-[#00ffc1]">
+                  <p className="text-3xl font-bold text-[#5eead4]">
                     ${(quotaForecast.forecast / 1000).toFixed(0)}k
                   </p>
                 </div>
@@ -382,11 +382,11 @@ export default function AnalyticsPage() {
               {/* Progress Bar */}
               <div className="relative h-8 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden mb-4">
                 <div
-                  className="absolute h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] rounded-full"
+                  className="absolute h-full bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] rounded-full"
                   style={{ width: `${quotaForecast.percentToTarget}%` }}
                 />
                 <div
-                  className="absolute h-full bg-[rgba(0,255,193,0.3)] rounded-full"
+                  className="absolute h-full bg-[rgba(94,234,212,0.3)] rounded-full"
                   style={{ width: `${(quotaForecast.forecast / quotaForecast.target) * 100}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -441,11 +441,11 @@ export default function AnalyticsPage() {
                   <h4 className="font-semibold text-white mb-2">AI Forecast Analysis</h4>
                   <p className="text-gray-300 mb-4">
                     Based on your current pipeline velocity and historical win rates, you&apos;re projected to hit{' '}
-                    <span className="text-[#00ffc1] font-semibold">93%</span> of quota. To hit 100%, you need to:
+                    <span className="text-[#5eead4] font-semibold">93%</span> of quota. To hit 100%, you need to:
                   </p>
                   <ul className="space-y-2 text-gray-400">
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                      <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                       Close the GlobalBank deal ($280k) - 60% probability
                     </li>
                     <li className="flex items-center gap-2">
@@ -581,11 +581,11 @@ export default function AnalyticsPage() {
                 ].map((rec, index) => (
                   <div
                     key={index}
-                    className="p-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] hover:border-[rgba(0,255,193,0.3)] transition-colors cursor-pointer"
+                    className="p-4 rounded-xl bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] hover:border-[rgba(94,234,212,0.3)] transition-colors cursor-pointer"
                   >
                     <h5 className="font-medium text-white mb-2">{rec.title}</h5>
                     <p className="text-sm text-gray-400 mb-3">{rec.description}</p>
-                    <span className="text-sm font-semibold text-[#00ffc1]">{rec.impact}</span>
+                    <span className="text-sm font-semibold text-[#5eead4]">{rec.impact}</span>
                   </div>
                 ))}
               </div>

@@ -159,7 +159,7 @@ export default function DealsPage() {
             <h1 className="text-3xl font-bold text-white mb-2">Deal Rooms</h1>
             <p className="text-gray-400">Collaborate on deals with your team</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
             <Plus className="w-5 h-5" />
             New Deal
           </button>
@@ -169,7 +169,7 @@ export default function DealsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Briefcase className="w-5 h-5 text-[#00ffc1]" />
+              <Briefcase className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Active Deals</span>
             </div>
             <p className="text-3xl font-bold text-white">{deals.length}</p>
@@ -209,7 +209,7 @@ export default function DealsPage() {
                 placeholder="Search deals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
               />
             </div>
 
@@ -219,7 +219,7 @@ export default function DealsPage() {
                 onClick={() => setSelectedDeal(deal)}
                 className={`w-full text-left p-4 rounded-xl transition-all ${
                   selectedDeal.id === deal.id
-                    ? 'glass-card border-[rgba(0,255,193,0.3)]'
+                    ? 'glass-card border-[rgba(94,234,212,0.3)]'
                     : 'bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-transparent'
                 }`}
               >
@@ -256,7 +256,7 @@ export default function DealsPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowDealRoom(true)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity"
                   >
                     Open Deal Room
                   </button>
@@ -274,7 +274,7 @@ export default function DealsPage() {
                     onClick={() => setActiveTab(tab as typeof activeTab)}
                     className={`px-4 py-2 rounded-xl transition-all capitalize ${
                       activeTab === tab
-                        ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                        ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                         : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                     }`}
                   >
@@ -377,11 +377,11 @@ export default function DealsPage() {
                   </div>
 
                   {/* Next Action */}
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-[rgba(0,255,193,0.1)] to-[rgba(0,217,166,0.05)] border border-[rgba(0,255,193,0.2)]">
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-[rgba(94,234,212,0.1)] to-[rgba(0,217,166,0.05)] border border-[rgba(94,234,212,0.2)]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#00ffc1]/20 flex items-center justify-center">
-                          <Target className="w-5 h-5 text-[#00ffc1]" />
+                        <div className="w-10 h-10 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                          <Target className="w-5 h-5 text-[#5eead4]" />
                         </div>
                         <div>
                           <p className="text-sm text-gray-400">Next Action</p>
@@ -390,7 +390,7 @@ export default function DealsPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-400">Due</p>
-                        <p className="font-semibold text-[#00ffc1]">
+                        <p className="font-semibold text-[#5eead4]">
                           {new Date(selectedDeal.nextActionDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -426,7 +426,7 @@ export default function DealsPage() {
                         <p className="text-gray-300">
                           <span className="text-white font-medium">{activity.user}</span>{' '}
                           {activity.action}{' '}
-                          <span className="text-[#00ffc1]">{activity.target}</span>
+                          <span className="text-[#5eead4]">{activity.target}</span>
                         </p>
                         <p className="text-sm text-gray-500 mt-1">{activity.time}</p>
                       </div>
@@ -444,7 +444,7 @@ export default function DealsPage() {
                       className="flex items-center justify-between p-4 rounded-xl bg-[rgba(255,255,255,0.02)]"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-semibold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-[#0a0a0f] font-semibold">
                           {member[0]}
                         </div>
                         <div>
@@ -476,7 +476,7 @@ export default function DealsPage() {
                     </div>
                     <p className="text-gray-300 mb-4">
                       Based on engagement patterns and historical data, this deal has a{' '}
-                      <span className="text-[#00ffc1] font-semibold">{selectedDeal.probability}%</span>{' '}
+                      <span className="text-[#5eead4] font-semibold">{selectedDeal.probability}%</span>{' '}
                       chance of closing. Key risk: CFO engagement has dropped by 40% in the last 2 weeks.
                     </p>
                     <div className="flex items-center gap-2">
@@ -535,7 +535,7 @@ export default function DealsPage() {
                           className="w-full flex items-center justify-between p-3 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors group"
                         >
                           <span className="text-gray-300">{action}</span>
-                          <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-[#00ffc1] transition-colors" />
+                          <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-[#5eead4] transition-colors" />
                         </button>
                       ))}
                     </div>
@@ -561,7 +561,7 @@ export default function DealsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <button className="p-4 rounded-xl bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-colors text-center">
-              <FileText className="w-8 h-8 text-[#00ffc1] mx-auto mb-2" />
+              <FileText className="w-8 h-8 text-[#5eead4] mx-auto mb-2" />
               <p className="text-white font-medium">Documents</p>
               <p className="text-sm text-gray-400">5 files</p>
             </button>
@@ -583,7 +583,7 @@ export default function DealsPage() {
           </div>
 
           <div className="pt-4 border-t border-[rgba(255,255,255,0.1)]">
-            <button className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+            <button className="w-full py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
               Enter Full Deal Room
             </button>
           </div>

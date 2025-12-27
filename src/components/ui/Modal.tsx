@@ -38,11 +38,11 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         className={`glass-card w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-[rgba(0,255,193,0.1)]">
+        <div className="flex items-center justify-between p-6 border-b border-[rgba(94,234,212,0.1)]">
           <h2 className="text-xl font-semibold gradient-text">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-[rgba(0,255,193,0.1)] transition-colors"
+            className="p-2 rounded-lg hover:bg-[rgba(94,234,212,0.1)] transition-colors"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>

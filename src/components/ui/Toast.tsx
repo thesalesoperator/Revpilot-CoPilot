@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }
 
   const colors = {
-    success: 'border-[#00ffc1] text-[#00ffc1]',
+    success: 'border-[#5eead4] text-[#5eead4]',
     error: 'border-[#ff6b8a] text-[#ff6b8a]',
     info: 'border-[#ffbe57] text-[#ffbe57]',
   }

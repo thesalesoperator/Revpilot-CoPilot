@@ -404,9 +404,9 @@ export default function SettingsPage() {
 
         {/* Profile Section */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-[#00ffc1]" />
+              <User className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Profile</h2>
             </div>
           </div>
@@ -446,7 +446,7 @@ export default function SettingsPage() {
             <div className="flex justify-end">
               <button onClick={handleSaveProfile} disabled={saving} className="btn-primary flex items-center gap-2">
                 {saving ? (
-                  <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
@@ -694,9 +694,9 @@ export default function SettingsPage() {
 
         {/* Sales Practice Context */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] bg-gradient-to-r from-[rgba(0,255,193,0.05)] to-transparent">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] bg-gradient-to-r from-[rgba(94,234,212,0.05)] to-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center">
                 <Zap className="w-5 h-5 text-[#0a0f1c]" />
               </div>
               <div>
@@ -781,7 +781,7 @@ export default function SettingsPage() {
                 className="btn-primary flex items-center gap-2"
               >
                 {saving ? (
-                  <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
@@ -795,9 +795,9 @@ export default function SettingsPage() {
 
         {/* Commission Pay Schedule */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-[#00ffc1]" />
+              <Calendar className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Commission Pay Schedule</h2>
             </div>
           </div>
@@ -835,7 +835,7 @@ export default function SettingsPage() {
             <div className="flex justify-end">
               <button onClick={handleSaveSettings} disabled={saving} className="btn-primary flex items-center gap-2">
                 {saving ? (
-                  <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
@@ -849,9 +849,9 @@ export default function SettingsPage() {
 
         {/* Saved Products */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] flex items-center justify-between">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Package className="w-5 h-5 text-[#00ffc1]" />
+              <Package className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Saved Products</h2>
             </div>
             <button onClick={handleAddProduct} className="btn-secondary flex items-center gap-2 text-sm py-2 px-4">
@@ -873,7 +873,7 @@ export default function SettingsPage() {
                 {products.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-[rgba(0,255,193,0.02)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4 flex items-center justify-between"
+                    className="bg-[rgba(94,234,212,0.02)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4 flex items-center justify-between"
                   >
                     <div className="flex-1">
                       <h3 className="font-medium text-white mb-1">{product.name}</h3>
@@ -887,7 +887,7 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditProduct(product)}
-                        className="p-2 rounded-lg hover:bg-[rgba(0,255,193,0.1)] text-gray-400 hover:text-[#00ffc1] transition-colors"
+                        className="p-2 rounded-lg hover:bg-[rgba(94,234,212,0.1)] text-gray-400 hover:text-[#5eead4] transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -907,9 +907,9 @@ export default function SettingsPage() {
 
         {/* Live Coaching Chrome Extension */}
         <div className="glass-card overflow-hidden">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] bg-gradient-to-r from-[rgba(0,255,193,0.05)] to-transparent">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] bg-gradient-to-r from-[rgba(94,234,212,0.05)] to-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center">
                 <Headphones className="w-5 h-5 text-[#0a0f1c]" />
               </div>
               <div>
@@ -922,19 +922,19 @@ export default function SettingsPage() {
             {/* Features */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
-                <Zap className="w-6 h-6 text-[#00ffc1] mb-2" />
+                <Zap className="w-6 h-6 text-[#5eead4] mb-2" />
                 <h4 className="font-medium text-white mb-1">Real-Time Suggestions</h4>
                 <p className="text-sm text-gray-400">Get coaching tips and follow-up questions as you talk</p>
               </div>
               <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
-                <svg className="w-6 h-6 text-[#00ffc1] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-[#5eead4] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
                 <h4 className="font-medium text-white mb-1">Objection Handling</h4>
                 <p className="text-sm text-gray-400">AI detects objections and suggests responses</p>
               </div>
               <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl p-4">
-                <svg className="w-6 h-6 text-[#00ffc1] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-[#5eead4] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
                 <h4 className="font-medium text-white mb-1">Talk Ratio Tracking</h4>
@@ -943,7 +943,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Installation Instructions */}
-            <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-6">
+            <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-6">
               <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
                 <Chrome className="w-5 h-5" />
                 Install Chrome Extension
@@ -966,19 +966,19 @@ export default function SettingsPage() {
               </div>
 
               {/* Quick Start Steps */}
-              <div className="border-t border-[rgba(0,255,193,0.1)] pt-4">
+              <div className="border-t border-[rgba(94,234,212,0.1)] pt-4">
                 <p className="text-white font-medium mb-3">After installing:</p>
                 <ol className="space-y-2 text-sm">
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">1</span>
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#5eead4] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">1</span>
                     <p className="text-gray-400">Click the extension icon and log in with your RevPilot account</p>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">2</span>
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#5eead4] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">2</span>
                     <p className="text-gray-400">Join a Zoom call in Chrome (use web client, not desktop app)</p>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">3</span>
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#5eead4] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">3</span>
                     <p className="text-gray-400">Click &quot;Start Coaching&quot; in the overlay and get real-time tips!</p>
                   </li>
                 </ol>
@@ -1002,7 +1002,7 @@ export default function SettingsPage() {
                   Manual installation (for developers)
                 </summary>
                 <div className="mt-3 pl-4 border-l border-gray-700 text-gray-400 space-y-2">
-                  <p>1. <a href="/downloads/revpilot-extension.zip" download className="text-[#00ffc1] hover:underline">Download the extension ZIP</a></p>
+                  <p>1. <a href="/downloads/revpilot-extension.zip" download className="text-[#5eead4] hover:underline">Download the extension ZIP</a></p>
                   <p>2. Extract the ZIP file</p>
                   <p>3. Go to <code className="bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded">chrome://extensions</code></p>
                   <p>4. Enable &quot;Developer mode&quot; (top right)</p>
@@ -1031,9 +1031,9 @@ export default function SettingsPage() {
 
         {/* Sales Training Manual */}
         <div className="glass-card overflow-hidden">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)] bg-gradient-to-r from-[rgba(0,255,193,0.05)] to-transparent">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)] bg-gradient-to-r from-[rgba(94,234,212,0.05)] to-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-[#0a0f1c]" />
               </div>
               <div>
@@ -1054,8 +1054,8 @@ export default function SettingsPage() {
               <div
                 className={`border rounded-xl overflow-hidden transition-all cursor-pointer ${
                   salesMethodology === 'challenger'
-                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
-                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                    ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(94,234,212,0.3)]'
                 }`}
               >
                 <div
@@ -1067,7 +1067,7 @@ export default function SettingsPage() {
                     name="methodology"
                     checked={salesMethodology === 'challenger'}
                     onChange={() => setSalesMethodology('challenger')}
-                    className="mt-1 accent-[#00ffc1]"
+                    className="mt-1 accent-[#5eead4]"
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -1106,8 +1106,8 @@ export default function SettingsPage() {
               <div
                 className={`border rounded-xl overflow-hidden transition-all cursor-pointer ${
                   salesMethodology === 'nepq'
-                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
-                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                    ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(94,234,212,0.3)]'
                 }`}
               >
                 <div
@@ -1119,7 +1119,7 @@ export default function SettingsPage() {
                     name="methodology"
                     checked={salesMethodology === 'nepq'}
                     onChange={() => setSalesMethodology('nepq')}
-                    className="mt-1 accent-[#00ffc1]"
+                    className="mt-1 accent-[#5eead4]"
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -1159,8 +1159,8 @@ export default function SettingsPage() {
               <div
                 className={`border rounded-xl overflow-hidden transition-all cursor-pointer ${
                   salesMethodology === 'hormozi'
-                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
-                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                    ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(94,234,212,0.3)]'
                 }`}
               >
                 <div
@@ -1172,7 +1172,7 @@ export default function SettingsPage() {
                     name="methodology"
                     checked={salesMethodology === 'hormozi'}
                     onChange={() => setSalesMethodology('hormozi')}
-                    className="mt-1 accent-[#00ffc1]"
+                    className="mt-1 accent-[#5eead4]"
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
@@ -1218,8 +1218,8 @@ export default function SettingsPage() {
               <div
                 className={`border rounded-xl overflow-hidden transition-all ${
                   salesMethodology === 'custom'
-                    ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
-                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(0,255,193,0.3)]'
+                    ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]'
+                    : 'border-[rgba(255,255,255,0.1)] hover:border-[rgba(94,234,212,0.3)]'
                 }`}
               >
                 <div
@@ -1231,7 +1231,7 @@ export default function SettingsPage() {
                     name="methodology"
                     checked={salesMethodology === 'custom'}
                     onChange={() => setSalesMethodology('custom')}
-                    className="mt-1 accent-[#00ffc1]"
+                    className="mt-1 accent-[#5eead4]"
                   />
                   <div className="flex-1">
                     <h3 className="font-semibold text-white">Custom Methodology</h3>
@@ -1272,7 +1272,7 @@ export default function SettingsPage() {
                 className="btn-primary flex items-center gap-2"
               >
                 {saving ? (
-                  <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
@@ -1286,9 +1286,9 @@ export default function SettingsPage() {
 
         {/* Fathom Integration */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <div className="flex items-center gap-3">
-              <Link className="w-5 h-5 text-[#00ffc1]" />
+              <Link className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Fathom Integration</h2>
               {fathomConnected && (
                 <span className="flex items-center gap-1 text-sm bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
@@ -1327,7 +1327,7 @@ export default function SettingsPage() {
                   className="btn-primary flex items-center gap-2"
                 >
                   {saving ? (
-                    <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
@@ -1342,7 +1342,7 @@ export default function SettingsPage() {
                   href="https://fathom.video/settings/integrations"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#00ffc1] hover:underline inline-flex items-center gap-1"
+                  className="text-[#5eead4] hover:underline inline-flex items-center gap-1"
                 >
                   Fathom Settings <ExternalLink className="w-3 h-3" />
                 </a>
@@ -1350,7 +1350,7 @@ export default function SettingsPage() {
             </div>
 
             {fathomConnected && (
-              <div className="flex items-center justify-between bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4">
+              <div className="flex items-center justify-between bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
                 <div>
                   <p className="text-white font-medium">Fathom is connected</p>
                   <p className="text-sm text-gray-400">You can now import calls from the Call Review page</p>
@@ -1368,9 +1368,9 @@ export default function SettingsPage() {
 
         {/* Badges & Achievements */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <div className="flex items-center gap-3">
-              <Trophy className="w-5 h-5 text-[#00ffc1]" />
+              <Trophy className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Badges & Achievements</h2>
             </div>
             <p className="text-gray-400 text-sm mt-1">
@@ -1379,7 +1379,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Current Streaks */}
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Flame className="w-5 h-5 text-orange-500" />
               Current Streaks
@@ -1427,7 +1427,7 @@ export default function SettingsPage() {
                       key={badge.id}
                       className={`rounded-xl p-4 text-center transition-all ${
                         isEarned
-                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.3)]'
+                          ? 'bg-[rgba(94,234,212,0.1)] border border-[rgba(94,234,212,0.3)]'
                           : 'bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] opacity-50'
                       }`}
                     >
@@ -1439,7 +1439,7 @@ export default function SettingsPage() {
                       </h4>
                       <p className="text-xs text-gray-500 mt-1">{badge.description}</p>
                       {isEarned && (
-                        <span className="inline-block mt-2 text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                        <span className="inline-block mt-2 text-xs bg-[#5eead4]/20 text-[#5eead4] px-2 py-1 rounded-full">
                           Earned!
                         </span>
                       )}
@@ -1460,7 +1460,7 @@ export default function SettingsPage() {
                       key={badge.id}
                       className={`rounded-xl p-4 transition-all ${
                         isEarned
-                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.3)]'
+                          ? 'bg-[rgba(94,234,212,0.1)] border border-[rgba(94,234,212,0.3)]'
                           : 'bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] opacity-50'
                       }`}
                     >
@@ -1474,7 +1474,7 @@ export default function SettingsPage() {
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">{badge.requirement}</p>
                           {isEarned && (
-                            <span className="inline-block mt-2 text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                            <span className="inline-block mt-2 text-xs bg-[#5eead4]/20 text-[#5eead4] px-2 py-1 rounded-full">
                               Earned!
                             </span>
                           )}
@@ -1497,7 +1497,7 @@ export default function SettingsPage() {
                       key={badge.id}
                       className={`rounded-xl p-4 transition-all ${
                         isEarned
-                          ? 'bg-[rgba(0,255,193,0.1)] border border-[rgba(0,255,193,0.3)]'
+                          ? 'bg-[rgba(94,234,212,0.1)] border border-[rgba(94,234,212,0.3)]'
                           : 'bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] opacity-50'
                       }`}
                     >
@@ -1511,7 +1511,7 @@ export default function SettingsPage() {
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">{badge.requirement}</p>
                           {isEarned && (
-                            <span className="inline-block mt-2 text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                            <span className="inline-block mt-2 text-xs bg-[#5eead4]/20 text-[#5eead4] px-2 py-1 rounded-full">
                               Earned!
                             </span>
                           )}
@@ -1524,11 +1524,11 @@ export default function SettingsPage() {
             </div>
 
             {/* Stats Summary */}
-            <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-6">
+            <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-400 text-sm">Total Badges Earned</p>
-                  <p className="text-3xl font-bold text-[#00ffc1]">
+                  <p className="text-3xl font-bold text-[#5eead4]">
                     {userBadges.length} / {BADGES.length}
                   </p>
                 </div>
@@ -1541,7 +1541,7 @@ export default function SettingsPage() {
               </div>
               <div className="mt-4 bg-[rgba(255,255,255,0.1)] rounded-full h-3 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] transition-all duration-500"
                   style={{ width: `${(userBadges.length / BADGES.length) * 100}%` }}
                 />
               </div>
@@ -1723,7 +1723,7 @@ function ProductModal({ isOpen, onClose, product, userId, onSuccess }: ProductMo
           </button>
           <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2">
             {loading ? (
-              <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <Save className="w-4 h-4" />
