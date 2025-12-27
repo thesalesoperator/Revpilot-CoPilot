@@ -45,10 +45,10 @@ const categories = [
 
 // Difficulty levels
 const difficulties = [
-  { id: 'easy', label: 'Easy', color: 'text-green-400 bg-green-500/20' },
-  { id: 'medium', label: 'Medium', color: 'text-yellow-400 bg-yellow-500/20' },
-  { id: 'hard', label: 'Hard', color: 'text-orange-400 bg-orange-500/20' },
-  { id: 'expert', label: 'Expert', color: 'text-red-400 bg-red-500/20' },
+  { id: 'easy', label: 'Easy', color: 'text-[#5eead4] bg-[#5eead4]/20' },
+  { id: 'medium', label: 'Medium', color: 'text-[#5eead4] bg-[#5eead4]/20' },
+  { id: 'hard', label: 'Hard', color: 'text-[#5eead4] bg-[#5eead4]/20' },
+  { id: 'expert', label: 'Expert', color: 'text-gray-400 bg-gray-500/20' },
 ]
 
 // Mock personas
@@ -272,14 +272,14 @@ export default function PersonasPage() {
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-3xl">
                       {persona.avatar}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-white">{persona.name}</h3>
                         {persona.isOfficial && (
-                          <Sparkles className="w-4 h-4 text-yellow-400" />
+                          <Sparkles className="w-4 h-4 text-[#5eead4]" />
                         )}
                       </div>
                       <p className="text-sm text-gray-400">{persona.role}</p>
@@ -314,7 +314,7 @@ export default function PersonasPage() {
                 <div className="flex items-center justify-between text-sm mb-4">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1 text-gray-400">
-                      <Star className="w-4 h-4 text-yellow-400" />
+                      <Star className="w-4 h-4 text-[#5eead4]" />
                       {persona.rating}
                     </span>
                     <span className="flex items-center gap-1 text-gray-400">
@@ -481,7 +481,7 @@ export default function PersonasPage() {
         {selectedPersona && (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-5xl">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-5xl">
                 {selectedPersona.avatar}
               </div>
               <div>

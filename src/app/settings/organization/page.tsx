@@ -295,12 +295,12 @@ export default function OrganizationSettingsPage() {
           </div>
           <div className="flex items-center gap-2 text-sm">
             {currentOrganization.user_role === 'owner' && (
-              <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full">
+              <span className="flex items-center gap-1 bg-[#5eead4]/20 text-[#5eead4] px-3 py-1 rounded-full">
                 <Crown className="w-3 h-3" /> Owner
               </span>
             )}
             {currentOrganization.user_role === 'admin' && (
-              <span className="flex items-center gap-1 bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full">
+              <span className="flex items-center gap-1 bg-[#5eead4]/20 text-[#5eead4] px-3 py-1 rounded-full">
                 <Shield className="w-3 h-3" /> Admin
               </span>
             )}
@@ -434,7 +434,7 @@ export default function OrganizationSettingsPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   {member.role === 'owner' ? (
-                    <span className="flex items-center gap-1 text-yellow-400 text-sm">
+                    <span className="flex items-center gap-1 text-[#5eead4] text-sm">
                       <Crown className="w-4 h-4" /> Owner
                     </span>
                   ) : (
@@ -450,7 +450,7 @@ export default function OrganizationSettingsPage() {
                         </select>
                       ) : (
                         <span className={`flex items-center gap-1 text-sm ${
-                          member.role === 'admin' ? 'text-purple-400' : 'text-gray-400'
+                          member.role === 'admin' ? 'text-[#5eead4]' : 'text-gray-400'
                         }`}>
                           {member.role === 'admin' && <Shield className="w-4 h-4" />}
                           {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
@@ -459,7 +459,7 @@ export default function OrganizationSettingsPage() {
                       {isOrgAdmin && member.user_id !== user?.id && member.role !== 'owner' && (
                         <button
                           onClick={() => handleRemoveMember(member.id, (member as { full_name?: string }).full_name || 'this member')}
-                          className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors"
+                          className="p-2 rounded-lg hover:bg-gray-500/10 text-gray-400 hover:text-gray-400 transition-colors"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -521,7 +521,7 @@ export default function OrganizationSettingsPage() {
                             <div className="flex items-center gap-2 mb-1">
                               <code className="text-[#5eead4] font-mono text-sm">{invite.invite_code}</code>
                               <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                invite.role === 'admin' ? 'bg-purple-500/20 text-purple-400' : 'bg-gray-500/20 text-gray-400'
+                                invite.role === 'admin' ? 'bg-[#5eead4]/20 text-[#5eead4]' : 'bg-gray-500/20 text-gray-400'
                               }`}>
                                 {invite.role}
                               </span>
@@ -549,7 +549,7 @@ export default function OrganizationSettingsPage() {
                             </button>
                             <button
                               onClick={() => handleRevokeInvite(invite.id)}
-                              className="p-2 rounded-lg hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-colors"
+                              className="p-2 rounded-lg hover:bg-gray-500/10 text-gray-400 hover:text-gray-400 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -581,8 +581,8 @@ export default function OrganizationSettingsPage() {
               <div>
                 <span className="text-sm text-gray-400">Status</span>
                 <p className={`font-medium ${
-                  currentOrganization.subscription_status === 'active' ? 'text-green-400' :
-                  currentOrganization.subscription_status === 'trial' ? 'text-yellow-400' : 'text-red-400'
+                  currentOrganization.subscription_status === 'active' ? 'text-[#5eead4]' :
+                  currentOrganization.subscription_status === 'trial' ? 'text-[#5eead4]' : 'text-gray-400'
                 }`}>
                   {currentOrganization.subscription_status.charAt(0).toUpperCase() + currentOrganization.subscription_status.slice(1)}
                 </p>

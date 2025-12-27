@@ -47,7 +47,7 @@ export default function WelcomeQuote({ userName }: WelcomeQuoteProps) {
       <div className="relative w-full max-w-lg animate-in fade-in zoom-in duration-300">
         <div className="glass-card p-8 relative overflow-hidden">
           {/* Decorative gradient */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#5eead4] via-[#ff9855] to-[#5eead4]" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#5eead4] via-[#5eead4] to-[#5eead4]" />
 
           {/* Close button */}
           <button
@@ -60,7 +60,7 @@ export default function WelcomeQuote({ userName }: WelcomeQuoteProps) {
           {/* Content */}
           <div className="text-center">
             {/* Icon */}
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#5eead4]/20 to-[#ff9855]/20 mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/20 mb-6">
               <Sparkles className="w-8 h-8 text-[#5eead4]" />
             </div>
 

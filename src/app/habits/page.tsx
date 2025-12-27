@@ -361,7 +361,7 @@ export default function HabitsPage() {
             <h3 className="text-lg font-semibold text-white mb-4">Habit Streak</h3>
             <div className="flex items-center gap-4">
               <div className="text-5xl animate-fire">
-                <Flame className="w-12 h-12 text-orange-500" />
+                <Flame className="w-12 h-12 text-[#5eead4]" />
               </div>
               <div>
                 <p className="text-4xl font-bold text-white">{streak}</p>
@@ -480,7 +480,7 @@ export default function HabitsPage() {
                 {/* Delete */}
                 <button
                   onClick={() => handleDeleteHabit(habit.id)}
-                  className="p-2 rounded-lg text-gray-500 hover:text-[#ff6b8a] hover:bg-[rgba(255,0,67,0.1)] transition-colors"
+                  className="p-2 rounded-lg text-gray-500 hover:text-[gray-400] hover:bg-[rgba(160,160,176,0.1)] transition-colors"
                 >
                   <Trash2 className="w-5 h-5" />
                 </button>

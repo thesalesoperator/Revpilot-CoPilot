@@ -312,10 +312,10 @@ export default function DashboardPage() {
                             onChange={(e) => handleStatusChange(sale, e.target.value)}
                             className={`status-select text-sm font-medium rounded-full px-3 py-1.5 border cursor-pointer transition-colors focus:outline-none ${
                               sale.status === 'refunded'
-                                ? 'bg-[rgba(255,0,67,0.15)] text-[#ff6b8a] border-[rgba(255,0,67,0.3)]'
+                                ? 'bg-[rgba(160,160,176,0.15)] text-[gray-400] border-[rgba(160,160,176,0.3)]'
                                 : sale.status === 'paid'
                                 ? 'bg-[rgba(94,234,212,0.15)] text-[#5eead4] border-[rgba(94,234,212,0.3)]'
-                                : 'bg-[rgba(255,152,85,0.15)] text-[#ffbe57] border-[rgba(255,152,85,0.3)]'
+                                : 'bg-[rgba(94,234,212,0.15)] text-[#5eead4] border-[rgba(94,234,212,0.3)]'
                             }`}
                           >
                             <option value="not_yet_paid">Not Yet Paid</option>
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteSale(sale.id)}
-                              className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
+                              className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -769,12 +769,12 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
 
         {/* Future Payments Section - shows when there's remaining balance */}
         {hasRemainingBalance && (
-          <div className="border border-[rgba(255,190,87,0.3)] bg-[rgba(255,190,87,0.05)] rounded-xl p-4 space-y-4">
+          <div className="border border-[rgba(94,234,212,0.3)] bg-[rgba(94,234,212,0.05)] rounded-xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-medium text-[#ffbe57]">Future Payment Schedule</h4>
+                <h4 className="text-sm font-medium text-[#5eead4]">Future Payment Schedule</h4>
                 <p className="text-xs text-gray-400 mt-1">
-                  Remaining balance: <span className={remainingBalance > 0.01 ? 'text-[#ff6b8a]' : 'text-[#5eead4]'}>{formatCurrency(remainingBalance)}</span>
+                  Remaining balance: <span className={remainingBalance > 0.01 ? 'text-[gray-400]' : 'text-[#5eead4]'}>{formatCurrency(remainingBalance)}</span>
                 </p>
               </div>
               <button
@@ -791,7 +791,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
               <div className="space-y-3">
                 {futurePayments.map((payment, index) => (
                   <div key={payment.id} className="flex items-center gap-3 bg-[rgba(0,0,0,0.2)] rounded-lg p-3">
-                    <div className="w-8 h-8 rounded-full bg-[rgba(255,190,87,0.2)] flex items-center justify-center text-[#ffbe57] text-sm font-medium">
+                    <div className="w-8 h-8 rounded-full bg-[rgba(94,234,212,0.2)] flex items-center justify-center text-[#5eead4] text-sm font-medium">
                       {index + 2}
                     </div>
                     <div className="flex-1 grid grid-cols-2 gap-3">
@@ -819,7 +819,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
                     <button
                       type="button"
                       onClick={() => removeFuturePayment(payment.id)}
-                      className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -855,7 +855,7 @@ function SaleModal({ isOpen, onClose, sale, products, userId, onSuccess }: SaleM
               </div>
               <div>
                 <p className="text-gray-400">Potential Commission</p>
-                <p className="text-[#ffbe57] font-medium">{formatCurrency(potentialCommission)}</p>
+                <p className="text-[#5eead4] font-medium">{formatCurrency(potentialCommission)}</p>
               </div>
             </div>
           </div>

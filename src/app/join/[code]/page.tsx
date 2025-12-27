@@ -113,8 +113,8 @@ export default function JoinPage({ params }: { params: Promise<{ code: string }>
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-2xl p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-            <X className="w-8 h-8 text-red-400" />
+          <div className="w-16 h-16 rounded-full bg-gray-500/10 flex items-center justify-center mx-auto mb-4">
+            <X className="w-8 h-8 text-gray-400" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Invalid Invite</h1>
           <p className="text-gray-400 mb-6">{error}</p>
@@ -157,9 +157,9 @@ export default function JoinPage({ params }: { params: Promise<{ code: string }>
             </div>
           </div>
 
-          <div className="bg-[rgba(255,152,85,0.1)] border border-[rgba(255,152,85,0.2)] rounded-xl p-4 mb-6">
+          <div className="bg-[rgba(94,234,212,0.1)] border border-[rgba(94,234,212,0.2)] rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-[#ff9855] flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-[#5eead4] flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-white font-medium mb-1">Sign in required</p>
                 <p className="text-sm text-gray-400">
@@ -213,7 +213,7 @@ export default function JoinPage({ params }: { params: Promise<{ code: string }>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm text-gray-400">Joining as</span>
             <span className="text-white font-medium capitalize flex items-center gap-2">
-              {invite.role === 'admin' && <Shield className="w-4 h-4 text-purple-400" />}
+              {invite.role === 'admin' && <Shield className="w-4 h-4 text-[#5eead4]" />}
               {invite.role}
             </span>
           </div>

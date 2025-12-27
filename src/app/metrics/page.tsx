@@ -51,8 +51,8 @@ const DEFAULT_METRICS = [
 // Chart colors for different metrics
 const CHART_COLORS = [
   '#5eead4',
-  '#ff9855',
-  '#ff6b8a',
+  '#5eead4',
+  'gray-400',
   '#a78bfa',
   '#60a5fa',
   '#34d399',
@@ -471,7 +471,7 @@ export default function MetricsPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteMetric(metric.id)}
-                          className="p-2 rounded-lg text-gray-500 hover:text-[#ff6b8a] hover:bg-[rgba(255,0,67,0.1)] transition-colors"
+                          className="p-2 rounded-lg text-gray-500 hover:text-[gray-400] hover:bg-[rgba(160,160,176,0.1)] transition-colors"
                           title="Delete metric"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -494,7 +494,7 @@ export default function MetricsPage() {
                           <span className="text-xs text-gray-500">Month Comparison</span>
                           {comparison.percentChange !== null && (
                             <div className={`flex items-center gap-1 text-xs font-medium ${
-                              comparison.percentChange > 0 ? 'text-[#5eead4]' : comparison.percentChange < 0 ? 'text-[#ff6b8a]' : 'text-gray-400'
+                              comparison.percentChange > 0 ? 'text-[#5eead4]' : comparison.percentChange < 0 ? 'text-[gray-400]' : 'text-gray-400'
                             }`}>
                               {comparison.percentChange > 0 ? (
                                 <ArrowUp className="w-3 h-3" />
@@ -616,7 +616,7 @@ export default function MetricsPage() {
         {currencyMetrics.length > 0 && getChartDataForMetrics(currencyMetrics).length > 0 && (
           <div className="glass-card p-6">
             <div className="flex items-center gap-2 mb-6">
-              <DollarSign className="w-5 h-5 text-[#ff9855]" />
+              <DollarSign className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Financial Metrics Over Time</h2>
             </div>
             <div className="h-[300px]">

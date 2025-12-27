@@ -29,7 +29,7 @@ const teams = [
   {
     id: '1',
     name: 'Deal Destroyers',
-    color: 'from-red-500 to-orange-500',
+    color: 'from-gray-500 to-[#5eead4]',
     members: 8,
     wins: 24,
     losses: 6,
@@ -42,7 +42,7 @@ const teams = [
   {
     id: '2',
     name: 'Quota Crushers',
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     members: 7,
     wins: 22,
     losses: 8,
@@ -55,7 +55,7 @@ const teams = [
   {
     id: '3',
     name: 'Revenue Rockets',
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-[#5eead4] to-emerald-500',
     members: 6,
     wins: 19,
     losses: 11,
@@ -68,7 +68,7 @@ const teams = [
   {
     id: '4',
     name: 'Close Kings',
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     members: 8,
     wins: 15,
     losses: 15,
@@ -91,7 +91,7 @@ const weeklyChallenges = [
     goal: 20,
     endsIn: '3 days',
     icon: Target,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
   },
   {
     id: '2',
@@ -102,7 +102,7 @@ const weeklyChallenges = [
     goal: 50,
     endsIn: '3 days',
     icon: Shield,
-    color: 'from-red-500 to-orange-500',
+    color: 'from-gray-500 to-[#5eead4]',
   },
   {
     id: '3',
@@ -113,19 +113,19 @@ const weeklyChallenges = [
     goal: 100000,
     endsIn: '3 days',
     icon: Trophy,
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-[#5eead4] to-emerald-500',
     isCurrency: true,
   },
 ]
 
 // Territory map regions
 const territories = [
-  { id: 'north', name: 'North Region', owner: 'Deal Destroyers', color: 'from-red-500 to-orange-500', value: 15 },
-  { id: 'south', name: 'South Region', owner: 'Quota Crushers', color: 'from-blue-500 to-cyan-500', value: 12 },
-  { id: 'east', name: 'East Region', owner: 'Deal Destroyers', color: 'from-red-500 to-orange-500', value: 10 },
-  { id: 'west', name: 'West Region', owner: 'Revenue Rockets', color: 'from-green-500 to-emerald-500', value: 14 },
-  { id: 'central', name: 'Central Region', owner: 'Close Kings', color: 'from-purple-500 to-pink-500', value: 20 },
-  { id: 'coastal', name: 'Coastal Region', owner: 'Quota Crushers', color: 'from-blue-500 to-cyan-500', value: 18 },
+  { id: 'north', name: 'North Region', owner: 'Deal Destroyers', color: 'from-gray-500 to-[#5eead4]', value: 15 },
+  { id: 'south', name: 'South Region', owner: 'Quota Crushers', color: 'from-[#5eead4] to-[#5eead4]', value: 12 },
+  { id: 'east', name: 'East Region', owner: 'Deal Destroyers', color: 'from-gray-500 to-[#5eead4]', value: 10 },
+  { id: 'west', name: 'West Region', owner: 'Revenue Rockets', color: 'from-[#5eead4] to-emerald-500', value: 14 },
+  { id: 'central', name: 'Central Region', owner: 'Close Kings', color: 'from-[#5eead4] to-[#5eead4]', value: 20 },
+  { id: 'coastal', name: 'Coastal Region', owner: 'Quota Crushers', color: 'from-[#5eead4] to-[#5eead4]', value: 18 },
 ]
 
 // Recent battles
@@ -181,13 +181,13 @@ export default function TerritoryWarsPage() {
         <div className="glass-card p-6 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-3xl">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-500 to-[#5eead4] flex items-center justify-center text-3xl">
                 🔥
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-bold text-white">{yourTeam.name}</h3>
-                  <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-medium">
+                  <span className="px-2 py-0.5 rounded-full bg-[#5eead4]/20 text-[#5eead4] text-xs font-medium">
                     {yourTeam.role}
                   </span>
                 </div>
@@ -200,12 +200,12 @@ export default function TerritoryWarsPage() {
                 <p className="text-xs text-gray-400">Your Contribution</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-yellow-400">#{yourTeam.weeklyRank}</p>
+                <p className="text-2xl font-bold text-[#5eead4]">#{yourTeam.weeklyRank}</p>
                 <p className="text-xs text-gray-400">Team Rank</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-white flex items-center justify-center gap-1">
-                  5 <Flame className="w-5 h-5 text-orange-500" />
+                  5 <Flame className="w-5 h-5 text-[#5eead4]" />
                 </p>
                 <p className="text-xs text-gray-400">Win Streak</p>
               </div>
@@ -249,11 +249,11 @@ export default function TerritoryWarsPage() {
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                           team.rank === 1
-                            ? 'bg-yellow-500 text-black'
+                            ? 'bg-[#5eead4] text-black'
                             : team.rank === 2
                               ? 'bg-gray-400 text-black'
                               : team.rank === 3
-                                ? 'bg-amber-700 text-white'
+                                ? 'bg-gray-500 text-white'
                                 : 'bg-[rgba(255,255,255,0.1)] text-gray-400'
                         }`}
                       >
@@ -289,13 +289,13 @@ export default function TerritoryWarsPage() {
                           <p className="text-xs text-gray-500">Territory</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-lg font-bold text-yellow-400">
+                          <p className="text-lg font-bold text-[#5eead4]">
                             {team.points.toLocaleString()}
                           </p>
                           <p className="text-xs text-gray-500">Points</p>
                         </div>
                         {team.streak > 0 && (
-                          <div className="flex items-center gap-1 text-orange-500">
+                          <div className="flex items-center gap-1 text-[#5eead4]">
                             <Flame className="w-4 h-4" />
                             <span className="font-bold">{team.streak}</span>
                           </div>
@@ -317,11 +317,11 @@ export default function TerritoryWarsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Battles Won</span>
-                    <span className="text-green-400 font-semibold">8</span>
+                    <span className="text-[#5eead4] font-semibold">8</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Battles Lost</span>
-                    <span className="text-red-400 font-semibold">2</span>
+                    <span className="text-gray-400 font-semibold">2</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Territory Gained</span>
@@ -329,7 +329,7 @@ export default function TerritoryWarsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400">Points Earned</span>
-                    <span className="text-yellow-400 font-semibold">+1,250</span>
+                    <span className="text-[#5eead4] font-semibold">+1,250</span>
                   </div>
                 </div>
               </div>
@@ -347,7 +347,7 @@ export default function TerritoryWarsPage() {
                         <span className="text-sm text-white">{battle.attacker}</span>
                         <span
                           className={`text-xs font-semibold ${
-                            battle.result === 'win' ? 'text-green-400' : 'text-red-400'
+                            battle.result === 'win' ? 'text-[#5eead4]' : 'text-gray-400'
                           }`}
                         >
                           {battle.result === 'win' ? 'VICTORY' : 'DEFEAT'}
@@ -449,7 +449,7 @@ export default function TerritoryWarsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-yellow-400">
+                      <div className="flex items-center gap-1 text-[#5eead4]">
                         <Zap className="w-4 h-4" />
                         <span className="font-semibold">+{challenge.reward} XP</span>
                       </div>
@@ -499,8 +499,8 @@ export default function TerritoryWarsPage() {
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           battle.result === 'win'
-                            ? 'bg-green-500/20 text-green-400'
-                            : 'bg-red-500/20 text-red-400'
+                            ? 'bg-[#5eead4]/20 text-[#5eead4]'
+                            : 'bg-gray-500/20 text-gray-400'
                         }`}
                       >
                         {battle.result.toUpperCase()}

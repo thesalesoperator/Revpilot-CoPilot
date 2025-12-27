@@ -30,7 +30,7 @@ const skillTrees = [
     name: 'Discovery Master',
     description: 'Master the art of uncovering customer needs',
     icon: MessageSquare,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     currentLevel: 4,
     maxLevel: 10,
     totalXP: 1250,
@@ -52,7 +52,7 @@ const skillTrees = [
     name: 'Objection Handler',
     description: 'Turn objections into opportunities',
     icon: Shield,
-    color: 'from-red-500 to-orange-500',
+    color: 'from-gray-500 to-[#5eead4]',
     currentLevel: 3,
     maxLevel: 10,
     totalXP: 750,
@@ -74,7 +74,7 @@ const skillTrees = [
     name: 'Closing Expert',
     description: 'Seal deals with confidence',
     icon: Handshake,
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-[#5eead4] to-emerald-500',
     currentLevel: 2,
     maxLevel: 10,
     totalXP: 450,
@@ -96,7 +96,7 @@ const skillTrees = [
     name: 'Presentation Pro',
     description: 'Deliver compelling demos and pitches',
     icon: TrendingUp,
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     currentLevel: 5,
     maxLevel: 10,
     totalXP: 1500,
@@ -118,7 +118,7 @@ const skillTrees = [
     name: 'Relationship Builder',
     description: 'Build lasting customer relationships',
     icon: Users,
-    color: 'from-yellow-500 to-amber-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     currentLevel: 6,
     maxLevel: 10,
     totalXP: 2100,
@@ -140,7 +140,7 @@ const skillTrees = [
     name: 'Prospecting Pro',
     description: 'Find and engage ideal prospects',
     icon: Target,
-    color: 'from-cyan-500 to-blue-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     currentLevel: 3,
     maxLevel: 10,
     totalXP: 750,
@@ -259,7 +259,7 @@ export default function SkillsPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-400">Total XP Earned</p>
-                  <p className="text-2xl font-bold text-yellow-400">{selectedTree.totalXP}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{selectedTree.totalXP}</p>
                 </div>
               </div>
 
@@ -315,7 +315,7 @@ export default function SkillsPage() {
                             {skill.name}
                           </h4>
                           {skill.level === 10 && (
-                            <Sparkles className="w-4 h-4 text-yellow-400" />
+                            <Sparkles className="w-4 h-4 text-[#5eead4]" />
                           )}
                         </div>
                         <p className={`text-sm ${skill.unlocked ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -327,7 +327,7 @@ export default function SkillsPage() {
                       <div className="text-right">
                         <div
                           className={`flex items-center gap-1 ${
-                            skill.unlocked ? 'text-yellow-400' : 'text-gray-600'
+                            skill.unlocked ? 'text-[#5eead4]' : 'text-gray-600'
                           }`}
                         >
                           <Zap className="w-4 h-4" />
@@ -365,9 +365,9 @@ export default function SkillsPage() {
               {selectedTree.currentLevel === selectedTree.maxLevel && (
                 <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-[rgba(255,215,0,0.1)] to-[rgba(255,165,0,0.1)] border border-[rgba(255,215,0,0.3)]">
                   <div className="flex items-center gap-3">
-                    <Award className="w-8 h-8 text-yellow-400" />
+                    <Award className="w-8 h-8 text-[#5eead4]" />
                     <div>
-                      <p className="font-semibold text-yellow-400">Mastery Achieved!</p>
+                      <p className="font-semibold text-[#5eead4]">Mastery Achieved!</p>
                       <p className="text-sm text-gray-400">
                         You&apos;ve completed the {selectedTree.name} skill tree
                       </p>

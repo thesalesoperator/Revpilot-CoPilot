@@ -402,9 +402,9 @@ const achievements = [
 
 const rarityColors = {
   common: { bg: 'from-gray-500 to-gray-600', border: 'border-gray-500', text: 'text-gray-400' },
-  rare: { bg: 'from-blue-500 to-blue-600', border: 'border-blue-500', text: 'text-blue-400' },
-  epic: { bg: 'from-purple-500 to-purple-600', border: 'border-purple-500', text: 'text-purple-400' },
-  legendary: { bg: 'from-yellow-500 to-orange-500', border: 'border-yellow-500', text: 'text-yellow-400' },
+  rare: { bg: 'from-[#5eead4] to-[#4fd1c5]', border: 'border-[#5eead4]', text: 'text-[#5eead4]' },
+  epic: { bg: 'from-[#5eead4] to-[#4fd1c5]', border: 'border-[#5eead4]', text: 'text-[#5eead4]' },
+  legendary: { bg: 'from-[#5eead4] to-[#5eead4]', border: 'border-[#5eead4]', text: 'text-[#5eead4]' },
 }
 
 export default function AchievementsPage() {
@@ -464,7 +464,7 @@ export default function AchievementsPage() {
           {/* Total XP */}
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
+              <Zap className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Total XP</span>
             </div>
             <p className="text-3xl font-bold text-white">{totalXP.toLocaleString()}</p>
@@ -585,7 +585,7 @@ export default function AchievementsPage() {
 
                     {/* XP and unlock date */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-yellow-400">
+                      <div className="flex items-center gap-1 text-[#5eead4]">
                         <Zap className="w-4 h-4" />
                         <span className="text-sm font-medium">+{achievement.xp} XP</span>
                       </div>

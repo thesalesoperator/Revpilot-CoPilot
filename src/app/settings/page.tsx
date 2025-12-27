@@ -523,7 +523,7 @@ export default function SettingsPage() {
                     <button
                       onClick={handleRemoveAvatar}
                       disabled={uploadingAvatar}
-                      className="text-sm py-2 px-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
+                      className="text-sm py-2 px-4 text-gray-400 hover:text-gray-300 hover:bg-gray-500/10 rounded-xl transition-colors"
                     >
                       Remove
                     </button>
@@ -760,9 +760,9 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="bg-[rgba(255,152,85,0.05)] border border-[rgba(255,152,85,0.1)] rounded-xl p-4">
+            <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
               <h4 className="font-medium text-white mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#ff9855]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-[#5eead4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 How this is used
@@ -893,7 +893,7 @@ export default function SettingsPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
+                        className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1012,9 +1012,9 @@ export default function SettingsPage() {
             </div>
 
             {/* Pro Tips */}
-            <div className="bg-[rgba(255,152,85,0.05)] border border-[rgba(255,152,85,0.1)] rounded-xl p-4">
+            <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
               <h4 className="font-medium text-white mb-2 flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#ff9855]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 text-[#5eead4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Pro Tips
@@ -1291,7 +1291,7 @@ export default function SettingsPage() {
               <Link className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Fathom Integration</h2>
               {fathomConnected && (
-                <span className="flex items-center gap-1 text-sm bg-green-500/20 text-green-400 px-2 py-1 rounded-full">
+                <span className="flex items-center gap-1 text-sm bg-[#5eead4]/20 text-[#5eead4] px-2 py-1 rounded-full">
                   <CheckCircle className="w-3 h-3" />
                   Connected
                 </span>
@@ -1357,7 +1357,7 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={handleDisconnectFathom}
-                  className="text-sm text-red-400 hover:text-red-300 transition-colors"
+                  className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
                 >
                   Disconnect
                 </button>
@@ -1381,7 +1381,7 @@ export default function SettingsPage() {
           {/* Current Streaks */}
           <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-500" />
+              <Flame className="w-5 h-5 text-[#5eead4]" />
               Current Streaks
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -38,8 +38,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const colors = {
     success: 'border-[#5eead4] text-[#5eead4]',
-    error: 'border-[#ff6b8a] text-[#ff6b8a]',
-    info: 'border-[#ffbe57] text-[#ffbe57]',
+    error: 'border-[gray-400] text-[gray-400]',
+    info: 'border-[#5eead4] text-[#5eead4]',
   }
 
   return (

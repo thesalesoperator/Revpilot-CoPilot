@@ -78,7 +78,7 @@ export default function ActiveCallOverlay({
         {/* Timer & Status */}
         <div className="flex items-center gap-6">
           {isConnecting && (
-            <div className="flex items-center gap-2 text-yellow-400">
+            <div className="flex items-center gap-2 text-[#5eead4]">
               <Loader2 className="w-5 h-5 animate-spin" />
               <span className="font-medium">Connecting...</span>
             </div>
@@ -86,8 +86,8 @@ export default function ActiveCallOverlay({
           {isActive && (
             <>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-red-400 text-sm font-medium">LIVE</span>
+                <div className="w-3 h-3 rounded-full bg-gray-500 animate-pulse" />
+                <span className="text-gray-400 text-sm font-medium">LIVE</span>
               </div>
               <div className="text-4xl font-mono font-bold text-white">
                 {formatTime(duration)}
@@ -159,7 +159,7 @@ export default function ActiveCallOverlay({
           {challenge.bonusObjectives.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-400" />
+                <Star className="w-4 h-4 text-[#5eead4]" />
                 Bonus
               </h3>
               <ul className="space-y-3">
@@ -168,7 +168,7 @@ export default function ActiveCallOverlay({
                     <span className="text-lg flex-shrink-0">{bonus.icon}</span>
                     <div>
                       <span className="text-sm text-white">{bonus.name}</span>
-                      <span className="text-xs text-yellow-400 ml-2">+{bonus.xpBonus} XP</span>
+                      <span className="text-xs text-[#5eead4] ml-2">+{bonus.xpBonus} XP</span>
                       <p className="text-xs text-gray-500 mt-0.5">{bonus.description}</p>
                     </div>
                   </li>
@@ -255,7 +255,7 @@ export default function ActiveCallOverlay({
                 onClick={onToggleMute}
                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
                   isMuted
-                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                    ? 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/30'
                     : 'bg-[rgba(255,255,255,0.05)] text-white hover:bg-[rgba(255,255,255,0.1)]'
                 }`}
               >
@@ -263,7 +263,7 @@ export default function ActiveCallOverlay({
               </button>
               <button
                 onClick={onEndCall}
-                className="w-20 h-20 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all shadow-lg shadow-red-500/20"
+                className="w-20 h-20 rounded-full bg-gray-500 text-white flex items-center justify-center hover:bg-gray-600 transition-all shadow-lg shadow-gray-500/20"
               >
                 <PhoneOff className="w-8 h-8" />
               </button>
@@ -275,7 +275,7 @@ export default function ActiveCallOverlay({
           {isConnecting && (
             <button
               onClick={onEndCall}
-              className="px-6 py-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all flex items-center gap-2"
+              className="px-6 py-3 rounded-xl bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 transition-all flex items-center gap-2"
             >
               <X className="w-5 h-5" />
               Cancel

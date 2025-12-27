@@ -73,10 +73,10 @@ interface CallResults {
 }
 
 const DIFFICULTY_CONFIG = {
-  easy: { color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/30', label: 'Easy' },
-  medium: { color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', label: 'Medium' },
-  hard: { color: 'text-orange-400', bg: 'bg-orange-500/20', border: 'border-orange-500/30', label: 'Hard' },
-  expert: { color: 'text-red-400', bg: 'bg-red-500/20', border: 'border-red-500/30', label: 'Expert' },
+  easy: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Easy' },
+  medium: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Medium' },
+  hard: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Hard' },
+  expert: { color: 'text-gray-400', bg: 'bg-gray-500/20', border: 'border-gray-500/30', label: 'Expert' },
 }
 
 const PERSONA_ICONS: Record<string, typeof Users> = {
@@ -652,11 +652,11 @@ export default function PracticePage() {
           </div>
           <div className="flex items-center gap-4">
             <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-400" />
+              <Trophy className="w-5 h-5 text-[#5eead4]" />
               <span className="text-white font-bold">{(userStats?.total_xp || 0).toLocaleString()} XP</span>
             </div>
             <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <Flame className="w-5 h-5 text-orange-400" />
+              <Flame className="w-5 h-5 text-[#5eead4]" />
               <span className="text-white font-bold">{userStats?.current_streak || 0} day streak</span>
             </div>
             {userStats?.current_rank && (
@@ -725,8 +725,8 @@ export default function PracticePage() {
                     {bestScore && (
                       <div className="absolute top-2 right-2">
                         <div className="flex items-center gap-1 bg-[rgba(94,234,212,0.1)] px-2 py-1 rounded-full">
-                          <Trophy className="w-3 h-3 text-yellow-400" />
-                          <span className="text-xs text-yellow-400">{bestScore}</span>
+                          <Trophy className="w-3 h-3 text-[#5eead4]" />
+                          <span className="text-xs text-[#5eead4]">{bestScore}</span>
                         </div>
                       </div>
                     )}
@@ -765,7 +765,7 @@ export default function PracticePage() {
                             </span>
                           )}
                           <span className="flex items-center gap-1">
-                            <Star className="w-3 h-3 text-yellow-400" />
+                            <Star className="w-3 h-3 text-[#5eead4]" />
                             {challenge.xpReward} XP
                           </span>
                         </div>
@@ -861,7 +861,7 @@ export default function PracticePage() {
                 {selectedChallenge.bonusObjectives.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-400" />
+                      <Star className="w-4 h-4 text-[#5eead4]" />
                       Bonus Objectives
                     </h4>
                     <ul className="space-y-2">
@@ -870,7 +870,7 @@ export default function PracticePage() {
                           <span className="text-lg">{bonus.icon}</span>
                           <div>
                             <span className="text-white">{bonus.name}</span>
-                            <span className="text-yellow-400 text-xs ml-2">+{bonus.xpBonus} XP</span>
+                            <span className="text-[#5eead4] text-xs ml-2">+{bonus.xpBonus} XP</span>
                             <p className="text-xs text-gray-500">{bonus.description}</p>
                           </div>
                         </li>
@@ -906,7 +906,7 @@ export default function PracticePage() {
                           {formatTime(callState.duration)}
                         </div>
                         {selectedChallenge.timeLimit && (
-                          <p className={`text-sm ${callState.duration > selectedChallenge.timeLimit * 0.8 ? 'text-red-400' : 'text-gray-400'}`}>
+                          <p className={`text-sm ${callState.duration > selectedChallenge.timeLimit * 0.8 ? 'text-gray-400' : 'text-gray-400'}`}>
                             {callState.duration > selectedChallenge.timeLimit
                               ? 'Time exceeded!'
                               : `${formatTime(selectedChallenge.timeLimit - callState.duration)} remaining`}
@@ -934,7 +934,7 @@ export default function PracticePage() {
                           onClick={toggleMute}
                           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                             callState.isMuted
-                              ? 'bg-red-500/20 text-red-400'
+                              ? 'bg-gray-500/20 text-gray-400'
                               : 'bg-[rgba(255,255,255,0.05)] text-white hover:bg-[rgba(255,255,255,0.1)]'
                           }`}
                         >
@@ -942,7 +942,7 @@ export default function PracticePage() {
                         </button>
                         <button
                           onClick={endCall}
-                          className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all"
+                          className="w-16 h-16 rounded-full bg-gray-500 text-white flex items-center justify-center hover:bg-gray-600 transition-all"
                         >
                           <PhoneOff className="w-6 h-6" />
                         </button>
@@ -1028,7 +1028,7 @@ export default function PracticePage() {
                         <li
                           key={i}
                           className={`text-sm flex items-center gap-2 ${
-                            completed ? 'text-green-400' : 'text-gray-500'
+                            completed ? 'text-[#5eead4]' : 'text-gray-500'
                           }`}
                         >
                           {completed ? (
@@ -1054,7 +1054,7 @@ export default function PracticePage() {
                           <li
                             key={bonus.id}
                             className={`text-sm flex items-center gap-2 ${
-                              completed ? 'text-yellow-400' : 'text-gray-500'
+                              completed ? 'text-[#5eead4]' : 'text-gray-500'
                             }`}
                           >
                             <span>{bonus.icon}</span>
@@ -1087,7 +1087,7 @@ export default function PracticePage() {
                         return (
                           <div key={key} className="flex items-center justify-between text-xs">
                             <span className="text-gray-400 capitalize">{key.replace(/_/g, ' ')}</span>
-                            <span className={`font-medium ${typedValue.score >= 80 ? 'text-green-400' : typedValue.score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            <span className={`font-medium ${typedValue.score >= 80 ? 'text-[#5eead4]' : typedValue.score >= 60 ? 'text-[#5eead4]' : 'text-gray-400'}`}>
                               {typedValue.score}
                             </span>
                           </div>

@@ -33,7 +33,7 @@ export default function LandingPage() {
       {/* Gradient background effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[#5eead4]/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#5eead4]/10 rounded-full blur-[150px]" />
       </div>
 
       {/* Navigation */}
@@ -108,7 +108,7 @@ export default function LandingPage() {
             {/* Main Headline */}
             <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
               Turn Every Rep Into{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5eead4] to-cyan-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5eead4] to-[#5eead4]">
                 Their Own Top-Performing Manager
               </span>
             </h1>
@@ -158,9 +158,9 @@ export default function LandingPage() {
               {/* Browser Chrome */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-[#0a0a0f]">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-gray-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-[#5eead4]/80" />
+                  <div className="w-3 h-3 rounded-full bg-[#5eead4]/80" />
                 </div>
                 <div className="flex-1 flex justify-center">
                   <div className="px-4 py-1 rounded-lg bg-white/5 text-xs text-gray-500">app.revpilot.io/dashboard</div>
@@ -182,13 +182,13 @@ export default function LandingPage() {
                         </div>
                       </div>
                       <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                        <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-[#5eead4] to-cyan-400" />
+                        <div className="h-full w-3/4 rounded-full bg-gradient-to-r from-[#5eead4] to-[#5eead4]" />
                       </div>
                     </div>
                     <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                          <Flame className="w-5 h-5 text-orange-400" />
+                        <div className="w-10 h-10 rounded-lg bg-[#5eead4]/20 flex items-center justify-center">
+                          <Flame className="w-5 h-5 text-[#5eead4]" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Streak</p>
@@ -198,8 +198,8 @@ export default function LandingPage() {
                     </div>
                     <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                          <Trophy className="w-5 h-5 text-purple-400" />
+                        <div className="w-10 h-10 rounded-lg bg-[#5eead4]/20 flex items-center justify-center">
+                          <Trophy className="w-5 h-5 text-[#5eead4]" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Rank</p>
@@ -223,7 +223,7 @@ export default function LandingPage() {
                       <div className="flex items-center gap-4 p-3 rounded-lg bg-white/5">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse" />
                             <span className="text-xs text-gray-400">LIVE</span>
                             <span className="text-sm font-medium">Discovery Call - Acme Corp</span>
                           </div>
@@ -301,12 +301,12 @@ export default function LandingPage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="p-6 rounded-2xl bg-gradient-to-br from-red-500/5 to-transparent border border-red-500/20"
+                className="p-6 rounded-2xl bg-gradient-to-br from-gray-500/5 to-transparent border border-gray-500/20"
               >
-                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-4">
-                  <item.icon className="w-6 h-6 text-red-400" />
+                <div className="w-12 h-12 rounded-xl bg-gray-500/10 flex items-center justify-center mb-4">
+                  <item.icon className="w-6 h-6 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-red-400">{item.problem}</h3>
+                <h3 className="text-lg font-semibold mb-2 text-gray-400">{item.problem}</h3>
                 <p className="text-gray-400">{item.result}</p>
               </div>
             ))}
@@ -362,7 +362,7 @@ export default function LandingPage() {
               <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                    <div className="w-3 h-3 rounded-full bg-gray-500 animate-pulse" />
                     <span className="text-sm font-medium">Live Call - Enterprise Demo</span>
                   </div>
                   <span className="text-2xl font-mono font-bold">18:42</span>
@@ -379,11 +379,11 @@ export default function LandingPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
+                  <div className="p-4 rounded-xl bg-[#5eead4]/10 border border-[#5eead4]/30">
                     <div className="flex items-start gap-3">
-                      <MessageSquare className="w-5 h-5 text-yellow-400 mt-0.5" />
+                      <MessageSquare className="w-5 h-5 text-[#5eead4] mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium text-yellow-400 mb-1">Talk Ratio Alert</p>
+                        <p className="text-sm font-medium text-[#5eead4] mb-1">Talk Ratio Alert</p>
                         <p className="text-sm text-gray-300">
                           You're at 68% talk time. Try asking an open-ended question to let them share more.
                         </p>
@@ -398,14 +398,14 @@ export default function LandingPage() {
           {/* Feature 2 - Weekly Visibility */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-32">
             <div className="order-2 lg:order-1 relative">
-              <div className="absolute inset-0 bg-blue-500/20 rounded-3xl blur-3xl" />
+              <div className="absolute inset-0 bg-[#5eead4]/20 rounded-3xl blur-3xl" />
               <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] p-6 overflow-hidden">
                 <h4 className="text-lg font-semibold mb-4">This Week's Performance</h4>
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <p className="text-sm text-gray-400 mb-1">Projected</p>
                     <p className="text-3xl font-bold text-[#5eead4]">$52,400</p>
-                    <p className="text-xs text-green-400 mt-1">↑ 12% vs last week</p>
+                    <p className="text-xs text-[#5eead4] mt-1">↑ 12% vs last week</p>
                   </div>
                   <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <p className="text-sm text-gray-400 mb-1">Commission</p>
@@ -430,7 +430,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#5eead4]/10 text-[#5eead4] text-sm font-medium mb-6">
                 <BarChart3 className="w-4 h-4" />
                 Pillar 2
               </div>
@@ -448,7 +448,7 @@ export default function LandingPage() {
                   "Performance trends and insights",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-[#5eead4] flex-shrink-0" />
                     <span className="text-gray-300">{item}</span>
                   </li>
                 ))}
@@ -459,7 +459,7 @@ export default function LandingPage() {
           {/* Feature 3 - Practice Arena */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-32">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#5eead4]/10 text-[#5eead4] text-sm font-medium mb-6">
                 <Target className="w-4 h-4" />
                 Pillar 3
               </div>
@@ -477,38 +477,38 @@ export default function LandingPage() {
                   "Practice specific scenarios on demand",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-[#5eead4] flex-shrink-0" />
                     <span className="text-gray-300">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div className="relative">
-              <div className="absolute inset-0 bg-purple-500/20 rounded-3xl blur-3xl" />
+              <div className="absolute inset-0 bg-[#5eead4]/20 rounded-3xl blur-3xl" />
               <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-6">
                   <h4 className="text-lg font-semibold flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-400" />
+                    <Flame className="w-5 h-5 text-[#5eead4]" />
                     Sales Sparring Arena
                   </h4>
                   <div className="flex items-center gap-2 text-sm">
-                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    <Trophy className="w-4 h-4 text-[#5eead4]" />
                     <span className="font-bold">2,450 XP</span>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-[#0a0a0f] border border-purple-500/30">
+                  <div className="p-4 rounded-xl bg-[#0a0a0f] border border-[#5eead4]/30">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">The Budget Objection</span>
-                      <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">Medium</span>
+                      <span className="text-xs px-2 py-1 rounded bg-[#5eead4]/20 text-[#5eead4]">Medium</span>
                     </div>
                     <p className="text-sm text-gray-400 mb-3">Handle a CFO who says "we don't have budget"</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm">
-                        <Star className="w-4 h-4 text-yellow-400" />
+                        <Star className="w-4 h-4 text-[#5eead4]" />
                         <span>+150 XP</span>
                       </div>
-                      <button className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg text-sm font-medium">
+                      <button className="px-4 py-2 bg-[#5eead4]/20 text-[#5eead4] rounded-lg text-sm font-medium">
                         Start Battle
                       </button>
                     </div>
@@ -516,12 +516,12 @@ export default function LandingPage() {
                   <div className="p-4 rounded-xl bg-[#0a0a0f] border border-white/10">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold">The Hostile Executive</span>
-                      <span className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400">Hard</span>
+                      <span className="text-xs px-2 py-1 rounded bg-gray-500/20 text-gray-400">Hard</span>
                     </div>
                     <p className="text-sm text-gray-400 mb-3">Win over a skeptical COO in 10 minutes</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm">
-                        <Star className="w-4 h-4 text-yellow-400" />
+                        <Star className="w-4 h-4 text-[#5eead4]" />
                         <span>+300 XP</span>
                       </div>
                       <button className="px-4 py-2 bg-white/5 text-gray-400 rounded-lg text-sm font-medium">
@@ -537,16 +537,16 @@ export default function LandingPage() {
           {/* Feature 4 - Social Coaching */}
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1 relative">
-              <div className="absolute inset-0 bg-orange-500/20 rounded-3xl blur-3xl" />
+              <div className="absolute inset-0 bg-[#5eead4]/20 rounded-3xl blur-3xl" />
               <div className="relative rounded-2xl border border-white/10 bg-[#001a3d] p-6 overflow-hidden">
                 <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-orange-400" />
+                  <Users className="w-5 h-5 text-[#5eead4]" />
                   Team Activity
                 </h4>
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-sm font-bold">
                         SK
                       </div>
                       <div>
@@ -568,7 +568,7 @@ export default function LandingPage() {
                   </div>
                   <div className="p-4 rounded-xl bg-[#0a0a0f]">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center text-sm font-bold">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-teal-500 flex items-center justify-center text-sm font-bold">
                         MJ
                       </div>
                       <div>
@@ -584,7 +584,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 text-orange-400 text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#5eead4]/10 text-[#5eead4] text-sm font-medium mb-6">
                 <Users className="w-4 h-4" />
                 Pillar 4
               </div>
@@ -602,7 +602,7 @@ export default function LandingPage() {
                   "Badge system and public achievements",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-[#5eead4] flex-shrink-0" />
                     <span className="text-gray-300">{item}</span>
                   </li>
                 ))}
@@ -630,13 +630,13 @@ export default function LandingPage() {
               <h3 className="text-xl font-semibold mb-2">Faster Ramp Time</h3>
               <p className="text-gray-400">New reps get better in weeks, not quarters. Live coaching accelerates the learning curve.</p>
             </div>
-            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20">
-              <div className="text-5xl md:text-6xl font-bold text-blue-400 mb-4">23%</div>
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-[#5eead4]/10 to-transparent border border-[#5eead4]/20">
+              <div className="text-5xl md:text-6xl font-bold text-[#5eead4] mb-4">23%</div>
               <h3 className="text-xl font-semibold mb-2">Higher Conversion</h3>
               <p className="text-gray-400">Better calls because coaching happens in real-time, not after the deal is lost.</p>
             </div>
-            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20">
-              <div className="text-5xl md:text-6xl font-bold text-purple-400 mb-4">3x</div>
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-[#5eead4]/10 to-transparent border border-[#5eead4]/20">
+              <div className="text-5xl md:text-6xl font-bold text-[#5eead4] mb-4">3x</div>
               <h3 className="text-xl font-semibold mb-2">More Consistency</h3>
               <p className="text-gray-400">Habits, metrics, and streaks create "always-on" activity. No more good week / bad week cycles.</p>
             </div>
@@ -738,7 +738,7 @@ export default function LandingPage() {
             </div>
 
             {/* Team - Highlighted */}
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-[#5eead4]/10 to-blue-500/10 border-2 border-[#5eead4]/50 relative">
+            <div className="p-8 rounded-2xl bg-gradient-to-br from-[#5eead4]/10 to-[#5eead4]/10 border-2 border-[#5eead4]/50 relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5eead4] text-[#0a0a0f] text-sm font-bold rounded-full">
                 Most Popular
               </div>
@@ -810,7 +810,7 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="relative z-10 py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="p-12 rounded-3xl bg-gradient-to-br from-[#5eead4]/20 via-blue-500/10 to-purple-500/10 border border-[#5eead4]/30">
+          <div className="p-12 rounded-3xl bg-gradient-to-br from-[#5eead4]/20 via-[#5eead4]/10 to-[#5eead4]/10 border border-[#5eead4]/30">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
               Ready to Transform Your Sales Team?
             </h2>

@@ -193,8 +193,8 @@ export default function ProjectionsPage() {
             className="glass-card p-6 text-left hover:border-[rgba(94,234,212,0.3)] transition-all group"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-[rgba(255,152,85,0.1)] group-hover:bg-[rgba(255,152,85,0.2)] transition-colors">
-                <TrendingUp className="w-5 h-5 text-[#ffbe57]" />
+              <div className="p-2 rounded-lg bg-[rgba(94,234,212,0.1)] group-hover:bg-[rgba(94,234,212,0.2)] transition-colors">
+                <TrendingUp className="w-5 h-5 text-[#5eead4]" />
               </div>
               <span className="text-sm text-gray-400">Quick Add</span>
             </div>
@@ -204,11 +204,11 @@ export default function ProjectionsPage() {
 
           <button
             onClick={() => setProjectedSales([])}
-            className="glass-card p-6 text-left hover:border-[rgba(255,0,67,0.3)] transition-all group"
+            className="glass-card p-6 text-left hover:border-[rgba(160,160,176,0.3)] transition-all group"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-[rgba(255,0,67,0.1)] group-hover:bg-[rgba(255,0,67,0.2)] transition-colors">
-                <Sparkles className="w-5 h-5 text-[#ff6b8a]" />
+              <div className="p-2 rounded-lg bg-[rgba(160,160,176,0.1)] group-hover:bg-[rgba(160,160,176,0.2)] transition-colors">
+                <Sparkles className="w-5 h-5 text-[gray-400]" />
               </div>
               <span className="text-sm text-gray-400">Reset</span>
             </div>
@@ -241,7 +241,7 @@ export default function ProjectionsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Outstanding</p>
-                  <p className="text-2xl font-bold text-[#ffbe57]">{formatCurrency(projectionTotals.totalOutstanding)}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{formatCurrency(projectionTotals.totalOutstanding)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Guaranteed</p>
@@ -249,7 +249,7 @@ export default function ProjectionsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Potential</p>
-                  <p className="text-2xl font-bold text-[#ffbe57]">{formatCurrency(projectionTotals.potentialCommission)}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{formatCurrency(projectionTotals.potentialCommission)}</p>
                 </div>
                 <div className="bg-[rgba(94,234,212,0.1)] rounded-xl p-4 -m-2">
                   <p className="text-sm text-[#5eead4] mb-1">Total Commission</p>
@@ -287,7 +287,7 @@ export default function ProjectionsPage() {
                     <span className="text-sm text-gray-400">Projection #{index + 1}</span>
                     <button
                       onClick={() => removeProjectedSale(sale.id)}
-                      className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-[gray-400] transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -399,7 +399,7 @@ export default function ProjectionsPage() {
         {projectedSales.length > 0 && (
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-6">
-              <DollarSign className="w-6 h-6 text-[#ffbe57]" />
+              <DollarSign className="w-6 h-6 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text-orange">Commission Goals</h2>
             </div>
 

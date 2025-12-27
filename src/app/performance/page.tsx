@@ -30,7 +30,7 @@ const performanceSections = [
     icon: LayoutDashboard,
     title: 'Dashboard',
     description: 'Your sales overview and commission tracking',
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     features: ['Commission tracking', 'Activity feed', 'Quick stats', 'Recent deals'],
   },
   {
@@ -39,7 +39,7 @@ const performanceSections = [
     icon: TrendingUp,
     title: 'Projections',
     description: 'Forecast your earnings and quota attainment',
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-[#5eead4] to-emerald-500',
     features: ['Quota forecast', 'Earnings projection', 'Trend analysis', 'Goal tracking'],
   },
   {
@@ -48,7 +48,7 @@ const performanceSections = [
     icon: BarChart3,
     title: 'Metrics',
     description: 'Deep dive into your performance data',
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-[#5eead4] to-[#5eead4]',
     features: ['Activity metrics', 'Conversion rates', 'Pipeline analysis', 'Historical data'],
   },
 ]
@@ -61,7 +61,7 @@ const comingSoonSections = [
     icon: Briefcase,
     title: 'Deal Rooms',
     description: 'Collaborative workspace for team selling',
-    color: 'from-orange-500 to-red-500',
+    color: 'from-[#5eead4] to-gray-500',
   },
   {
     id: 'analytics',
@@ -69,7 +69,7 @@ const comingSoonSections = [
     icon: Brain,
     title: 'AI Analytics',
     description: 'Win/Loss analysis and AI insights',
-    color: 'from-indigo-500 to-purple-500',
+    color: 'from-indigo-500 to-[#5eead4]',
   },
 ]
 
@@ -104,7 +104,7 @@ export default function PerformancePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <DollarSign className="w-4 h-4 text-green-400" />
+                <DollarSign className="w-4 h-4 text-[#5eead4]" />
                 <span className="text-sm text-gray-400">Revenue</span>
               </div>
               <p className="text-2xl font-bold text-white">${(quickStats.mtdRevenue / 1000).toFixed(1)}k</p>
@@ -124,14 +124,14 @@ export default function PerformancePage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <CheckCircle className="w-4 h-4 text-blue-400" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 <span className="text-sm text-gray-400">Deals Won</span>
               </div>
               <p className="text-2xl font-bold text-white">{quickStats.dealsWon}</p>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-purple-400" />
+                <Activity className="w-4 h-4 text-[#5eead4]" />
                 <span className="text-sm text-gray-400">Avg Deal Size</span>
               </div>
               <p className="text-2xl font-bold text-white">${(quickStats.avgDealSize / 1000).toFixed(1)}k</p>
@@ -192,7 +192,7 @@ export default function PerformancePage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-white">{section.title}</h4>
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400">
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-[#5eead4]/20 text-[#5eead4]">
                         Coming Soon
                       </span>
                     </div>
@@ -213,7 +213,7 @@ export default function PerformancePage() {
               href="/dashboard"
               className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
             >
-              <LayoutDashboard className="w-6 h-6 text-blue-400" />
+              <LayoutDashboard className="w-6 h-6 text-[#5eead4]" />
               <div>
                 <p className="font-medium text-white">View Dashboard</p>
                 <p className="text-xs text-gray-400">Check your daily progress</p>
@@ -223,7 +223,7 @@ export default function PerformancePage() {
               href="/projections"
               className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
             >
-              <TrendingUp className="w-6 h-6 text-green-400" />
+              <TrendingUp className="w-6 h-6 text-[#5eead4]" />
               <div>
                 <p className="font-medium text-white">Update Projections</p>
                 <p className="text-xs text-gray-400">Forecast your month-end</p>
@@ -233,7 +233,7 @@ export default function PerformancePage() {
               href="/metrics"
               className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
             >
-              <BarChart3 className="w-6 h-6 text-purple-400" />
+              <BarChart3 className="w-6 h-6 text-[#5eead4]" />
               <div>
                 <p className="font-medium text-white">Analyze Metrics</p>
                 <p className="text-xs text-gray-400">Deep dive into your data</p>

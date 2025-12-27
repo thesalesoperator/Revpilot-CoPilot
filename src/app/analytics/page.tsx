@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-400 text-sm">Win Rate</span>
                   <span className={`flex items-center gap-1 text-sm ${
-                    winLossData.trends.winRate > 0 ? 'text-green-400' : 'text-red-400'
+                    winLossData.trends.winRate > 0 ? 'text-[#5eead4]' : 'text-gray-400'
                   }`}>
                     {winLossData.trends.winRate > 0 ? (
                       <ArrowUpRight className="w-4 h-4" />
@@ -214,7 +214,7 @@ export default function AnalyticsPage() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-400 text-sm">Avg Deal Size</span>
-                  <span className="flex items-center gap-1 text-sm text-green-400">
+                  <span className="flex items-center gap-1 text-sm text-[#5eead4]">
                     <ArrowUpRight className="w-4 h-4" />
                     {winLossData.trends.dealSize}%
                   </span>
@@ -227,7 +227,7 @@ export default function AnalyticsPage() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-400 text-sm">Avg Sales Cycle</span>
-                  <span className="flex items-center gap-1 text-sm text-green-400">
+                  <span className="flex items-center gap-1 text-sm text-[#5eead4]">
                     <ArrowDownRight className="w-4 h-4" />
                     {Math.abs(winLossData.trends.salesCycle)} days
                   </span>
@@ -243,7 +243,7 @@ export default function AnalyticsPage() {
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex-1 h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-green-500 rounded-full"
+                      className="h-full bg-[#5eead4] rounded-full"
                       style={{ width: `${(winLossData.won / winLossData.totalDeals) * 100}%` }}
                     />
                   </div>
@@ -262,7 +262,7 @@ export default function AnalyticsPage() {
                       <div className="flex-1">
                         <div className="h-4 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-red-500 rounded-full transition-all"
+                            className="h-full bg-gray-500 rounded-full transition-all"
                             style={{ width: `${reason.percentage}%` }}
                           />
                         </div>
@@ -272,10 +272,10 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="w-6">
                         {reason.trend === 'up' && (
-                          <TrendingUp className="w-4 h-4 text-red-400" />
+                          <TrendingUp className="w-4 h-4 text-gray-400" />
                         )}
                         {reason.trend === 'down' && (
-                          <TrendingDown className="w-4 h-4 text-green-400" />
+                          <TrendingDown className="w-4 h-4 text-[#5eead4]" />
                         )}
                       </div>
                     </div>
@@ -332,15 +332,15 @@ export default function AnalyticsPage() {
                       className="border-b border-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.02)]"
                     >
                       <td className="p-4 text-white font-medium">{deal.name}</td>
-                      <td className="p-4 text-right text-green-400">
+                      <td className="p-4 text-right text-[#5eead4]">
                         ${(deal.value / 1000).toFixed(0)}k
                       </td>
                       <td className="p-4 text-center">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
                             deal.result === 'won'
-                              ? 'bg-green-500/20 text-green-400'
-                              : 'bg-red-500/20 text-red-400'
+                              ? 'bg-[#5eead4]/20 text-[#5eead4]'
+                              : 'bg-gray-500/20 text-gray-400'
                           }`}
                         >
                           {deal.result === 'won' ? (
@@ -405,19 +405,19 @@ export default function AnalyticsPage() {
                   <p className="text-sm text-gray-400">Target</p>
                 </div>
                 <div className="text-center p-4 bg-[rgba(255,255,255,0.02)] rounded-xl">
-                  <p className="text-2xl font-bold text-green-400">
+                  <p className="text-2xl font-bold text-[#5eead4]">
                     ${(quotaForecast.achieved / 1000).toFixed(0)}k
                   </p>
                   <p className="text-sm text-gray-400">Achieved</p>
                 </div>
                 <div className="text-center p-4 bg-[rgba(255,255,255,0.02)] rounded-xl">
-                  <p className="text-2xl font-bold text-blue-400">
+                  <p className="text-2xl font-bold text-[#5eead4]">
                     ${(quotaForecast.committed / 1000).toFixed(0)}k
                   </p>
                   <p className="text-sm text-gray-400">Committed</p>
                 </div>
                 <div className="text-center p-4 bg-[rgba(255,255,255,0.02)] rounded-xl">
-                  <p className="text-2xl font-bold text-yellow-400">
+                  <p className="text-2xl font-bold text-[#5eead4]">
                     ${(quotaForecast.bestCase / 1000).toFixed(0)}k
                   </p>
                   <p className="text-sm text-gray-400">Best Case</p>
@@ -432,10 +432,10 @@ export default function AnalyticsPage() {
             </div>
 
             {/* AI Forecast Insight */}
-            <div className="glass-card p-6 mb-8 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+            <div className="glass-card p-6 mb-8 bg-gradient-to-r from-[#5eead4]/10 to-[#5eead4]/10 border-[#5eead4]/20">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-purple-400" />
+                <div className="w-12 h-12 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-[#5eead4]" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-white mb-2">AI Forecast Analysis</h4>
@@ -449,11 +449,11 @@ export default function AnalyticsPage() {
                       Close the GlobalBank deal ($280k) - 60% probability
                     </li>
                     <li className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                      <AlertTriangle className="w-4 h-4 text-[#5eead4]" />
                       Accelerate TechCorp evaluation - stalled for 2 weeks
                     </li>
                     <li className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-purple-400" />
+                      <Zap className="w-4 h-4 text-[#5eead4]" />
                       Add 2 more qualified opportunities to pipeline
                     </li>
                   </ul>
@@ -476,7 +476,7 @@ export default function AnalyticsPage() {
                       <div className="w-full flex items-end justify-center gap-1 h-40">
                         <div
                           className={`w-6 rounded-t transition-all ${
-                            hitTarget ? 'bg-green-500' : 'bg-red-400'
+                            hitTarget ? 'bg-[#5eead4]' : 'bg-gray-400'
                           }`}
                           style={{ height: `${wonHeight}%` }}
                         />
@@ -492,7 +492,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="flex items-center justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-green-500" />
+                  <div className="w-4 h-4 rounded bg-[#5eead4]" />
                   <span className="text-sm text-gray-400">Achieved</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -510,8 +510,8 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="glass-card p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-green-400" />
+                  <div className="w-10 h-10 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-[#5eead4]" />
                   </div>
                   <h4 className="font-semibold text-white">Winning Patterns</h4>
                 </div>
@@ -523,7 +523,7 @@ export default function AnalyticsPage() {
                     'Proposals with ROI calculator close 28% faster',
                   ].map((pattern, index) => (
                     <li key={index} className="flex items-start gap-2 text-gray-400">
-                      <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-[#5eead4] mt-0.5 flex-shrink-0" />
                       {pattern}
                     </li>
                   ))}
@@ -532,8 +532,8 @@ export default function AnalyticsPage() {
 
               <div className="glass-card p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
-                    <AlertTriangle className="w-5 h-5 text-red-400" />
+                  <div className="w-10 h-10 rounded-xl bg-gray-500/20 flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-gray-400" />
                   </div>
                   <h4 className="font-semibold text-white">Loss Indicators</h4>
                 </div>
@@ -545,7 +545,7 @@ export default function AnalyticsPage() {
                     'Budget objection late in cycle = 55% loss',
                   ].map((pattern, index) => (
                     <li key={index} className="flex items-start gap-2 text-gray-400">
-                      <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                      <XCircle className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                       {pattern}
                     </li>
                   ))}
@@ -556,8 +556,8 @@ export default function AnalyticsPage() {
             {/* Recommendations */}
             <div className="glass-card p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-purple-400" />
+                <div className="w-10 h-10 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-[#5eead4]" />
                 </div>
                 <h4 className="font-semibold text-white">AI Recommendations for You</h4>
               </div>

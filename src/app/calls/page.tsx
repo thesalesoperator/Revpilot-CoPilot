@@ -59,15 +59,15 @@ function formatFileSize(bytes: number | null): string {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-green-400'
-  if (score >= 60) return 'text-yellow-400'
-  return 'text-red-400'
+  if (score >= 80) return 'text-[#5eead4]'
+  if (score >= 60) return 'text-[#5eead4]'
+  return 'text-gray-400'
 }
 
 function getScoreBg(score: number): string {
-  if (score >= 80) return 'bg-green-500/20 border-green-500/30'
-  if (score >= 60) return 'bg-yellow-500/20 border-yellow-500/30'
-  return 'bg-red-500/20 border-red-500/30'
+  if (score >= 80) return 'bg-[#5eead4]/20 border-[#5eead4]/30'
+  if (score >= 60) return 'bg-[#5eead4]/20 border-[#5eead4]/30'
+  return 'bg-gray-500/20 border-gray-500/30'
 }
 
 export default function CallsPage() {
@@ -415,9 +415,9 @@ export default function CallsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-400" />
+        return <CheckCircle className="w-5 h-5 text-[#5eead4]" />
       case 'failed':
-        return <XCircle className="w-5 h-5 text-red-400" />
+        return <XCircle className="w-5 h-5 text-gray-400" />
       case 'transcribing':
       case 'analyzing':
         return <Loader2 className="w-5 h-5 text-[#5eead4] animate-spin" />
@@ -578,7 +578,7 @@ export default function CallsPage() {
                         e.stopPropagation()
                         handleDeleteRecording(recording.id, recording.file_url)
                       }}
-                      className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-red-400 transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -609,7 +609,7 @@ export default function CallsPage() {
                 {/* Error State */}
                 {expandedId === recording.id && recording.status === 'failed' && (
                   <div className="p-6 border-t border-[rgba(255,255,255,0.05)]">
-                    <div className="flex items-center gap-3 text-red-400">
+                    <div className="flex items-center gap-3 text-gray-400">
                       <XCircle className="w-5 h-5" />
                       <span>{recording.error_message || 'An error occurred during analysis'}</span>
                     </div>
@@ -821,8 +821,8 @@ function MissingAnalysisView({ recordingId, transcript, onReanalyze, isReanalyzi
   return (
     <div className="border-t border-[rgba(255,255,255,0.05)] p-6">
       <div className="text-center py-6">
-        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
-          <XCircle className="w-8 h-8 text-amber-500" />
+        <div className="w-16 h-16 rounded-full bg-[#5eead4]/10 flex items-center justify-center mx-auto mb-4">
+          <XCircle className="w-8 h-8 text-[#5eead4]" />
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Analysis Data Missing</h3>
         <p className="text-gray-400 mb-6 max-w-md mx-auto">
@@ -952,7 +952,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
                 </div>
                 <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#ff9855]"
+                    className="h-full bg-[#5eead4]"
                     style={{ width: `${analysis.talk_listen_ratio.prospect_percentage || 0}%` }}
                   />
                 </div>
@@ -998,13 +998,13 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
       <div className="px-6 pb-6 grid md:grid-cols-2 gap-4">
         <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-5 h-5 text-green-400" />
+            <TrendingUp className="w-5 h-5 text-[#5eead4]" />
             <h4 className="font-medium text-white">Strengths</h4>
           </div>
           <ul className="space-y-2">
             {(analysis.strengths || []).map((strength, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4] mt-0.5 shrink-0" />
                 {strength}
               </li>
             ))}
@@ -1014,15 +1014,15 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
           </ul>
         </div>
 
-        <div className="bg-[rgba(255,152,85,0.05)] border border-[rgba(255,152,85,0.1)] rounded-xl p-4">
+        <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingDown className="w-5 h-5 text-orange-400" />
+            <TrendingDown className="w-5 h-5 text-[#5eead4]" />
             <h4 className="font-medium text-white">Key Improvements</h4>
           </div>
           <ul className="space-y-2">
             {(analysis.key_improvements || []).map((improvement, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                <Target className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
+                <Target className="w-4 h-4 text-[#5eead4] mt-0.5 shrink-0" />
                 {improvement}
               </li>
             ))}

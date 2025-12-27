@@ -191,9 +191,9 @@ const objections = [
 ]
 
 const difficultyColors = {
-  common: { bg: 'bg-green-500/20', text: 'text-green-400', label: 'Common' },
-  medium: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', label: 'Medium' },
-  hard: { bg: 'bg-red-500/20', text: 'text-red-400', label: 'Hard' },
+  common: { bg: 'bg-[#5eead4]/20', text: 'text-[#5eead4]', label: 'Common' },
+  medium: { bg: 'bg-[#5eead4]/20', text: 'text-[#5eead4]', label: 'Medium' },
+  hard: { bg: 'bg-gray-500/20', text: 'text-gray-400', label: 'Hard' },
 }
 
 export default function ObjectionsPage() {
@@ -320,10 +320,10 @@ export default function ObjectionsPage() {
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                         index === 0
-                          ? 'bg-yellow-500 text-black'
+                          ? 'bg-[#5eead4] text-black'
                           : index === 1
                             ? 'bg-gray-400 text-black'
-                            : 'bg-amber-700 text-white'
+                            : 'bg-gray-500 text-white'
                       }`}
                     >
                       {index + 1}
@@ -353,7 +353,7 @@ export default function ObjectionsPage() {
                     className="w-full p-6 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-500 to-[#5eead4] flex items-center justify-center flex-shrink-0">
                         <Shield className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
@@ -412,15 +412,15 @@ export default function ObjectionsPage() {
                         >
                           {response.isTopResponse && (
                             <div className="flex items-center gap-2 mb-3">
-                              <Award className="w-4 h-4 text-yellow-400" />
-                              <span className="text-xs font-semibold text-yellow-400">TOP RESPONSE</span>
+                              <Award className="w-4 h-4 text-[#5eead4]" />
+                              <span className="text-xs font-semibold text-[#5eead4]">TOP RESPONSE</span>
                             </div>
                           )}
                           <p className="text-gray-300 mb-4 leading-relaxed">{response.text}</p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white text-sm font-semibold">
                                   {response.author[0]}
                                 </div>
                                 <div>
@@ -429,11 +429,11 @@ export default function ObjectionsPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-1 text-gray-400 hover:text-green-400 transition-colors">
+                                <button className="flex items-center gap-1 text-gray-400 hover:text-[#5eead4] transition-colors">
                                   <ThumbsUp className="w-4 h-4" />
                                   <span className="text-sm">{response.upvotes}</span>
                                 </button>
-                                <button className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                                <button className="flex items-center gap-1 text-gray-400 hover:text-gray-400 transition-colors">
                                   <ThumbsDown className="w-4 h-4" />
                                   <span className="text-sm">{response.downvotes}</span>
                                 </button>
@@ -450,8 +450,8 @@ export default function ObjectionsPage() {
                               >
                                 {copiedId === response.id ? (
                                   <>
-                                    <Check className="w-4 h-4 text-green-400" />
-                                    <span className="text-sm text-green-400">Copied</span>
+                                    <Check className="w-4 h-4 text-[#5eead4]" />
+                                    <span className="text-sm text-[#5eead4]">Copied</span>
                                   </>
                                 ) : (
                                   <>

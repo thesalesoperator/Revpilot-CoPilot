@@ -41,13 +41,13 @@ const JOURNAL_PROMPTS = {
     icon: CloudRain,
     title: "What didn't go as planned?",
     placeholder: "Be honest with yourself. What objections stumped you? Which prospects went cold? What felt frustrating?",
-    color: '#ff6b8a',
+    color: 'gray-400',
   },
   what_to_improve: {
     icon: Zap,
     title: 'What can I improve tomorrow?',
     placeholder: 'One specific thing to focus on. A script tweak? Better discovery questions? More follow-ups?',
-    color: '#ff9855',
+    color: '#5eead4',
   },
   where_need_support: {
     icon: Heart,
@@ -273,7 +273,7 @@ export default function JournalPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5eead4]/20 to-[#ff9855]/20 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/20 flex items-center justify-center">
               <BookOpen className="w-6 h-6 text-[#5eead4]" />
             </div>
             <div>

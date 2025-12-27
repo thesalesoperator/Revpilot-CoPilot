@@ -49,9 +49,9 @@ export default function OrganizationSwitcher() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'owner':
-        return <Crown className="w-3 h-3 text-yellow-400" />
+        return <Crown className="w-3 h-3 text-[#5eead4]" />
       case 'admin':
-        return <Shield className="w-3 h-3 text-purple-400" />
+        return <Shield className="w-3 h-3 text-[#5eead4]" />
       default:
         return null
     }

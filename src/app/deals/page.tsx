@@ -36,12 +36,12 @@ import { useAuth } from '@/contexts/AuthContext'
 
 // Deal stages
 const stages = [
-  { id: 'discovery', label: 'Discovery', color: 'bg-blue-500' },
-  { id: 'demo', label: 'Demo', color: 'bg-purple-500' },
-  { id: 'proposal', label: 'Proposal', color: 'bg-yellow-500' },
-  { id: 'negotiation', label: 'Negotiation', color: 'bg-orange-500' },
-  { id: 'closed-won', label: 'Closed Won', color: 'bg-green-500' },
-  { id: 'closed-lost', label: 'Closed Lost', color: 'bg-red-500' },
+  { id: 'discovery', label: 'Discovery', color: 'bg-[#5eead4]' },
+  { id: 'demo', label: 'Demo', color: 'bg-[#5eead4]' },
+  { id: 'proposal', label: 'Proposal', color: 'bg-[#5eead4]' },
+  { id: 'negotiation', label: 'Negotiation', color: 'bg-[#5eead4]' },
+  { id: 'closed-won', label: 'Closed Won', color: 'bg-[#5eead4]' },
+  { id: 'closed-lost', label: 'Closed Lost', color: 'bg-gray-500' },
 ]
 
 // Mock deals data
@@ -129,15 +129,15 @@ const activityFeed = [
 ]
 
 const getHealthColor = (score: number) => {
-  if (score >= 80) return 'text-green-400'
-  if (score >= 60) return 'text-yellow-400'
-  return 'text-red-400'
+  if (score >= 80) return 'text-[#5eead4]'
+  if (score >= 60) return 'text-[#5eead4]'
+  return 'text-gray-400'
 }
 
 const getHealthBg = (score: number) => {
-  if (score >= 80) return 'from-green-500 to-emerald-500'
-  if (score >= 60) return 'from-yellow-500 to-orange-500'
-  return 'from-red-500 to-rose-500'
+  if (score >= 80) return 'from-[#5eead4] to-emerald-500'
+  if (score >= 60) return 'from-[#5eead4] to-[#5eead4]'
+  return 'from-gray-500 to-rose-500'
 }
 
 export default function DealsPage() {
@@ -176,21 +176,21 @@ export default function DealsPage() {
           </div>
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <DollarSign className="w-5 h-5 text-green-400" />
+              <DollarSign className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Total Pipeline</span>
             </div>
             <p className="text-3xl font-bold text-white">${(totalPipeline / 1000).toFixed(0)}k</p>
           </div>
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Target className="w-5 h-5 text-yellow-400" />
+              <Target className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Weighted Pipeline</span>
             </div>
             <p className="text-3xl font-bold text-white">${(weightedPipeline / 1000).toFixed(0)}k</p>
           </div>
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Activity className="w-5 h-5 text-purple-400" />
+              <Activity className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Avg Health Score</span>
             </div>
             <p className="text-3xl font-bold text-white">
@@ -233,7 +233,7 @@ export default function DealsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-green-400 font-semibold">${(deal.value / 1000).toFixed(0)}k</span>
+                  <span className="text-[#5eead4] font-semibold">${(deal.value / 1000).toFixed(0)}k</span>
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
                     stages.find((s) => s.id === deal.stage)?.color
                   } bg-opacity-20`}>
@@ -289,7 +289,7 @@ export default function DealsPage() {
                   <div className="grid grid-cols-4 gap-4">
                     <div className="bg-[rgba(255,255,255,0.02)] rounded-xl p-4">
                       <p className="text-sm text-gray-400 mb-1">Deal Value</p>
-                      <p className="text-2xl font-bold text-green-400">
+                      <p className="text-2xl font-bold text-[#5eead4]">
                         ${(selectedDeal.value / 1000).toFixed(0)}k
                       </p>
                     </div>
@@ -323,18 +323,18 @@ export default function DealsPage() {
                           key={index}
                           className={`flex items-center gap-3 p-3 rounded-xl ${
                             signal.type === 'positive'
-                              ? 'bg-green-500/10 border border-green-500/20'
+                              ? 'bg-[#5eead4]/10 border border-[#5eead4]/20'
                               : signal.type === 'warning'
-                                ? 'bg-yellow-500/10 border border-yellow-500/20'
-                                : 'bg-red-500/10 border border-red-500/20'
+                                ? 'bg-[#5eead4]/10 border border-[#5eead4]/20'
+                                : 'bg-gray-500/10 border border-gray-500/20'
                           }`}
                         >
                           {signal.type === 'positive' ? (
-                            <CheckCircle className="w-5 h-5 text-green-400" />
+                            <CheckCircle className="w-5 h-5 text-[#5eead4]" />
                           ) : signal.type === 'warning' ? (
-                            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                            <AlertTriangle className="w-5 h-5 text-[#5eead4]" />
                           ) : (
-                            <TrendingDown className="w-5 h-5 text-red-400" />
+                            <TrendingDown className="w-5 h-5 text-gray-400" />
                           )}
                           <span className="text-gray-300">{signal.text}</span>
                         </div>
@@ -352,7 +352,7 @@ export default function DealsPage() {
                           className="flex items-center justify-between p-3 rounded-xl bg-[rgba(255,255,255,0.02)]"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-semibold">
                               {contact.name[0]}
                             </div>
                             <div>
@@ -409,11 +409,11 @@ export default function DealsPage() {
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center ${
                           activity.type === 'call'
-                            ? 'bg-green-500/20 text-green-400'
+                            ? 'bg-[#5eead4]/20 text-[#5eead4]'
                             : activity.type === 'email'
-                              ? 'bg-blue-500/20 text-blue-400'
+                              ? 'bg-[#5eead4]/20 text-[#5eead4]'
                               : activity.type === 'meeting'
-                                ? 'bg-purple-500/20 text-purple-400'
+                                ? 'bg-[#5eead4]/20 text-[#5eead4]'
                                 : 'bg-gray-500/20 text-gray-400'
                         }`}
                       >
@@ -469,9 +469,9 @@ export default function DealsPage() {
               {activeTab === 'ai' && (
                 <div className="space-y-6">
                   {/* AI Health Analysis */}
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-[#5eead4]/10 to-[#5eead4]/10 border border-[#5eead4]/20">
                     <div className="flex items-center gap-3 mb-3">
-                      <Brain className="w-6 h-6 text-purple-400" />
+                      <Brain className="w-6 h-6 text-[#5eead4]" />
                       <h4 className="font-semibold text-white">AI Deal Analysis</h4>
                     </div>
                     <p className="text-gray-300 mb-4">
@@ -480,8 +480,8 @@ export default function DealsPage() {
                       chance of closing. Key risk: CFO engagement has dropped by 40% in the last 2 weeks.
                     </p>
                     <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm text-yellow-400">
+                      <Zap className="w-4 h-4 text-[#5eead4]" />
+                      <span className="text-sm text-[#5eead4]">
                         Recommendation: Schedule a call specifically with the CFO to address budget concerns.
                       </span>
                     </div>
@@ -503,14 +503,14 @@ export default function DealsPage() {
                           <div className="flex-1 h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
-                                item.positive ? 'bg-green-500' : 'bg-yellow-500'
+                                item.positive ? 'bg-[#5eead4]' : 'bg-[#5eead4]'
                               }`}
                               style={{ width: `${item.score}%` }}
                             />
                           </div>
                           <span
                             className={`text-sm font-semibold ${
-                              item.positive ? 'text-green-400' : 'text-yellow-400'
+                              item.positive ? 'text-[#5eead4]' : 'text-[#5eead4]'
                             }`}
                           >
                             {item.score}%
@@ -566,17 +566,17 @@ export default function DealsPage() {
               <p className="text-sm text-gray-400">5 files</p>
             </button>
             <button className="p-4 rounded-xl bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-colors text-center">
-              <MessageSquare className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+              <MessageSquare className="w-8 h-8 text-[#5eead4] mx-auto mb-2" />
               <p className="text-white font-medium">Team Chat</p>
               <p className="text-sm text-gray-400">12 messages</p>
             </button>
             <button className="p-4 rounded-xl bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-colors text-center">
-              <Phone className="w-8 h-8 text-green-400 mx-auto mb-2" />
+              <Phone className="w-8 h-8 text-[#5eead4] mx-auto mb-2" />
               <p className="text-white font-medium">Call History</p>
               <p className="text-sm text-gray-400">8 calls</p>
             </button>
             <button className="p-4 rounded-xl bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-colors text-center">
-              <Calendar className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+              <Calendar className="w-8 h-8 text-[#5eead4] mx-auto mb-2" />
               <p className="text-white font-medium">Meetings</p>
               <p className="text-sm text-gray-400">3 scheduled</p>
             </button>

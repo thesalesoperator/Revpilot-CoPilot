@@ -22,15 +22,15 @@ export default function StatCard({
   const iconColors = {
     default: 'text-[#5eead4]',
     success: 'text-[#5eead4]',
-    warning: 'text-[#ffbe57]',
-    danger: 'text-[#ff6b8a]',
+    warning: 'text-[#5eead4]',
+    danger: 'text-[gray-400]',
   }
 
   const bgColors = {
     default: 'bg-[rgba(94,234,212,0.1)]',
     success: 'bg-[rgba(94,234,212,0.1)]',
-    warning: 'bg-[rgba(255,190,87,0.1)]',
-    danger: 'bg-[rgba(255,0,67,0.1)]',
+    warning: 'bg-[rgba(94,234,212,0.1)]',
+    danger: 'bg-[rgba(160,160,176,0.1)]',
   }
 
   return (

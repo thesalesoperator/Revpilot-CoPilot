@@ -299,7 +299,7 @@ export default function MentorshipPage() {
               {filteredMentors.map((mentor) => (
                 <div key={mentor.id} className="glass-card p-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-3xl">
                       {mentor.avatar}
                     </div>
                     <div className="flex-1">
@@ -312,10 +312,10 @@ export default function MentorshipPage() {
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${
                             mentor.availability === 'Available'
-                              ? 'bg-green-500/20 text-green-400'
+                              ? 'bg-[#5eead4]/20 text-[#5eead4]'
                               : mentor.availability === 'Limited'
-                                ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-red-500/20 text-red-400'
+                                ? 'bg-[#5eead4]/20 text-[#5eead4]'
+                                : 'bg-gray-500/20 text-gray-400'
                           }`}
                         >
                           {mentor.availability}
@@ -324,7 +324,7 @@ export default function MentorshipPage() {
 
                       {/* Stats */}
                       <div className="flex items-center gap-4 mt-3 text-sm">
-                        <span className="flex items-center gap-1 text-yellow-400">
+                        <span className="flex items-center gap-1 text-[#5eead4]">
                           <Star className="w-4 h-4" />
                           {mentor.rating} ({mentor.reviews})
                         </span>
@@ -378,10 +378,10 @@ export default function MentorshipPage() {
             {programs.map((program) => (
               <div key={program.id} className="glass-card p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="px-2 py-1 rounded-full text-xs bg-purple-500/20 text-purple-400">
+                  <span className="px-2 py-1 rounded-full text-xs bg-[#5eead4]/20 text-[#5eead4]">
                     {program.duration}
                   </span>
-                  <div className="flex items-center gap-1 text-yellow-400">
+                  <div className="flex items-center gap-1 text-[#5eead4]">
                     <Star className="w-4 h-4" />
                     <span className="text-sm">{program.rating}</span>
                   </div>
@@ -403,7 +403,7 @@ export default function MentorshipPage() {
 
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-gray-400">by {program.mentor}</span>
-                  <span className="text-sm text-yellow-400">{program.spots} spots left</span>
+                  <span className="text-sm text-[#5eead4]">{program.spots} spots left</span>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
@@ -425,12 +425,12 @@ export default function MentorshipPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     {session.type === 'video' ? (
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                        <Video className="w-6 h-6 text-blue-400" />
+                      <div className="w-12 h-12 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                        <Video className="w-6 h-6 text-[#5eead4]" />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                        <Phone className="w-6 h-6 text-green-400" />
+                      <div className="w-12 h-12 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                        <Phone className="w-6 h-6 text-[#5eead4]" />
                       </div>
                     )}
                     <div>
@@ -474,7 +474,7 @@ export default function MentorshipPage() {
           <div className="space-y-6">
             {/* Header */}
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-4xl">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-4xl">
                 {selectedMentor.avatar}
               </div>
               <div className="flex-1">
@@ -482,7 +482,7 @@ export default function MentorshipPage() {
                 <p className="text-gray-400">{selectedMentor.title}</p>
                 <p className="text-sm text-gray-500">{selectedMentor.company}</p>
                 <div className="flex items-center gap-4 mt-2 text-sm">
-                  <span className="flex items-center gap-1 text-yellow-400">
+                  <span className="flex items-center gap-1 text-[#5eead4]">
                     <Star className="w-4 h-4" />
                     {selectedMentor.rating} ({selectedMentor.reviews} reviews)
                   </span>
@@ -501,7 +501,7 @@ export default function MentorshipPage() {
                 {selectedMentor.achievements.map((achievement) => (
                   <span
                     key={achievement}
-                    className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-yellow-500/20 text-yellow-400"
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-[#5eead4]/20 text-[#5eead4]"
                   >
                     <Award className="w-4 h-4" />
                     {achievement}
