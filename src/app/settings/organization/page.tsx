@@ -456,7 +456,7 @@ export default function OrganizationSettingsPage() {
                           {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                         </span>
                       )}
-                      {isOrgAdmin && member.user_id !== user?.id && member.role !== 'owner' && (
+                      {isOrgAdmin && member.user_id !== user?.id && (
                         <button
                           onClick={() => handleRemoveMember(member.id, (member as { full_name?: string }).full_name || 'this member')}
                           className="p-2 rounded-lg hover:bg-gray-500/10 text-gray-400 hover:text-gray-400 transition-colors"
