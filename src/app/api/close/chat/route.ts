@@ -135,8 +135,10 @@ export async function POST(request: Request) {
           page_context
         }
       ])
-      .then(() => {})
-      .catch(err => console.error('[Close Chat] History save error:', err))
+      .then(
+        () => {},
+        err => console.error('[Close Chat] History save error:', err)
+      )
 
     // Track usage analytics (async)
     supabase
@@ -147,8 +149,10 @@ export async function POST(request: Request) {
         event_data: { message_length: message.length, response_length: response.length },
         page_url: page_context
       })
-      .then(() => {})
-      .catch(err => console.error('[Close Chat] Analytics error:', err))
+      .then(
+        () => {},
+        err => console.error('[Close Chat] Analytics error:', err)
+      )
 
     return NextResponse.json(
       {
