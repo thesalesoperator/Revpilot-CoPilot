@@ -18,6 +18,8 @@ import {
   PieChart,
   Briefcase,
   Brain,
+  BookOpen,
+  Flame,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useAuth } from '@/contexts/AuthContext'
@@ -50,6 +52,28 @@ const performanceSections = [
     description: 'Deep dive into your performance data',
     color: 'from-[#5eead4] to-[#5eead4]',
     features: ['Activity metrics', 'Conversion rates', 'Pipeline analysis', 'Historical data'],
+  },
+]
+
+// Daily Growth sections
+const growthSections = [
+  {
+    id: 'journal',
+    href: '/journal',
+    icon: BookOpen,
+    title: 'Sales Journal',
+    description: 'Daily reflection and mindset tracking',
+    color: 'from-[#5eead4] to-[#4fd1c5]',
+    features: ['Daily wins', 'Challenges', 'Improvements', 'Mood tracking'],
+  },
+  {
+    id: 'habits',
+    href: '/habits',
+    icon: Flame,
+    title: 'Habit Tracker',
+    description: 'Build consistency with daily habits',
+    color: 'from-[#5eead4] to-emerald-500',
+    features: ['Custom habits', 'Streak tracking', 'Weekly view', 'Celebrations'],
   },
 ]
 
@@ -173,6 +197,43 @@ export default function PerformancePage() {
           ))}
         </div>
 
+        {/* Daily Growth */}
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-white mb-4">Daily Growth</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {growthSections.map((section) => (
+              <Link
+                key={section.id}
+                href={section.href}
+                className="glass-card p-6 group hover:scale-[1.02] transition-all duration-300"
+              >
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${section.color} flex items-center justify-center mb-4`}
+                >
+                  <section.icon className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-white group-hover:text-[#5eead4] transition-colors">
+                    {section.title}
+                  </h3>
+                  <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-[#5eead4] group-hover:translate-x-1 transition-all" />
+                </div>
+                <p className="text-gray-400 text-sm mb-4">{section.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {section.features.map((feature) => (
+                    <span
+                      key={feature}
+                      className="px-2 py-1 rounded-full text-xs bg-[rgba(255,255,255,0.05)] text-gray-400"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Coming Soon */}
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-white mb-4">Coming Soon</h3>
@@ -208,7 +269,7 @@ export default function PerformancePage() {
         {/* Quick Actions */}
         <div className="glass-card p-6">
           <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <Link
               href="/dashboard"
               className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
@@ -237,6 +298,26 @@ export default function PerformancePage() {
               <div>
                 <p className="font-medium text-white">Analyze Metrics</p>
                 <p className="text-xs text-gray-400">Deep dive into your data</p>
+              </div>
+            </Link>
+            <Link
+              href="/journal"
+              className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+            >
+              <BookOpen className="w-6 h-6 text-[#5eead4]" />
+              <div>
+                <p className="font-medium text-white">Write in Journal</p>
+                <p className="text-xs text-gray-400">Reflect on your day</p>
+              </div>
+            </Link>
+            <Link
+              href="/habits"
+              className="flex items-center gap-3 p-4 rounded-xl bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+            >
+              <Flame className="w-6 h-6 text-[#5eead4]" />
+              <div>
+                <p className="font-medium text-white">Track Habits</p>
+                <p className="text-xs text-gray-400">Build your streak</p>
               </div>
             </Link>
           </div>
