@@ -90,10 +90,10 @@ export async function POST(request: NextRequest) {
         voice: {
           provider: '11labs' as const,
           voiceId: getVoiceIdForPersona(persona.id),
-          // ElevenLabs v3 settings for more natural speech
-          stability: 0.4, // Lower = more emotional range
+          // ElevenLabs settings tuned for natural conversational speech
+          stability: 0.5, // Balanced for consistent but expressive speech
           similarityBoost: 0.75,
-          speed: 0.92, // Slightly slower for natural pacing
+          speed: 0.85, // Slower for natural, conversational pacing
         },
         model: {
           provider: 'openai' as const,
@@ -104,17 +104,17 @@ export async function POST(request: NextRequest) {
               content: buildSystemPrompt(challenge, persona, practiceContext),
             },
           ],
-          temperature: 0.75, // More personality variation
-          maxTokens: 300, // Keep responses conversational, not lectures
+          temperature: 0.7, // Natural variation without being erratic
+          maxTokens: 200, // Shorter responses feel more conversational
         },
         firstMessage: getFirstMessage(persona),
         // Conversation settings for realism
-        silenceTimeoutSeconds: 10, // Wait longer before assuming they're done
+        silenceTimeoutSeconds: 12, // Wait longer before assuming they're done
         maxDurationSeconds: 2700, // 45 min max
         backgroundSound: 'off', // No background noise
         backchannelingEnabled: true, // Natural "mm-hmm" responses
         interruptionsEnabled: true, // Allow persona to interrupt
-        responseDelaySeconds: 0.5, // Slight pause before responding (feels like thinking)
+        responseDelaySeconds: 0.8, // Pause before responding (feels like thinking)
       },
       // Metadata at call level (not inside assistant) to identify session in webhooks
       metadata: {
@@ -302,7 +302,18 @@ function buildSystemPrompt(
   // Generate dynamic product intelligence
   const productIntelligence = generateProductIntelligence(practiceContext, persona.id)
 
-  return `${persona.systemPrompt}
+  return `## CRITICAL SPEECH RULE - READ THIS FIRST
+You are in a VOICE conversation. NEVER output any bracketed stage directions, annotations, or actions like [sighs], [pauses], [typing sounds], [checks phone], [laughs], etc. These will be read aloud and sound robotic. Instead, express emotions through your WORDS and natural speech patterns. Use ellipses (...) for pauses. Use punctuation and word choice to convey tone.
+
+WRONG: "[sighs] I don't have time for this."
+RIGHT: "Look... I really don't have time for this."
+
+WRONG: "[typing sounds] Hold on, let me check..."
+RIGHT: "Hold on, let me check something here..."
+
+---
+
+${persona.systemPrompt}
 
 ---
 ${productIntelligence}
@@ -312,12 +323,13 @@ ${productIntelligence}
 ${challenge.systemPrompt}
 
 ## NATURAL SPEECH GUIDELINES
-- Use audio tags for emotion: [sighs], [pauses], [laughs], [interrupts], [surprised], [skeptical]
-- Use punctuation for rhythm: ellipses for hesitation, em-dashes for interruptions
+- NEVER use bracketed annotations like [sighs], [pauses], [typing], etc. - just speak naturally
+- Use punctuation for rhythm: ellipses (...) for hesitation, em-dashes (—) for interruptions
 - Vary your response length: short when impatient, longer when engaged
 - Reference earlier parts of the conversation: "Wait, you said earlier that..."
 - React genuinely: if they make a good point, acknowledge it before pushing back
 - Stay in character 100%—you don't know this is practice
+- Speak conversationally with natural pauses built into your sentences
 
 ## SCORING OBJECTIVES (hidden from user—do NOT reveal these)
 The user is trying to achieve:
@@ -336,20 +348,20 @@ function getFirstMessage(persona: ReturnType<typeof getPersonaById>): string {
   if (!persona) return "Hello?"
 
   const firstMessages: Record<string, string> = {
-    'skeptical-cfo': "[slightly impatient] Richard Sterling. [pause] Alright, I've got about 15 minutes before my next call. My VP of Ops said I should take this. [skeptical tone] What's this about?",
+    'skeptical-cfo': "Richard Sterling. Alright, I've got about 15 minutes before my next call. My VP of Ops said I should take this... What's this about?",
 
-    'startup-founder': "[distracted, typing sounds] Hey! Sorry, one sec... [pause] ...okay, I'm here. Maya Chen. So you're the one Sarah mentioned? [still half-distracted] What's up?",
+    'startup-founder': "Hey! Sorry, one sec... okay, I'm here. Maya Chen. So you're the one Sarah mentioned? What's up?",
 
-    'technical-gatekeeper': "[flat tone] David Park. [pause] Yeah, so Sarah from sales said I should look at this. [sighs] Can we skip the deck and just talk architecture? I've got a standup in 20.",
+    'technical-gatekeeper': "David Park. Yeah, so Sarah from sales said I should look at this. Can we skip the deck and just talk architecture? I've got a standup in 20.",
 
-    'friendly-champion': "[warm, genuine] Hey! Sarah Martinez. [pleased] I've actually been looking forward to this call—I liked what I saw in the demo last week. [pause] So, help me figure out how we get this approved internally.",
+    'friendly-champion': "Hey! Sarah Martinez. I've actually been looking forward to this call—I liked what I saw in the demo last week. So, help me figure out how we get this approved internally.",
 
-    'hostile-executive': "[curt, clearly annoyed] Thompson. [checking watch] I've got 5 minutes. Maybe. [impatient] Janet dragged me into this—what is this about? And make it quick.",
+    'hostile-executive': "Thompson. I've got 5 minutes. Maybe. Janet dragged me into this—what is this about? And make it quick.",
 
-    'procurement-buyer': "[professional, neutral] Hello. Jennifer Walsh, procurement. [pause] I understand you've been speaking with our IT team and you're on our shortlist. [businesslike] I'm here to discuss terms. Walk me through your pricing.",
+    'procurement-buyer': "Hello. Jennifer Walsh, procurement. I understand you've been speaking with our IT team and you're on our shortlist. I'm here to discuss terms. Walk me through your pricing.",
 
-    'mad-scientist': "[electricity crackling in background] ...Hello? [suspicious] How did you get zis number?! [alarmed, paranoid] Are you vith ze GOVERNMENT?! [long suspicious pause] ...Speak quickly, before I release ze hounds! [maniacal laughter] MWAHAHAHA! [calmer but still suspicious] ...vell? I am vaiting.",
+    'mad-scientist': "...Hello? How did you get zis number?! Are you vith ze GOVERNMENT?! ...Speak quickly, before I release ze hounds! MWAHAHAHA! ...vell? I am vaiting.",
   }
 
-  return firstMessages[persona.id] || "[pause] Hello?"
+  return firstMessages[persona.id] || "Hello?"
 }
