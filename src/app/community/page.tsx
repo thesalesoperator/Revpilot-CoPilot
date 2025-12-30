@@ -823,9 +823,9 @@ export default function CommunityPage() {
     const colors: Record<string, string> = {
       objection_handling: 'from-gray-500 to-[#5eead4]',
       closing: 'from-[#5eead4] to-emerald-500',
-      discovery: 'from-[#5eead4] to-[#5eead4]',
-      rapport: 'from-[#5eead4] to-[#5eead4]',
-      value_prop: 'from-[#5eead4] to-[#5eead4]',
+      discovery: 'from-[#5eead4] to-[#4fd1c5]',
+      rapport: 'from-[#5eead4] to-[#4fd1c5]',
+      value_prop: 'from-[#5eead4] to-[#4fd1c5]',
       negotiation: 'from-indigo-500 to-violet-500',
       other: 'from-gray-500 to-slate-500',
     }
@@ -998,7 +998,7 @@ export default function CommunityPage() {
 
                         <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
                           <div className="flex items-center gap-4">
-                            <button onClick={() => handleLike(post.id)} className={`flex items-center gap-2 transition-colors ${post.is_liked ? 'text-gray-400' : 'text-gray-400 hover:text-gray-400'}`}>
+                            <button onClick={() => handleLike(post.id)} className={`flex items-center gap-2 transition-colors ${post.is_liked ? 'text-red-400' : 'text-gray-400 hover:text-red-400'}`}>
                               <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
                               <span>{post.like_count}</span>
                             </button>
@@ -1039,7 +1039,7 @@ export default function CommunityPage() {
                             <div className="space-y-3">
                               {comments[post.id]?.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                     {getInitials(comment.author.full_name, comment.author.email)}
                                   </div>
                                   <div className="flex-1 bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
@@ -1192,7 +1192,7 @@ export default function CommunityPage() {
 
                         <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
                           <div className="flex items-center gap-4">
-                            <button onClick={() => handleClipLike(clip.id)} className={`flex items-center gap-2 transition-colors ${clip.is_liked ? 'text-gray-400' : 'text-gray-400 hover:text-gray-400'}`}>
+                            <button onClick={() => handleClipLike(clip.id)} className={`flex items-center gap-2 transition-colors ${clip.is_liked ? 'text-red-400' : 'text-gray-400 hover:text-red-400'}`}>
                               <Heart className={`w-5 h-5 ${clip.is_liked ? 'fill-current' : ''}`} />
                               <span>{clip.like_count}</span>
                             </button>
@@ -1233,7 +1233,7 @@ export default function CommunityPage() {
                             <div className="space-y-3">
                               {clipComments[clip.id]?.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                     {getInitials(comment.author.full_name, comment.author.email)}
                                   </div>
                                   <div className="flex-1 bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
@@ -1269,7 +1269,7 @@ export default function CommunityPage() {
                       {incomingRequests.map((request) => (
                         <div key={request.id} className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] rounded-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[gray-400] to-[#5eead4] flex items-center justify-center text-white font-bold">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-400 to-[#5eead4] flex items-center justify-center text-white font-bold">
                               {getInitials(request.user.full_name, request.user.email)}
                             </div>
                             <div>
@@ -1354,7 +1354,7 @@ export default function CommunityPage() {
                               <p className="text-xs text-gray-500">{friend.title}</p>
                             </div>
                           </div>
-                          <button onClick={() => removeFriend(friend.user_id)} className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-gray-400">
+                          <button onClick={() => removeFriend(friend.user_id)} className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-red-400">
                             <UserMinus className="w-5 h-5" />
                           </button>
                         </div>
@@ -1411,7 +1411,7 @@ export default function CommunityPage() {
                         <div key={group.id} className="glass-card p-5 hover:border-[rgba(94,234,212,0.2)] transition-colors">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-bold text-lg">
+                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-lg">
                                 {group.name.slice(0, 2).toUpperCase()}
                               </div>
                               <div>
@@ -1431,7 +1431,7 @@ export default function CommunityPage() {
                               <button
                                 onClick={() => leaveGroup(group.id)}
                                 disabled={processingGroupId === group.id}
-                                className="text-sm text-gray-400 hover:text-gray-400 flex items-center gap-1"
+                                className="text-sm text-gray-400 hover:text-red-400 flex items-center gap-1"
                               >
                                 {processingGroupId === group.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogOut className="w-3 h-3" />}
                                 Leave
@@ -1467,7 +1467,7 @@ export default function CommunityPage() {
                           <div key={group.id} className="glass-card p-5 hover:border-[rgba(94,234,212,0.2)] transition-colors">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-bold text-lg">
+                                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-lg">
                                   {group.name.slice(0, 2).toUpperCase()}
                                 </div>
                                 <div>
@@ -1529,7 +1529,7 @@ export default function CommunityPage() {
                 <div className="space-y-2">
                   {myGroups.slice(0, 3).map((group) => (
                     <div key={group.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(255,255,255,0.02)] cursor-pointer transition-colors" onClick={() => setActiveTab('groups')}>
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-bold text-xs">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-xs">
                         {group.name.slice(0, 2).toUpperCase()}
                       </div>
                       <span className="text-sm text-gray-300 truncate">{group.name}</span>
@@ -1661,7 +1661,7 @@ export default function CommunityPage() {
               {friendSearchResults.map((searchUser) => (
                 <div key={searchUser.id} className="flex items-center justify-between p-3 bg-[rgba(255,255,255,0.02)] rounded-xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white font-bold text-sm">{getInitials(searchUser.full_name, searchUser.email)}</div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-sm">{getInitials(searchUser.full_name, searchUser.email)}</div>
                     <div>
                       <h4 className="font-medium text-white text-sm">{searchUser.full_name || searchUser.email.split('@')[0]}</h4>
                       <p className="text-xs text-gray-500">{searchUser.title}</p>
