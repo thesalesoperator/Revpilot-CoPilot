@@ -27,14 +27,20 @@ import {
   HelpCircle,
   RotateCcw,
   Loader2,
+  Sparkles,
+  Play,
+  Archive,
+  Trash2,
 } from 'lucide-react'
 import Vapi from '@vapi-ai/web'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { createClient } from '@/lib/supabase/client'
 import { CHALLENGES, PERSONAS, getUnlockedChallenges } from '@/lib/practice/challenges'
 import type { Challenge, PracticeSession, UserPracticeStats, XPBreakdown } from '@/types/practice'
 import type { CallAnalysis } from '@/types/database'
+import type { AIScenario } from '@/types/scenarios'
 
 // Vapi instance type
 type VapiInstance = InstanceType<typeof Vapi>
@@ -101,6 +107,11 @@ export default function PracticePage() {
   const [callResults, setCallResults] = useState<CallResults | null>(null)
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'challenges' | 'my-scenarios'>('challenges')
+  const [myScenarios, setMyScenarios] = useState<AIScenario[]>([])
+  const [selectedScenario, setSelectedScenario] = useState<AIScenario | null>(null)
+  const [loadingScenarios, setLoadingScenarios] = useState(false)
+  const [archivingScenarioId, setArchivingScenarioId] = useState<string | null>(null)
 
   const vapiRef = useRef<VapiInstance | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -109,6 +120,7 @@ export default function PracticePage() {
 
   const { user } = useAuth()
   const { showToast } = useToast()
+  const supabase = createClient()
 
   // Create ringing sound using Web Audio API
   const playRingTone = useCallback(() => {
@@ -206,10 +218,72 @@ export default function PracticePage() {
     }
   }, [user?.email])
 
+  // Fetch user's custom scenarios
+  const fetchScenarios = useCallback(async () => {
+    try {
+      setLoadingScenarios(true)
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.access_token) return
+
+      const response = await fetch('/api/scenarios', {
+        headers: {
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMyScenarios(data.scenarios || [])
+      }
+    } catch (error) {
+      console.error('Error fetching scenarios:', error)
+    } finally {
+      setLoadingScenarios(false)
+    }
+  }, [supabase])
+
+  // Handle archive scenario
+  const handleArchiveScenario = async (scenarioId: string, currentStatus: 'active' | 'archived') => {
+    try {
+      setArchivingScenarioId(scenarioId)
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.access_token) return
+
+      const newStatus = currentStatus === 'active' ? 'archived' : 'active'
+      const response = await fetch(`/api/scenarios/${scenarioId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        showToast('success', `Scenario ${newStatus === 'archived' ? 'archived' : 'activated'}`)
+        fetchScenarios()
+      } else {
+        const data = await response.json()
+        showToast('error', data.error || 'Failed to update scenario')
+      }
+    } catch (error) {
+      showToast('error', 'Failed to update scenario')
+    } finally {
+      setArchivingScenarioId(null)
+    }
+  }
+
   // Initial load
   useEffect(() => {
     fetchUserStats()
   }, [fetchUserStats])
+
+  // Fetch scenarios when tab changes to my-scenarios
+  useEffect(() => {
+    if (activeTab === 'my-scenarios') {
+      fetchScenarios()
+    }
+  }, [activeTab, fetchScenarios])
 
   // Timer effect
   useEffect(() => {
@@ -236,7 +310,7 @@ export default function PracticePage() {
   }
 
   const startCall = async () => {
-    if (!selectedChallenge) return
+    if (!selectedChallenge && !selectedScenario) return
 
     setCallState({
       status: 'connecting',
@@ -260,24 +334,60 @@ export default function PracticePage() {
         return
       }
 
-      // Create practice session
-      const response = await fetch('/api/practice/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          challenge_id: selectedChallenge.id,
-          persona_id: selectedChallenge.personaId,
-          difficulty: selectedChallenge.difficulty,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create session')
+      let data: {
+        session?: PracticeSession
+        attempt?: unknown
+        vapi_config?: {
+          assistant: Omit<VapiAssistantConfig, 'metadata'>
+          metadata?: Record<string, string>
+        }
       }
 
-      const data = await response.json()
-      setCurrentSession(data.session)
+      if (selectedScenario) {
+        // Create scenario attempt
+        const { data: session } = await supabase.auth.getSession()
+        if (!session?.session?.access_token) {
+          throw new Error('Not authenticated')
+        }
+
+        const response = await fetch(`/api/scenarios/${selectedScenario.id}/attempt`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session.access_token}`,
+          },
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to create attempt')
+        }
+
+        data = await response.json()
+        // For scenarios, we use the attempt as the session reference
+        setCurrentSession(data.attempt as unknown as PracticeSession)
+      } else if (selectedChallenge) {
+        // Create practice session for challenge
+        const response = await fetch('/api/practice/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            challenge_id: selectedChallenge.id,
+            persona_id: selectedChallenge.personaId,
+            difficulty: selectedChallenge.difficulty,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to create session')
+        }
+
+        data = await response.json()
+        setCurrentSession(data.session || null)
+      } else {
+        return
+      }
 
       // Initialize Vapi call
       const vapiApiKey = process.env.NEXT_PUBLIC_VAPI_API_KEY
@@ -336,11 +446,15 @@ export default function PracticePage() {
 
       // Start the call with the assistant config
       // Metadata is passed to identify the session in webhooks
+      if (!data.vapi_config) {
+        throw new Error('No Vapi configuration received')
+      }
       const assistantConfig = {
         ...data.vapi_config.assistant,
         metadata: data.vapi_config.metadata,
       }
-      await vapiRef.current.start(assistantConfig)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await vapiRef.current.start(assistantConfig as any)
     } catch (error) {
       console.error('Error starting call:', error)
       showToast('error', 'Failed to start call: ' + (error instanceof Error ? error.message : 'Unknown error'))
@@ -494,6 +608,10 @@ export default function PracticePage() {
     setShowResults(false)
     setCallResults(null)
     setCurrentSession(null)
+    // Refresh scenarios list if we were in scenario mode
+    if (activeTab === 'my-scenarios') {
+      fetchScenarios()
+    }
   }
 
   const filteredChallenges = difficultyFilter
@@ -575,37 +693,77 @@ export default function PracticePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Challenge Selection */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Difficulty Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">Filter:</span>
+            {/* Tab Navigation */}
+            <div className="flex items-center gap-4 border-b border-[rgba(255,255,255,0.1)] pb-3">
               <button
-                onClick={() => setDifficultyFilter(null)}
-                className={`px-3 py-1 rounded-lg text-sm transition-all ${
-                  difficultyFilter === null
+                onClick={() => {
+                  setActiveTab('challenges')
+                  setSelectedScenario(null)
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  activeTab === 'challenges'
                     ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
-                    : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                 }`}
               >
-                All
+                <Target className="w-4 h-4" />
+                Challenges
               </button>
-              {Object.entries(DIFFICULTY_CONFIG).map(([key, config]) => (
+              <button
+                onClick={() => {
+                  setActiveTab('my-scenarios')
+                  setSelectedChallenge(null)
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  activeTab === 'my-scenarios'
+                    ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
+                    : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                My Scenarios
+                {myScenarios.filter(s => s.status === 'active').length > 0 && (
+                  <span className="bg-[rgba(139,92,246,0.3)] text-purple-300 text-xs px-2 py-0.5 rounded-full">
+                    {myScenarios.filter(s => s.status === 'active').length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Difficulty Filter - Only show for challenges tab */}
+            {activeTab === 'challenges' && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 text-sm">Filter:</span>
                 <button
-                  key={key}
-                  onClick={() => setDifficultyFilter(key)}
+                  onClick={() => setDifficultyFilter(null)}
                   className={`px-3 py-1 rounded-lg text-sm transition-all ${
-                    difficultyFilter === key
-                      ? `${config.bg} ${config.color} font-semibold`
+                    difficultyFilter === null
+                      ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
                       : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
                   }`}
                 >
-                  {config.label}
+                  All
                 </button>
-              ))}
-            </div>
+                {Object.entries(DIFFICULTY_CONFIG).map(([key, config]) => (
+                  <button
+                    key={key}
+                    onClick={() => setDifficultyFilter(key)}
+                    className={`px-3 py-1 rounded-lg text-sm transition-all ${
+                      difficultyFilter === key
+                        ? `${config.bg} ${config.color} font-semibold`
+                        : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {config.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Challenge Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredChallenges.map((challenge) => {
+            {/* Challenge Cards - Only show for challenges tab */}
+            {activeTab === 'challenges' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredChallenges.map((challenge) => {
                 const diffConfig = DIFFICULTY_CONFIG[challenge.difficulty]
                 const CategoryIcon = getCategoryIcon(challenge.category)
                 const PersonaIcon = getPersonaIcon(challenge.personaId)
@@ -699,13 +857,310 @@ export default function PracticePage() {
                   </div>
                 )
               })}
-            </div>
+              </div>
+            )}
+
+            {/* My Scenarios - Only show for my-scenarios tab */}
+            {activeTab === 'my-scenarios' && (
+              <div className="space-y-4">
+                {loadingScenarios ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+                  </div>
+                ) : myScenarios.length === 0 ? (
+                  <div className="glass-card p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[rgba(139,92,246,0.1)] flex items-center justify-center">
+                      <Sparkles className="w-8 h-8 text-purple-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-2">No Custom Scenarios Yet</h3>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Create AI scenarios from your real sales calls to practice handling them better.
+                    </p>
+                    <a href="/calls" className="text-[#00ffc1] hover:underline text-sm">
+                      Go to Call Review to create scenarios →
+                    </a>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myScenarios.map((scenario) => {
+                      const isSelected = selectedScenario?.id === scenario.id
+                      const isArchived = scenario.status === 'archived'
+
+                      return (
+                        <div
+                          key={scenario.id}
+                          onClick={() => !isArchived && callState.status === 'idle' && setSelectedScenario(scenario)}
+                          className={`glass-card p-4 cursor-pointer transition-all relative overflow-hidden ${
+                            isArchived
+                              ? 'opacity-60 cursor-not-allowed'
+                              : callState.status !== 'idle'
+                              ? 'opacity-50 cursor-not-allowed'
+                              : isSelected
+                              ? 'border-[#8b5cf6] ring-2 ring-[#8b5cf6]/20'
+                              : 'hover:border-[rgba(139,92,246,0.3)]'
+                          }`}
+                        >
+                          {/* Best Score Badge */}
+                          {scenario.best_score && (
+                            <div className="absolute top-2 right-2">
+                              <div className="flex items-center gap-1 bg-[rgba(0,255,193,0.1)] px-2 py-1 rounded-full">
+                                <Trophy className="w-3 h-3 text-yellow-400" />
+                                <span className="text-xs text-yellow-400">{scenario.best_score}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Archived Badge */}
+                          {isArchived && (
+                            <div className="absolute top-2 left-2">
+                              <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full">
+                                Archived
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8b5cf6]/20 to-[#6366f1]/20 flex items-center justify-center">
+                              <Sparkles className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white truncate">{scenario.name}</h3>
+                              <p className="text-sm text-gray-400 line-clamp-2 mb-2">
+                                {scenario.description || `Practice with ${scenario.prospect_name || 'AI prospect'}`}
+                              </p>
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                {scenario.prospect_name && (
+                                  <span className="flex items-center gap-1">
+                                    <Users className="w-3 h-3" />
+                                    {scenario.prospect_name}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1">
+                                  <Play className="w-3 h-3" />
+                                  {scenario.attempts_count || 0} attempts
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleArchiveScenario(scenario.id, scenario.status as 'active' | 'archived')
+                                }}
+                                disabled={archivingScenarioId === scenario.id}
+                                className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white transition-colors"
+                                title={isArchived ? 'Activate' : 'Archive'}
+                              >
+                                {archivingScenarioId === scenario.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Archive className="w-4 h-4" />
+                                )}
+                              </button>
+                              <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-purple-400' : 'text-gray-600'}`} />
+                            </div>
+                          </div>
+
+                          {/* Pain Points Preview */}
+                          {scenario.pain_points && scenario.pain_points.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.05)]">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs text-gray-500">Pain points:</span>
+                                {scenario.pain_points.slice(0, 3).map((point, i) => (
+                                  <span
+                                    key={i}
+                                    className="text-xs bg-[rgba(255,255,255,0.05)] px-2 py-1 rounded text-gray-400 truncate max-w-[150px]"
+                                  >
+                                    {point}
+                                  </span>
+                                ))}
+                                {scenario.pain_points.length > 3 && (
+                                  <span className="text-xs text-gray-500">
+                                    +{scenario.pain_points.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Call Panel */}
           <div className="space-y-4">
-            {/* Selected Challenge Details */}
-            {selectedChallenge ? (
+            {/* Selected Scenario Details */}
+            {selectedScenario ? (
+              <div className="glass-card p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white">{selectedScenario.name}</h2>
+                  <span className="text-sm px-3 py-1 rounded-lg bg-purple-500/20 text-purple-400">
+                    Custom Scenario
+                  </span>
+                </div>
+
+                <p className="text-gray-400 text-sm">
+                  {selectedScenario.description || 'AI scenario created from a real sales call'}
+                </p>
+
+                {/* Persona */}
+                <div className="bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
+                  <p className="text-xs text-gray-500 mb-1">You&apos;re calling:</p>
+                  <p className="text-white font-medium">
+                    {selectedScenario.prospect_name || 'AI Prospect'}
+                    {selectedScenario.prospect_title && ` - ${selectedScenario.prospect_title}`}
+                  </p>
+                  {selectedScenario.prospect_company && (
+                    <p className="text-gray-400 text-sm">{selectedScenario.prospect_company}</p>
+                  )}
+                </div>
+
+                {/* Pain Points */}
+                {selectedScenario.pain_points && selectedScenario.pain_points.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-orange-400" />
+                      Known Pain Points
+                    </h4>
+                    <ul className="space-y-2">
+                      {selectedScenario.pain_points.slice(0, 4).map((point, i) => (
+                        <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
+                          <div className="w-5 h-5 rounded-full bg-orange-500/10 flex items-center justify-center text-xs text-orange-400 mt-0.5">
+                            {i + 1}
+                          </div>
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Objections */}
+                {selectedScenario.objections && selectedScenario.objections.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-red-400" />
+                      Expected Objections
+                    </h4>
+                    <ul className="space-y-2">
+                      {selectedScenario.objections.slice(0, 3).map((objection, i) => (
+                        <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
+                          <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+                          {objection}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Improvement Areas */}
+                {selectedScenario.improvement_areas && selectedScenario.improvement_areas.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-white mb-2 flex items-center gap-2">
+                      <Target className="w-4 h-4 text-[#00ffc1]" />
+                      Practice Goals
+                    </h4>
+                    <ul className="space-y-2">
+                      {selectedScenario.improvement_areas.slice(0, 3).map((area, i) => (
+                        <li key={i} className="text-sm text-gray-400 flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-[#00ffc1] mt-0.5 shrink-0" />
+                          {area}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Performance Stats */}
+                {(selectedScenario.attempts_count || 0) > 0 && (
+                  <div className="bg-[rgba(0,255,193,0.05)] rounded-xl p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Previous Attempts:</span>
+                      <span className="text-white font-medium">{selectedScenario.attempts_count}</span>
+                    </div>
+                    {selectedScenario.best_score && (
+                      <div className="flex items-center justify-between text-sm mt-1">
+                        <span className="text-gray-400">Best Score:</span>
+                        <span className="text-[#00ffc1] font-medium">{selectedScenario.best_score}</span>
+                      </div>
+                    )}
+                    {selectedScenario.average_score && (
+                      <div className="flex items-center justify-between text-sm mt-1">
+                        <span className="text-gray-400">Average Score:</span>
+                        <span className="text-white font-medium">{Math.round(selectedScenario.average_score)}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Call Controls for Scenario */}
+                <div className="pt-4 border-t border-[rgba(255,255,255,0.05)]">
+                  {callState.status === 'idle' && (
+                    <button onClick={startCall} className="btn-primary w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#8b5cf6] to-[#6366f1]">
+                      <Phone className="w-5 h-5" />
+                      Start Practice Call
+                    </button>
+                  )}
+
+                  {callState.status === 'connecting' && (
+                    <div className="text-center">
+                      <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-[rgba(139,92,246,0.1)] flex items-center justify-center animate-pulse">
+                        <Phone className="w-8 h-8 text-purple-400" />
+                      </div>
+                      <p className="text-white font-medium">Connecting...</p>
+                      <p className="text-sm text-gray-400">Preparing your AI prospect</p>
+                    </div>
+                  )}
+
+                  {callState.status === 'active' && (
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <div className="text-4xl font-mono font-bold text-white mb-1">
+                          {formatTime(callState.duration)}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="w-1 bg-purple-400 rounded-full animate-pulse"
+                            style={{
+                              height: `${Math.random() * 20 + 10}px`,
+                              animationDelay: `${i * 0.1}s`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-center gap-4">
+                        <button
+                          onClick={toggleMute}
+                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                            callState.isMuted
+                              ? 'bg-red-500/20 text-red-400'
+                              : 'bg-[rgba(255,255,255,0.05)] text-white hover:bg-[rgba(255,255,255,0.1)]'
+                          }`}
+                        >
+                          {callState.isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                        </button>
+                        <button
+                          onClick={endCall}
+                          className="w-16 h-16 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all"
+                        >
+                          <PhoneOff className="w-6 h-6" />
+                        </button>
+                        <button className="w-12 h-12 rounded-full bg-[rgba(255,255,255,0.05)] text-white flex items-center justify-center hover:bg-[rgba(255,255,255,0.1)]">
+                          <Volume2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : selectedChallenge ? (
               <div className="glass-card p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-bold text-white">{selectedChallenge.name}</h2>

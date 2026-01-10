@@ -24,6 +24,8 @@ import {
   Download,
   Video,
   ExternalLink,
+  Sparkles,
+  Play,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -85,6 +87,7 @@ export default function CallsPage() {
   const [fathomConnected, setFathomConnected] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [reanalyzingId, setReanalyzingId] = useState<string | null>(null)
+  const [creatingScenarioId, setCreatingScenarioId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { user } = useAuth()
@@ -412,6 +415,47 @@ export default function CallsPage() {
     }
   }
 
+  const handleCreateScenario = async (recordingId: string) => {
+    if (!user) return
+    setCreatingScenarioId(recordingId)
+
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.access_token) {
+        throw new Error('Not authenticated')
+      }
+
+      // Note: Call recordings use a different source than coaching_sessions
+      // For now, we'll create a scenario using the transcript directly
+      // The API needs to be extended to support call_recordings as source
+
+      const response = await fetch('/api/scenarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({
+          source_session_id: recordingId, // This will need API modification
+          name: `Practice Scenario from Call`,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create scenario')
+      }
+
+      showToast('success', 'AI Scenario created! Go to Practice to try it.')
+    } catch (error) {
+      console.error('Create scenario error:', error)
+      showToast('error', error instanceof Error ? error.message : 'Failed to create scenario')
+    } finally {
+      setCreatingScenarioId(null)
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -593,7 +637,13 @@ export default function CallsPage() {
 
                 {/* Expanded Analysis */}
                 {expandedId === recording.id && recording.status === 'completed' && recording.analysis && (
-                  <AnalysisView analysis={recording.analysis} transcript={recording.transcript} />
+                  <AnalysisView
+                    analysis={recording.analysis}
+                    transcript={recording.transcript}
+                    recordingId={recording.id}
+                    onCreateScenario={handleCreateScenario}
+                    isCreatingScenario={creatingScenarioId === recording.id}
+                  />
                 )}
 
                 {/* Missing Analysis State - completed but no analysis data */}
@@ -876,9 +926,12 @@ function MissingAnalysisView({ recordingId, transcript, onReanalyze, isReanalyzi
 interface AnalysisViewProps {
   analysis: CallAnalysis
   transcript: string | null
+  recordingId?: string
+  onCreateScenario?: (recordingId: string) => void
+  isCreatingScenario?: boolean
 }
 
-function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
+function AnalysisView({ analysis, transcript, recordingId, onCreateScenario, isCreatingScenario }: AnalysisViewProps) {
   const [showTranscript, setShowTranscript] = useState(false)
 
   // Safety check for malformed analysis data
@@ -1032,6 +1085,43 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
           </ul>
         </div>
       </div>
+
+      {/* Create AI Scenario CTA */}
+      {recordingId && onCreateScenario && transcript && (
+        <div className="px-6 pb-6">
+          <div className="bg-gradient-to-r from-[rgba(0,255,193,0.1)] to-[rgba(139,92,246,0.1)] border border-[rgba(0,255,193,0.2)] rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#8b5cf6] flex items-center justify-center shrink-0">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-semibold text-white mb-1">Practice This Call Again</h4>
+                <p className="text-sm text-gray-400 mb-4">
+                  Create an AI scenario from this call. The AI will roleplay as the prospect with their
+                  personality, objections, and pain points - so you can practice handling it better.
+                </p>
+                <button
+                  onClick={() => onCreateScenario(recordingId)}
+                  disabled={isCreatingScenario}
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  {isCreatingScenario ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Creating Scenario...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      Create AI Scenario
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Transcript Toggle */}
       {transcript && (
