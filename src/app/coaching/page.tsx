@@ -110,18 +110,13 @@ export default function CoachingPage() {
                   only you can see.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <a href="/settings" className="btn-primary flex items-center gap-2">
+                  <a href="/downloads/revpilot-extension.zip" download className="btn-primary flex items-center gap-2">
                     <Download className="w-5 h-5" />
-                    Get Chrome Extension
+                    Download Extension
                   </a>
-                  <a
-                    href="https://chrome.google.com/webstore"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-secondary flex items-center gap-2"
-                  >
+                  <a href="/settings#coaching" className="btn-secondary flex items-center gap-2">
                     <Chrome className="w-5 h-5" />
-                    Chrome Web Store
+                    Installation Guide
                   </a>
                 </div>
               </div>
@@ -284,10 +279,16 @@ export default function CoachingPage() {
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
             Join sales pros who are crushing their quotas with AI-powered real-time coaching.
           </p>
-          <a href="/settings" className="btn-primary inline-flex items-center gap-2">
-            <Download className="w-5 h-5" />
-            Download Extension Now
-          </a>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a href="/downloads/revpilot-extension.zip" download className="btn-primary inline-flex items-center gap-2">
+              <Download className="w-5 h-5" />
+              Download Extension
+            </a>
+            <a href="/settings#coaching" className="btn-secondary inline-flex items-center gap-2">
+              <ArrowRight className="w-5 h-5" />
+              View Installation Guide
+            </a>
+          </div>
         </div>
       </div>
     </DashboardLayout>

@@ -949,37 +949,88 @@ export default function SettingsPage() {
                 Install Chrome Extension
               </h3>
 
-              {/* Chrome Web Store - Primary Install */}
+              {/* Download Button */}
               <div className="mb-6">
                 <p className="text-gray-400 text-sm mb-4">
-                  Install directly from the Chrome Web Store with one click:
+                  Download and install the RevPilot Sales Coach extension to get real-time AI coaching during your calls.
                 </p>
                 <a
-                  href="https://chromewebstore.google.com/detail/revpilot-sales-coach/EXTENSION_ID_HERE"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/downloads/revpilot-extension.zip"
+                  download
                   className="btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
                 >
-                  <Chrome className="w-5 h-5" />
-                  Add to Chrome — It&apos;s Free
+                  <Download className="w-5 h-5" />
+                  Download Extension (v1.0)
                 </a>
               </div>
 
-              {/* Quick Start Steps */}
-              <div className="border-t border-[rgba(0,255,193,0.1)] pt-4">
-                <p className="text-white font-medium mb-3">After installing:</p>
-                <ol className="space-y-2 text-sm">
+              {/* Step-by-Step Installation */}
+              <div className="border-t border-[rgba(0,255,193,0.1)] pt-5">
+                <p className="text-white font-medium mb-4 flex items-center gap-2">
+                  <span className="text-[#00ffc1]">📋</span> Installation Steps
+                </p>
+                <ol className="space-y-4 text-sm">
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">1</span>
-                    <p className="text-gray-400">Click the extension icon and log in with your RevPilot account</p>
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-sm">1</span>
+                    <div>
+                      <p className="text-white font-medium">Download & Extract</p>
+                      <p className="text-gray-400 mt-1">Click the download button above and extract the ZIP file to a folder on your computer</p>
+                    </div>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">2</span>
-                    <p className="text-gray-400">Join a Zoom call in Chrome (use web client, not desktop app)</p>
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-sm">2</span>
+                    <div>
+                      <p className="text-white font-medium">Open Chrome Extensions</p>
+                      <p className="text-gray-400 mt-1">
+                        Go to <code className="bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded text-[#00ffc1]">chrome://extensions</code> in your browser
+                      </p>
+                    </div>
                   </li>
                   <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-xs">3</span>
-                    <p className="text-gray-400">Click &quot;Start Coaching&quot; in the overlay and get real-time tips!</p>
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-sm">3</span>
+                    <div>
+                      <p className="text-white font-medium">Enable Developer Mode</p>
+                      <p className="text-gray-400 mt-1">Toggle on &quot;Developer mode&quot; in the top-right corner of the extensions page</p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-sm">4</span>
+                    <div>
+                      <p className="text-white font-medium">Load the Extension</p>
+                      <p className="text-gray-400 mt-1">Click &quot;Load unpacked&quot; and select the extracted folder containing the extension files</p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00ffc1] text-[#0a0f1c] flex items-center justify-center font-bold text-sm">5</span>
+                    <div>
+                      <p className="text-white font-medium">Pin the Extension</p>
+                      <p className="text-gray-400 mt-1">Click the puzzle icon in Chrome toolbar and pin RevPilot for easy access</p>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+
+              {/* Quick Start After Install */}
+              <div className="mt-6 border-t border-[rgba(0,255,193,0.1)] pt-5">
+                <p className="text-white font-medium mb-3 flex items-center gap-2">
+                  <span className="text-[#00ffc1]">🚀</span> Start Coaching
+                </p>
+                <ol className="space-y-2 text-sm text-gray-400">
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#00ffc1]">•</span>
+                    Join your Zoom call in Chrome browser (use <a href="https://zoom.us/wc/join" target="_blank" rel="noopener noreferrer" className="text-[#00ffc1] hover:underline">Zoom Web Client</a>, not desktop app)
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#00ffc1]">•</span>
+                    The RevPilot overlay will appear in the top-right corner
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#00ffc1]">•</span>
+                    Click &quot;Start Coaching&quot; to begin receiving real-time suggestions
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-[#00ffc1]">•</span>
+                    Select &quot;RevPilot Script&quot; for coaching based on your custom sales script
                   </li>
                 </ol>
               </div>
@@ -992,23 +1043,9 @@ export default function SettingsPage() {
                   className="btn-secondary inline-flex items-center gap-2"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Open Zoom Web
+                  Open Zoom Web Client
                 </a>
               </div>
-
-              {/* Manual Install Fallback */}
-              <details className="mt-6 text-sm">
-                <summary className="text-gray-500 hover:text-gray-300 cursor-pointer">
-                  Manual installation (for developers)
-                </summary>
-                <div className="mt-3 pl-4 border-l border-gray-700 text-gray-400 space-y-2">
-                  <p>1. <a href="/downloads/revpilot-extension.zip" download className="text-[#00ffc1] hover:underline">Download the extension ZIP</a></p>
-                  <p>2. Extract the ZIP file</p>
-                  <p>3. Go to <code className="bg-[rgba(255,255,255,0.1)] px-2 py-0.5 rounded">chrome://extensions</code></p>
-                  <p>4. Enable &quot;Developer mode&quot; (top right)</p>
-                  <p>5. Click &quot;Load unpacked&quot; and select the extracted folder</p>
-                </div>
-              </details>
             </div>
 
             {/* Pro Tips */}
