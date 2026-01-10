@@ -28,7 +28,9 @@
         "https://*.zoom.us/*",
         "https://zoom.us/*",
         "https://meet.google.com/*",
-        "https://teams.microsoft.com/*"
+        "https://teams.microsoft.com/*",
+        "https://teams.live.com/*",
+        "https://*.teams.live.com/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"],

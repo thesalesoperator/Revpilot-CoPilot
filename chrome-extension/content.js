@@ -1,4 +1,5 @@
-// RevPilot Sales Coach - Content Script (Injected into Zoom pages)
+// RevPilot Sales Coach - Content Script
+// Supports: Zoom, Google Meet, Microsoft Teams
 
 ;(function() {
   'use strict'
@@ -26,22 +27,54 @@
   console.log('[RevPilot] Content script loaded on:', window.location.href)
   console.log('[RevPilot] Running in top frame')
 
-  // Try to initialize now and also watch for changes
-  setTimeout(init, 1000) // Delay slightly to let Zoom load
-  setTimeout(init, 3000) // Try again after 3s
-  setTimeout(init, 5000) // Try again after 5s
+  // Platform-specific initialization delays
+  // Different platforms load at different speeds
+  const initDelays = getPlatformInitDelays()
+  initDelays.forEach(delay => setTimeout(init, delay))
+
+  // Watch for SPA navigation (Teams uses heavy SPA)
+  let lastUrl = window.location.href
+  const urlObserver = new MutationObserver(() => {
+    if (window.location.href !== lastUrl) {
+      lastUrl = window.location.href
+      console.log('[RevPilot] URL changed, re-checking for meeting...')
+      // Reset overlay and try again
+      if (!overlay) {
+        setTimeout(init, 1000)
+      }
+    }
+  })
+  urlObserver.observe(document.body, { childList: true, subtree: true })
+
+  function getPlatformInitDelays() {
+    const hostname = window.location.hostname
+
+    // Google Meet loads quickly
+    if (hostname === 'meet.google.com') {
+      return [500, 1500, 3000]
+    }
+
+    // Teams is a heavy SPA, needs more time
+    if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) {
+      return [1000, 3000, 6000, 10000]
+    }
+
+    // Zoom web client - standard delays
+    return [1000, 3000, 5000]
+  }
 
   async function init() {
     // Don't create multiple overlays
     if (overlay) return
 
-    // Check if we're on a Zoom page
-    if (!isZoomPage()) {
-      console.log('[RevPilot] Not a Zoom meeting page')
+    // Check if we're on a supported meeting platform
+    if (!isMeetingPage()) {
+      console.log('[RevPilot] Not a supported meeting page')
       return
     }
 
-    console.log('[RevPilot] Zoom page detected, creating overlay...')
+    const platform = getMeetingPlatform()
+    console.log(`[RevPilot] ${platform} meeting detected, creating overlay...`)
 
     // Load auto-start preference
     try {
@@ -100,7 +133,7 @@
     }
   }
 
-  function isZoomPage() {
+  function isMeetingPage() {
     const url = window.location.href
     const hostname = window.location.hostname
 
@@ -109,12 +142,12 @@
       const isMeetingUrl = url.includes('zoom.us/wc/') ||
                            url.includes('zoom.us/j/') ||
                            url.includes('zoom.us/s/') ||
-                           (url.includes('/start') && url.match(/\/wc\/\d+\/start/)) ||
-                           (url.includes('/join') && url.match(/\/wc\/\d+\/join/))
+                           url.match(/\/wc\/\d+\/(start|join)/) !== null
 
       const hasMeetingUI = document.querySelector('#webclient') !== null ||
                            document.querySelector('.meeting-client') !== null ||
-                           document.querySelector('[data-type="meeting"]') !== null
+                           document.querySelector('[data-type="meeting"]') !== null ||
+                           document.querySelector('.meeting-app') !== null
 
       console.log('[RevPilot] Zoom check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
       return isMeetingUrl || hasMeetingUI
@@ -122,17 +155,35 @@
 
     // Check for Google Meet
     if (hostname === 'meet.google.com') {
-      const isMeetingUrl = url.match(/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i) !== null
+      // Meet URLs: meet.google.com/xxx-xxxx-xxx or meet.google.com/lookup/xxxxx
+      const isMeetingUrl = url.match(/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i) !== null ||
+                           url.includes('meet.google.com/lookup/')
+
+      // Meet UI detection - multiple selectors for reliability
       const hasMeetingUI = document.querySelector('[data-meeting-title]') !== null ||
-                           document.querySelector('[data-call-active="true"]') !== null
+                           document.querySelector('[data-call-active="true"]') !== null ||
+                           document.querySelector('[data-self-name]') !== null ||
+                           document.querySelector('[jscontroller][jsaction*="call"]') !== null ||
+                           document.querySelector('div[data-allocation-index]') !== null
+
       console.log('[RevPilot] Google Meet check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
       return isMeetingUrl || hasMeetingUI
     }
 
     // Check for Microsoft Teams
     if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) {
-      const isMeetingUrl = url.includes('/meet/') || url.includes('/l/meetup-join/')
-      const hasMeetingUI = document.querySelector('[data-tid="calling-screen"]') !== null
+      // Teams meeting URLs
+      const isMeetingUrl = url.includes('/meet/') ||
+                           url.includes('/l/meetup-join/') ||
+                           url.includes('/meeting/') ||
+                           url.includes('context=') // Teams meeting context parameter
+
+      // Teams UI detection - multiple selectors for reliability
+      const hasMeetingUI = document.querySelector('[data-tid="calling-screen"]') !== null ||
+                           document.querySelector('[data-tid="call-composite"]') !== null ||
+                           document.querySelector('.ts-calling-screen') !== null ||
+                           document.querySelector('[data-cid="calling-participant-stream"]') !== null
+
       console.log('[RevPilot] Teams check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
       return isMeetingUrl || hasMeetingUI
     }
