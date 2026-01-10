@@ -127,4 +127,4 @@ OPENAI_API_KEY=your_openai_api_key
 
 ## Support
 
-For help or feedback, visit [RevPilot Dashboard](https://revpilot-commission-calculator.netlify.app) or contact support.
+For help or feedback, visit [RevPilot Dashboard](https://revpilot-copilot.netlify.app) or contact support.

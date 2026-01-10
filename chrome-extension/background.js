@@ -2,7 +2,7 @@
 // Coordinates tab audio capture and coaching session management
 // v2.0 - Bot-free tab capture edition
 
-const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
+const API_BASE = 'https://revpilot-copilot.netlify.app'
 
 let currentSession = null
 let offscreenDocumentCreated = false

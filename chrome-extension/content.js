@@ -20,7 +20,7 @@
   let pollInterval = null  // Track polling interval for cleanup
   let autoStartEnabled = false  // Track auto-start preference
   let lastSummary = null  // Store last call summary
-  const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
+  const API_BASE = 'https://revpilot-copilot.netlify.app'
 
   // Initialize immediately
   console.log('[RevPilot] Content script loaded on:', window.location.href)

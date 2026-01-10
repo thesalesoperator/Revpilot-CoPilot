@@ -1,7 +1,7 @@
 // RevPilot Sales Coach - Offscreen Document for Tab Audio Capture
 // This document captures tab audio and streams it to Deepgram for real-time transcription
 
-const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
+const API_BASE = 'https://revpilot-copilot.netlify.app'
 
 let mediaStream = null
 let audioContext = null
