@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Calculator, Mail, Lock, User, ArrowRight } from 'lucide-react'
+import { Zap, Mail, Lock, User, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/ui/Toast'
 import BackgroundEffects from '@/components/ui/BackgroundEffects'
@@ -36,7 +36,7 @@ export default function SignupPage() {
       setLoading(false)
     } else {
       showToast('success', 'Account created successfully!')
-      router.push('/dashboard')
+      router.push('/practice')
     }
   }
 
@@ -48,10 +48,10 @@ export default function SignupPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] mb-4">
-            <Calculator className="w-8 h-8 text-[#00102e]" />
+            <Zap className="w-8 h-8 text-[#00102e]" />
           </div>
           <h1 className="text-3xl font-bold gradient-text mb-2">Create Account</h1>
-          <p className="text-gray-400">Start tracking your sales commissions today</p>
+          <p className="text-gray-400">Start your AI-powered sales coaching today</p>
         </div>
 
         {/* Signup Form */}

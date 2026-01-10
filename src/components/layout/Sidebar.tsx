@@ -4,12 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LogOut,
-  Calculator,
   Phone,
   Target,
-  Swords,
-  Users,
-  BarChart3,
   Settings,
   Flame,
   Zap,
@@ -19,37 +15,26 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 
-// Simplified navigation - 6 main items with enhanced data
+// Core navigation - focused on 3 key features
 const navItems = [
   {
-    href: '/calls',
-    icon: Phone,
-    label: 'Call Coaching',
-    notification: 3,
-  },
-  {
-    href: '/training',
+    href: '/practice',
     icon: Target,
-    label: 'Training',
-    progress: 65,
-  },
-  {
-    href: '/compete',
-    icon: Swords,
-    label: 'Compete',
-    streak: 5,
+    label: 'Practice Arena',
+    description: 'AI-powered sales sparring',
     hot: true,
   },
   {
-    href: '/community',
-    icon: Users,
-    label: 'Community',
-    notification: 2,
+    href: '/calls',
+    icon: Phone,
+    label: 'Call Review',
+    description: 'Upload & analyze calls',
   },
   {
-    href: '/performance',
-    icon: BarChart3,
-    label: 'My Performance',
+    href: '/coaching',
+    icon: Zap,
+    label: 'Live Coaching',
+    description: 'Real-time Zoom coaching',
   },
   {
     href: '/settings',
@@ -74,9 +59,11 @@ export default function Sidebar() {
   const { signOut, user } = useAuth()
 
   const isActiveRoute = (href: string) => {
+    if (href === '/practice') return pathname === '/practice'
     if (href === '/calls') return pathname === '/calls'
-    if (href === '/settings') return pathname === '/settings'
-    return pathname.startsWith(href)
+    if (href === '/coaching') return pathname === '/coaching'
+    if (href === '/settings') return pathname.startsWith('/settings')
+    return pathname === href
   }
 
   const xpProgress = (userGameStats.xp / userGameStats.xpToNext) * 100
@@ -85,13 +72,13 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-64 glass-card rounded-none border-l-0 border-t-0 border-b-0 flex flex-col z-50">
       {/* Logo */}
       <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
-        <Link href="/calls" className="flex items-center gap-3">
+        <Link href="/practice" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#2dd4bf] flex items-center justify-center">
-            <Calculator className="w-6 h-6 text-[#0f172a]" />
+            <Zap className="w-6 h-6 text-[#0f172a]" />
           </div>
           <div>
             <h1 className="font-bold text-lg gradient-text">RevPilot</h1>
-            <p className="text-xs text-slate-500">Sales Platform</p>
+            <p className="text-xs text-slate-500">AI Sales Coach</p>
           </div>
         </Link>
       </div>
@@ -158,34 +145,16 @@ export default function Sidebar() {
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                   )}
                 >
-                  <div className="relative">
-                    <item.icon className="w-5 h-5" />
-                    {item.notification && (
-                      <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#f0abab] flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-[#0f172a]">{item.notification}</span>
-                      </div>
+                  <item.icon className="w-5 h-5" />
+
+                  <div className="flex-1">
+                    <span className="font-medium">{item.label}</span>
+                    {'description' in item && item.description && (
+                      <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
                     )}
                   </div>
 
-                  <span className="font-medium flex-1">{item.label}</span>
-
-                  {item.streak && (
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15">
-                      <Flame className="w-3 h-3 text-amber-500" />
-                      <span className="text-xs font-bold text-amber-400">{item.streak}</span>
-                    </div>
-                  )}
-
-                  {item.progress && (
-                    <div className="w-12 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#5eead4] to-[#2dd4bf] rounded-full"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
-                  )}
-
-                  {item.hot && !item.streak && (
+                  {'hot' in item && item.hot && (
                     <div className="w-2 h-2 rounded-full bg-[#5eead4] animate-pulse" />
                   )}
                 </Link>
@@ -198,14 +167,14 @@ export default function Sidebar() {
       {/* Daily Challenge Teaser */}
       <div className="p-4 border-t border-[rgba(94,234,212,0.1)]">
         <Link
-          href="/training"
+          href="/practice"
           className="block p-3 rounded-xl bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.15)] hover:border-[rgba(94,234,212,0.3)] transition-colors"
         >
           <div className="flex items-center gap-2 mb-1">
-            <Zap className="w-4 h-4 text-[#5eead4]" />
+            <Flame className="w-4 h-4 text-[#5eead4]" />
             <span className="text-xs font-semibold text-[#5eead4]">DAILY CHALLENGE</span>
           </div>
-          <p className="text-sm text-slate-200">Close 3 practice deals</p>
+          <p className="text-sm text-slate-200">Complete 3 practice calls</p>
           <div className="flex items-center justify-between mt-2">
             <div className="flex-1 h-1.5 bg-slate-800 rounded-full mr-3">
               <div className="h-full w-1/3 bg-gradient-to-r from-[#5eead4] to-[#2dd4bf] rounded-full" />
