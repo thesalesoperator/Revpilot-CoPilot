@@ -35,19 +35,19 @@ const JOURNAL_PROMPTS = {
     icon: Sun,
     title: 'What went well today?',
     placeholder: 'Celebrate your wins, big or small. What calls did you nail? What deals moved forward? What made you proud?',
-    color: '#00ffc1',
+    color: '#5eead4',
   },
   what_didnt_go_well: {
     icon: CloudRain,
     title: "What didn't go as planned?",
     placeholder: "Be honest with yourself. What objections stumped you? Which prospects went cold? What felt frustrating?",
-    color: '#ff6b8a',
+    color: 'gray-400',
   },
   what_to_improve: {
     icon: Zap,
     title: 'What can I improve tomorrow?',
     placeholder: 'One specific thing to focus on. A script tweak? Better discovery questions? More follow-ups?',
-    color: '#ff9855',
+    color: '#5eead4',
   },
   where_need_support: {
     icon: Heart,
@@ -273,8 +273,8 @@ export default function JournalPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00ffc1]/20 to-[#ff9855]/20 flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-[#00ffc1]" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/20 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-[#5eead4]" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Daily Journal</h1>
@@ -287,7 +287,7 @@ export default function JournalPage() {
             <span className="text-2xl animate-fire">🔥</span>
             <div>
               <p className="text-sm text-gray-400">Journal Streak</p>
-              <p className="text-xl font-bold text-[#00ffc1]">
+              <p className="text-xl font-bold text-[#5eead4]">
                 {entries.length > 0 ? `${entries.length} entries` : '0 days'}
               </p>
             </div>
@@ -305,12 +305,12 @@ export default function JournalPage() {
             </button>
 
             <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-[#00ffc1]" />
+              <Calendar className="w-5 h-5 text-[#5eead4]" />
               <span className="text-lg font-medium text-white">
                 {isToday(selectedDate) ? "Today's Reflection" : formatDisplayDate(selectedDate)}
               </span>
               {hasEntryForDate(selectedDate) && (
-                <span className="text-xs bg-[#00ffc1]/20 text-[#00ffc1] px-2 py-1 rounded-full">
+                <span className="text-xs bg-[#5eead4]/20 text-[#5eead4] px-2 py-1 rounded-full">
                   Completed
                 </span>
               )}
@@ -400,7 +400,7 @@ export default function JournalPage() {
             className="btn-primary flex items-center gap-2 px-8"
           >
             {saving ? (
-              <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <Save className="w-5 h-5" />
@@ -427,9 +427,9 @@ export default function JournalPage() {
                     onClick={() => setSelectedDate(date)}
                     className={`aspect-square rounded-lg flex items-center justify-center text-sm transition-all ${
                       isSelected
-                        ? 'bg-[#00ffc1] text-[#00102e] font-bold'
+                        ? 'bg-[#5eead4] text-[#0a0a0f] font-bold'
                         : hasEntry
-                        ? 'bg-[#00ffc1]/20 text-[#00ffc1]'
+                        ? 'bg-[#5eead4]/20 text-[#5eead4]'
                         : 'bg-[rgba(255,255,255,0.05)] text-gray-500 hover:bg-[rgba(255,255,255,0.1)]'
                     }`}
                   >

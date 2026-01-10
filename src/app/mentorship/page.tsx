@@ -220,7 +220,7 @@ export default function MentorshipPage() {
           <div className="glass-card p-4 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Calendar className="w-6 h-6 text-[#00ffc1]" />
+                <Calendar className="w-6 h-6 text-[#5eead4]" />
                 <div>
                   <p className="text-white font-medium">Next Session</p>
                   <p className="text-sm text-gray-400">
@@ -232,7 +232,7 @@ export default function MentorshipPage() {
                 <span className="text-gray-400">
                   {upcomingSessions[0].date} at {upcomingSessions[0].time}
                 </span>
-                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                   Join Call
                 </button>
               </div>
@@ -252,7 +252,7 @@ export default function MentorshipPage() {
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-2 rounded-xl transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -272,7 +272,7 @@ export default function MentorshipPage() {
                   placeholder="Search mentors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+                  className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
                 />
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function MentorshipPage() {
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
                     selectedCategory === cat.id
-                      ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                      ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                       : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                   }`}
                 >
@@ -299,7 +299,7 @@ export default function MentorshipPage() {
               {filteredMentors.map((mentor) => (
                 <div key={mentor.id} className="glass-card p-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-3xl">
                       {mentor.avatar}
                     </div>
                     <div className="flex-1">
@@ -312,10 +312,10 @@ export default function MentorshipPage() {
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${
                             mentor.availability === 'Available'
-                              ? 'bg-green-500/20 text-green-400'
+                              ? 'bg-[#5eead4]/20 text-[#5eead4]'
                               : mentor.availability === 'Limited'
-                                ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'bg-red-500/20 text-red-400'
+                                ? 'bg-[#5eead4]/20 text-[#5eead4]'
+                                : 'bg-gray-500/20 text-gray-400'
                           }`}
                         >
                           {mentor.availability}
@@ -324,7 +324,7 @@ export default function MentorshipPage() {
 
                       {/* Stats */}
                       <div className="flex items-center gap-4 mt-3 text-sm">
-                        <span className="flex items-center gap-1 text-yellow-400">
+                        <span className="flex items-center gap-1 text-[#5eead4]">
                           <Star className="w-4 h-4" />
                           {mentor.rating} ({mentor.reviews})
                         </span>
@@ -351,7 +351,7 @@ export default function MentorshipPage() {
 
                   {/* Actions */}
                   <div className="flex items-center justify-between mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
-                    <span className="text-[#00ffc1] font-semibold">${mentor.hourlyRate}/hr</span>
+                    <span className="text-[#5eead4] font-semibold">${mentor.hourlyRate}/hr</span>
                     <div className="flex gap-2">
                       <button className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.1)] text-gray-400 transition-colors">
                         <Bookmark className="w-5 h-5" />
@@ -361,7 +361,7 @@ export default function MentorshipPage() {
                           setSelectedMentor(mentor)
                           setShowMentorModal(true)
                         }}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity"
                       >
                         View Profile
                       </button>
@@ -378,10 +378,10 @@ export default function MentorshipPage() {
             {programs.map((program) => (
               <div key={program.id} className="glass-card p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="px-2 py-1 rounded-full text-xs bg-purple-500/20 text-purple-400">
+                  <span className="px-2 py-1 rounded-full text-xs bg-[#5eead4]/20 text-[#5eead4]">
                     {program.duration}
                   </span>
-                  <div className="flex items-center gap-1 text-yellow-400">
+                  <div className="flex items-center gap-1 text-[#5eead4]">
                     <Star className="w-4 h-4" />
                     <span className="text-sm">{program.rating}</span>
                   </div>
@@ -403,12 +403,12 @@ export default function MentorshipPage() {
 
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-gray-400">by {program.mentor}</span>
-                  <span className="text-sm text-yellow-400">{program.spots} spots left</span>
+                  <span className="text-sm text-[#5eead4]">{program.spots} spots left</span>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-[rgba(255,255,255,0.05)]">
                   <span className="text-2xl font-bold text-white">${program.price}</span>
-                  <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                  <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                     Enroll Now
                   </button>
                 </div>
@@ -425,12 +425,12 @@ export default function MentorshipPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     {session.type === 'video' ? (
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                        <Video className="w-6 h-6 text-blue-400" />
+                      <div className="w-12 h-12 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                        <Video className="w-6 h-6 text-[#5eead4]" />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                        <Phone className="w-6 h-6 text-green-400" />
+                      <div className="w-12 h-12 rounded-xl bg-[#5eead4]/20 flex items-center justify-center">
+                        <Phone className="w-6 h-6 text-[#5eead4]" />
                       </div>
                     )}
                     <div>
@@ -443,7 +443,7 @@ export default function MentorshipPage() {
                       <p className="text-white">{session.date}</p>
                       <p className="text-sm text-gray-400">{session.time}</p>
                     </div>
-                    <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+                    <button className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
                       Join
                     </button>
                   </div>
@@ -474,7 +474,7 @@ export default function MentorshipPage() {
           <div className="space-y-6">
             {/* Header */}
             <div className="flex items-start gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-4xl">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-4xl">
                 {selectedMentor.avatar}
               </div>
               <div className="flex-1">
@@ -482,7 +482,7 @@ export default function MentorshipPage() {
                 <p className="text-gray-400">{selectedMentor.title}</p>
                 <p className="text-sm text-gray-500">{selectedMentor.company}</p>
                 <div className="flex items-center gap-4 mt-2 text-sm">
-                  <span className="flex items-center gap-1 text-yellow-400">
+                  <span className="flex items-center gap-1 text-[#5eead4]">
                     <Star className="w-4 h-4" />
                     {selectedMentor.rating} ({selectedMentor.reviews} reviews)
                   </span>
@@ -501,7 +501,7 @@ export default function MentorshipPage() {
                 {selectedMentor.achievements.map((achievement) => (
                   <span
                     key={achievement}
-                    className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-yellow-500/20 text-yellow-400"
+                    className="flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-[#5eead4]/20 text-[#5eead4]"
                   >
                     <Award className="w-4 h-4" />
                     {achievement}
@@ -545,7 +545,7 @@ export default function MentorshipPage() {
               </div>
               <button
                 onClick={() => bookSession(selectedMentor)}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
               >
                 <Calendar className="w-5 h-5" />
                 Book Session

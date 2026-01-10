@@ -11,9 +11,11 @@ import {
   Zap,
   Trophy,
   Star,
+  Building2,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
+import OrganizationSwitcher from '@/components/organization/OrganizationSwitcher'
 
 // Core navigation - focused on 3 key features
 const navItems = [
@@ -83,26 +85,26 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      {/* Level & XP Card */}
+      {/* Level & XP Card - Monochromatic teal */}
       <div className="p-4 border-b border-[rgba(94,234,212,0.1)]">
         <div className="glass-card p-3 bg-gradient-to-r from-[rgba(94,234,212,0.08)] to-transparent">
           <div className="flex items-center gap-3 mb-2">
             <div className="relative">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                <span className="text-lg font-bold text-white">{userGameStats.level}</span>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center">
+                <span className="text-lg font-bold text-[#0a0a0f]">{userGameStats.level}</span>
               </div>
-              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0f172a] border-2 border-amber-400 flex items-center justify-center">
-                <Star className="w-3 h-3 text-amber-400" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0f172a] border-2 border-[#5eead4] flex items-center justify-center">
+                <Star className="w-3 h-3 text-[#5eead4]" />
               </div>
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-200">Level {userGameStats.level}</span>
-                <span className="text-xs text-amber-400">{userGameStats.rank}</span>
+                <span className="text-xs text-[#5eead4]">{userGameStats.rank}</span>
               </div>
               <div className="w-full bg-slate-800 rounded-full h-2 mt-1">
                 <div
-                  className="bg-gradient-to-r from-amber-400 to-amber-500 h-2 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] h-2 rounded-full transition-all duration-500"
                   style={{ width: `${xpProgress}%` }}
                 />
               </div>
@@ -116,8 +118,8 @@ export default function Sidebar() {
           {/* Quick Stats Row */}
           <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
             <div className="flex items-center gap-1">
-              <Flame className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-semibold text-amber-400">{userGameStats.streak}</span>
+              <Flame className="w-4 h-4 text-[#5eead4]" />
+              <span className="text-sm font-semibold text-[#5eead4]">{userGameStats.streak}</span>
               <span className="text-xs text-slate-500">streak</span>
             </div>
             <div className="flex items-center gap-1">
@@ -127,6 +129,11 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Organization Switcher */}
+      <div className="px-4 py-3 border-b border-[rgba(94,234,212,0.1)]">
+        <OrganizationSwitcher />
       </div>
 
       {/* Navigation */}
@@ -191,7 +198,7 @@ export default function Sidebar() {
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5eead4] to-[#2dd4bf] flex items-center justify-center text-[#0f172a] font-semibold">
               {user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#0f172a]" />
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#5eead4] border-2 border-[#0f172a]" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-slate-200 truncate">
@@ -202,7 +209,7 @@ export default function Sidebar() {
         </div>
         <button
           onClick={() => signOut()}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-400 hover:text-[#f0abab] hover:bg-[rgba(240,171,171,0.1)] transition-all duration-200"
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-slate-400 hover:text-gray-300 hover:bg-[rgba(255,255,255,0.05)] transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sign Out</span>

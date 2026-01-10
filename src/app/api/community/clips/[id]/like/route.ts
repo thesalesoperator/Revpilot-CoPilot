@@ -73,6 +73,12 @@ export async function POST(
       newLikeCount = clip.like_count + 1
     }
 
+    // Update the clip's like_count
+    await supabase
+      .from('call_clips')
+      .update({ like_count: newLikeCount })
+      .eq('id', clipId)
+
     return NextResponse.json({ liked, like_count: newLikeCount })
   } catch (error) {
     console.error('Error in clip like POST:', error)

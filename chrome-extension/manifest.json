@@ -9,7 +9,8 @@
     "scripting",
     "tabCapture",
     "offscreen",
-    "tabs"
+    "tabs",
+    "identity"
   ],
   "host_permissions": [
     "https://*.zoom.us/*",
@@ -19,6 +20,14 @@
     "https://*.microsoft.com/*",
     "https://teams.microsoft.com/*"
   ],
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
   "background": {
     "service_worker": "background.js"
   },

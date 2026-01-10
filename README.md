@@ -1,6 +1,6 @@
-# RevPilot - Commission Calculator & Tracker
+# RevPilot Copilot - AI Sales Performance Platform
 
-A beautiful, modern commission tracking application for sales representatives to track their sales, calculate commissions, and project future earnings.
+A comprehensive AI-powered sales enablement platform for sales representatives featuring commission tracking, AI roleplay practice, real-time call coaching, and team performance analytics.
 
 ## Features
 
@@ -46,8 +46,8 @@ A beautiful, modern commission tracking application for sales representatives to
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/revpilot-commission-calculator.git
-cd revpilot-commission-calculator
+git clone https://github.com/yourusername/revpilot-copilot.git
+cd revpilot-copilot
 ```
 
 ### 2. Install dependencies

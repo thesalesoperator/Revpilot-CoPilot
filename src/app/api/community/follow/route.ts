@@ -78,6 +78,12 @@ export async function POST(request: NextRequest) {
       newFollowerCount = targetProfile.follower_count + 1
     }
 
+    // Update the target user's follower_count
+    await supabase
+      .from('user_profiles_extended')
+      .update({ follower_count: newFollowerCount })
+      .eq('user_id', body.user_id)
+
     const response: FollowResponse = {
       following,
       follower_count: newFollowerCount,

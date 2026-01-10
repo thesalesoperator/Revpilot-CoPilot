@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevPilot Close Co-Pilot - Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* RevPilot Design System Variables */
+    :root {
+      /* Brand Accent (Teal) */
+      --accent: #5eead4;
+      --accent-hover: #4fd1c5;
+      --accent-light-bg: rgba(94, 234, 212, 0.1);
+      --accent-border: rgba(94, 234, 212, 0.3);
+      --accent-focus: rgba(94, 234, 212, 0.5);
+
+      /* Backgrounds (Dark) */
+      --background: #0a0a0f;
+      --background-secondary: #111118;
+      --background-tertiary: #18181f;
+
+      /* Text */
+      --foreground: #f0f0f5;
+      --foreground-muted: #a0a0b0;
+      --foreground-dim: #6b6b7b;
+
+      /* Borders & Effects */
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(94, 234, 212, 0.3);
+
+      /* Glassmorphism */
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+      /* Status Colors */
+      --success: #5eead4;
+      --success-bg: rgba(94, 234, 212, 0.1);
+      --success-border: rgba(94, 234, 212, 0.2);
+      --error: #f87171;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --error-border: rgba(239, 68, 68, 0.2);
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--accent-border);
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(94, 234, 212, 0.3);
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+      color: var(--background);
+    }
+
+    .header-text h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-text p {
+      font-size: 14px;
+      color: var(--foreground-dim);
+    }
+
+    /* Auth Status */
+    .auth-status {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .auth-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .auth-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .auth-dot.connected {
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .auth-dot.disconnected {
+      background: var(--error);
+    }
+
+    .auth-text {
+      font-size: 14px;
+    }
+
+    .auth-text strong {
+      color: #fff;
+    }
+
+    .auth-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--foreground-muted);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .auth-btn:hover {
+      background: var(--glass-bg);
+      color: #fff;
+      border-color: var(--accent-border);
+    }
+
+    /* Sections */
+    .section {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .section-content {
+      padding: 20px;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--foreground-muted);
+    }
+
+    .form-group input,
+    .form-group textarea {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent-focus);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.1);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--foreground-dim);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      border-radius: var(--radius);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--background);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--foreground-muted);
+    }
+
+    .btn-secondary:hover {
+      background: var(--glass-bg);
+      color: #fff;
+      border-color: var(--accent-border);
+    }
+
+    /* Keywords List */
+    .keywords-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent-focus);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--foreground-dim);
+    }
+
+    .toolbar-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--foreground-muted);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toolbar-btn:hover {
+      background: var(--glass-bg);
+      color: #fff;
+      border-color: var(--accent-border);
+    }
+
+    .keywords-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .keyword-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .keyword-item:hover {
+      background: var(--glass-bg);
+    }
+
+    .keyword-item:last-child {
+      border-bottom: none;
+    }
+
+    .keyword-color {
+      width: 4px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .keyword-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .keyword-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .keyword-meta {
+      font-size: 13px;
+      color: var(--foreground-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .keyword-meta a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .keyword-meta a:hover {
+      text-decoration: underline;
+    }
+
+    .keyword-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .keyword-btn {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--foreground-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .keyword-btn:hover {
+      background: var(--glass-bg);
+      color: #fff;
+      border-color: var(--accent-border);
+    }
+
+    .keyword-btn.delete:hover {
+      border-color: var(--error-border);
+      color: var(--error);
+    }
+
+    .keyword-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--foreground-dim);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--foreground-muted);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    /* Messages */
+    .message {
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      border-radius: var(--radius);
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      background: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success);
+    }
+
+    .message.error {
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: var(--foreground-dim);
+      margin-top: 8px;
+    }
+
+    /* Scrollbar */
+    .keywords-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .keywords-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .keywords-list::-webkit-scrollbar-thumb {
+      background: var(--background-tertiary);
+      border-radius: 3px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: scaleIn 0.2s ease;
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      color: var(--foreground-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+      background: var(--glass-bg);
+    }
+
+    .modal-content {
+      padding: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Organization Selector */
+    .org-selector-section {
+      background: var(--background-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .org-selector-section label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--foreground-muted);
+      margin-bottom: 8px;
+    }
+
+    .org-select-wrapper {
+      position: relative;
+      max-width: 400px;
+    }
+
+    .org-select {
+      width: 100%;
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 40px 12px 14px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      appearance: none;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .org-select:focus {
+      border-color: var(--accent-focus);
+      box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.1);
+    }
+
+    .org-select option {
+      background: var(--background-secondary);
+      color: #fff;
+      padding: 10px;
+    }
+
+    .org-select-arrow {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--foreground-dim);
+    }
+
+    .org-select-arrow svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .org-info {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--foreground-dim);
+    }
+
+    .org-info.admin {
+      color: var(--accent);
+    }
+
+    .keyword-org-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 6px;
+      margin-left: 8px;
+      background: var(--accent-light-bg);
+      color: var(--accent);
+      border-radius: var(--radius-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>Close CRM Co-Pilot</h1>
+        <p>Manage keywords and training videos</p>
+      </div>
+    </header>
+
+    <!-- Auth Status -->
+    <div class="auth-status" id="authStatus">
+      <div class="auth-info">
+        <span class="auth-dot disconnected" id="authDot"></span>
+        <span class="auth-text" id="authText">Not signed in</span>
+      </div>
+      <button class="auth-btn" id="authBtn">Sign In</button>
+    </div>
+
+    <!-- Organization Selector -->
+    <div class="org-selector-section" id="orgSelectorSection" style="display: none;">
+      <label for="orgSelect">Select Organization</label>
+      <div class="org-select-wrapper">
+        <select class="org-select" id="orgSelect">
+          <option value="">Personal (No Organization)</option>
+        </select>
+        <span class="org-select-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </span>
+      </div>
+      <p class="org-info" id="orgInfo">Keywords will be saved to your personal account.</p>
+    </div>
+
+    <!-- Message -->
+    <div class="message" id="message"></div>
+
+    <!-- Add Keyword Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Add New Keyword</h2>
+      </div>
+      <div class="section-content">
+        <form id="keywordForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="keyword">Keyword *</label>
+              <input type="text" id="keyword" placeholder="Enter keyword to highlight" required>
+            </div>
+
+            <div class="form-group">
+              <label for="videoTitle">Video Title *</label>
+              <input type="text" id="videoTitle" placeholder="Training video title" required>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="videoUrl">Video URL *</label>
+              <input type="url" id="videoUrl" placeholder="https://example.com/video" required>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="description">Description (Optional)</label>
+              <textarea id="description" placeholder="Brief description of the training content"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="addBtn">Add Keyword</button>
+            <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Keywords List Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Manage Keywords</h2>
+      </div>
+      <div class="keywords-toolbar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search keywords...">
+        <button class="toolbar-btn" id="exportBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Export
+        </button>
+        <button class="toolbar-btn" id="importBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+          </svg>
+          Import
+        </button>
+      </div>
+      <div class="keywords-list" id="keywordsList">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+          </svg>
+          <h3>No keywords yet</h3>
+          <p>Add your first keyword above to start highlighting training videos in Close CRM.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <a href="https://revpilot-copilot.netlify.app/settings" target="_blank">Open RevPilot Dashboard</a>
+      <p>Close CRM Co-Pilot v1.0.0</p>
+    </footer>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Keyword</h3>
+        <button class="modal-close" id="closeModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-content">
+        <form id="editForm">
+          <input type="hidden" id="editId">
+          <div class="form-group">
+            <label for="editKeyword">Keyword *</label>
+            <input type="text" id="editKeyword" required>
+          </div>
+
+          <div class="form-group">
+            <label for="editVideoTitle">Video Title *</label>
+            <input type="text" id="editVideoTitle" required>
+          </div>
+
+          <div class="form-group">
+            <label for="editVideoUrl">Video URL *</label>
+            <input type="url" id="editVideoUrl" required>
+          </div>
+
+          <div class="form-group">
+            <label for="editDescription">Description</label>
+            <textarea id="editDescription"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+        <button type="button" class="btn btn-primary" id="saveEdit">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Import Keywords</h3>
+        <button class="modal-close" id="closeImportModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-content">
+        <div class="form-group">
+          <label for="importData">Paste JSON data</label>
+          <textarea id="importData" placeholder='[{"keyword": "...", "video_title": "...", "video_url": "..."}]' style="min-height: 150px;"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancelImport">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmImport">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

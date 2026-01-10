@@ -412,3 +412,93 @@ export interface CallRecording {
   created_at: string
   updated_at: string
 }
+
+// Organization types
+export type OrganizationBillingType = 'org_pays' | 'user_pays'
+export type OrganizationSubscriptionStatus = 'trial' | 'active' | 'past_due' | 'canceled' | 'incomplete'
+export type OrganizationSubscriptionPlan = 'free' | 'starter' | 'professional' | 'enterprise'
+export type OrganizationMemberRole = 'owner' | 'admin' | 'member'
+export type OrganizationMemberStatus = 'active' | 'suspended' | 'pending'
+export type OrganizationInviteStatus = 'active' | 'revoked' | 'expired'
+
+export interface Organization {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  logo_url: string | null
+  billing_type: OrganizationBillingType
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  subscription_status: OrganizationSubscriptionStatus
+  subscription_plan: OrganizationSubscriptionPlan
+  max_seats: number
+  used_seats: number
+  settings: Record<string, unknown>
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface OrganizationMember {
+  id: string
+  organization_id: string
+  user_id: string
+  role: OrganizationMemberRole
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  subscription_status: OrganizationSubscriptionStatus | 'none'
+  status: OrganizationMemberStatus
+  invited_at: string | null
+  joined_at: string
+  created_at: string
+  updated_at: string
+  // Joined fields
+  user?: {
+    email: string
+    full_name: string | null
+    avatar_url: string | null
+  }
+}
+
+export interface OrganizationInvite {
+  id: string
+  organization_id: string
+  invite_code: string
+  invite_token: string
+  email: string | null
+  role: 'admin' | 'member'
+  max_uses: number | null
+  use_count: number
+  expires_at: string | null
+  status: OrganizationInviteStatus
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface OrganizationActivityLog {
+  id: string
+  organization_id: string
+  user_id: string | null
+  action: string
+  details: Record<string, unknown>
+  created_at: string
+  // Joined fields
+  user?: {
+    email: string
+    full_name: string | null
+  }
+}
+
+// Organization with member info (for user's org list)
+export interface UserOrganization {
+  organization_id: string
+  organization_name: string
+  organization_slug: string
+  organization_logo: string | null
+  user_role: OrganizationMemberRole
+  member_count: number
+  billing_type: OrganizationBillingType
+  subscription_status: OrganizationSubscriptionStatus
+}

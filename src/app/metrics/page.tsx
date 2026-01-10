@@ -50,9 +50,9 @@ const DEFAULT_METRICS = [
 
 // Chart colors for different metrics
 const CHART_COLORS = [
-  '#00ffc1',
-  '#ff9855',
-  '#ff6b8a',
+  '#5eead4',
+  '#5eead4',
+  'gray-400',
   '#a78bfa',
   '#60a5fa',
   '#34d399',
@@ -390,7 +390,7 @@ export default function MetricsPage() {
         {/* Time Range Selector */}
         <div className="glass-card p-4">
           <div className="flex items-center gap-4">
-            <Calendar className="w-5 h-5 text-[#00ffc1]" />
+            <Calendar className="w-5 h-5 text-[#5eead4]" />
             <span className="text-sm text-gray-400">Show:</span>
             <select
               value={weeksToShow}
@@ -458,7 +458,7 @@ export default function MetricsPage() {
                           onClick={() => handleToggleReminder(metric)}
                           className={`p-2 rounded-lg transition-colors ${
                             metric.reminder_enabled
-                              ? 'text-[#00ffc1] hover:bg-[rgba(0,255,193,0.1)]'
+                              ? 'text-[#5eead4] hover:bg-[rgba(94,234,212,0.1)]'
                               : 'text-gray-500 hover:bg-[rgba(255,255,255,0.05)]'
                           }`}
                           title={metric.reminder_enabled ? 'Disable reminders' : 'Enable reminders'}
@@ -471,7 +471,7 @@ export default function MetricsPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteMetric(metric.id)}
-                          className="p-2 rounded-lg text-gray-500 hover:text-[#ff6b8a] hover:bg-[rgba(255,0,67,0.1)] transition-colors"
+                          className="p-2 rounded-lg text-gray-500 hover:text-gray-400 hover:bg-[rgba(160,160,176,0.1)] transition-colors"
                           title="Delete metric"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -494,7 +494,7 @@ export default function MetricsPage() {
                           <span className="text-xs text-gray-500">Month Comparison</span>
                           {comparison.percentChange !== null && (
                             <div className={`flex items-center gap-1 text-xs font-medium ${
-                              comparison.percentChange > 0 ? 'text-[#00ffc1]' : comparison.percentChange < 0 ? 'text-[#ff6b8a]' : 'text-gray-400'
+                              comparison.percentChange > 0 ? 'text-[#5eead4]' : comparison.percentChange < 0 ? 'text-gray-400' : 'text-gray-400'
                             }`}>
                               {comparison.percentChange > 0 ? (
                                 <ArrowUp className="w-3 h-3" />
@@ -563,7 +563,7 @@ export default function MetricsPage() {
         {percentageMetrics.length > 0 && getChartDataForMetrics(percentageMetrics).length > 0 && (
           <div className="glass-card p-6">
             <div className="flex items-center gap-2 mb-6">
-              <Percent className="w-5 h-5 text-[#00ffc1]" />
+              <Percent className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Rate Metrics Over Time</h2>
             </div>
             <div className="h-[300px]">
@@ -616,7 +616,7 @@ export default function MetricsPage() {
         {currencyMetrics.length > 0 && getChartDataForMetrics(currencyMetrics).length > 0 && (
           <div className="glass-card p-6">
             <div className="flex items-center gap-2 mb-6">
-              <DollarSign className="w-5 h-5 text-[#ff9855]" />
+              <DollarSign className="w-5 h-5 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text">Financial Metrics Over Time</h2>
             </div>
             <div className="h-[300px]">
@@ -841,7 +841,7 @@ function AddMetricModal({ isOpen, onClose, onAdd, existingMetrics }: AddMetricMo
             id="reminder"
             checked={reminderEnabled}
             onChange={(e) => setReminderEnabled(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-[#00ffc1] focus:ring-[#00ffc1]"
+            className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-[#5eead4] focus:ring-[#5eead4]"
           />
           <label htmlFor="reminder" className="text-sm text-gray-300">
             Remind me to log this metric weekly
@@ -965,9 +965,9 @@ function LogMetricsModal({
     <Modal isOpen={isOpen} onClose={onClose} title="Log Weekly Metrics" size="lg">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Week Selector */}
-        <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.2)] rounded-xl p-4">
+        <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.2)] rounded-xl p-4">
           <div className="flex items-center gap-4">
-            <Calendar className="w-5 h-5 text-[#00ffc1]" />
+            <Calendar className="w-5 h-5 text-[#5eead4]" />
             <div className="flex items-center gap-3 flex-1">
               <span className="text-sm text-gray-400">Week:</span>
               <select
@@ -1034,7 +1034,7 @@ function LogMetricsModal({
           </button>
           <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2">
             {loading ? (
-              <div className="w-5 h-5 border-2 border-[#00102e] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[#0a0a0f] border-t-transparent rounded-full animate-spin" />
             ) : (
               'Log Metrics'
             )}

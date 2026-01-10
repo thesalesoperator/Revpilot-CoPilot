@@ -14,7 +14,7 @@ interface CelebrationProps {
 
 // Confetti particle component
 const ConfettiParticle = ({ delay, left }: { delay: number; left: number }) => {
-  const colors = ['#00ffc1', '#ff9855', '#ff6b8a', '#a78bfa', '#60a5fa', '#fbbf24']
+  const colors = ['#5eead4', '#5eead4', '#9ca3af', '#a78bfa', '#60a5fa', '#fbbf24']
   const color = colors[Math.floor(Math.random() * colors.length)]
   const size = Math.random() * 10 + 5
   const duration = Math.random() * 2 + 2
@@ -79,7 +79,7 @@ export default function Celebration({
       <div className="pointer-events-auto relative w-full max-w-md animate-celebration-bounce">
         <div className="glass-card p-8 relative overflow-hidden text-center">
           {/* Gradient border */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00ffc1] via-[#ff9855] to-[#ff6b8a]" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#5eead4] via-[#5eead4] to-gray-400" />
 
           {/* Close button */}
           <button
@@ -100,9 +100,9 @@ export default function Celebration({
 
           {/* Badge earned */}
           {badgeName && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#00ffc1]/20 to-[#ff9855]/20 border border-[#00ffc1]/30">
-              <Trophy className="w-5 h-5 text-[#00ffc1]" />
-              <span className="text-[#00ffc1] font-medium">Badge Earned: {badgeName}</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#5eead4]/20 to-[#5eead4]/20 border border-[#5eead4]/30">
+              <Trophy className="w-5 h-5 text-[#5eead4]" />
+              <span className="text-[#5eead4] font-medium">Badge Earned: {badgeName}</span>
             </div>
           )}
 

@@ -110,7 +110,7 @@ export async function POST(
     // Check if clip exists and is accessible
     const { data: clip, error: clipError } = await supabase
       .from('call_clips')
-      .select('id, user_id, is_shared')
+      .select('id, user_id, is_shared, comment_count')
       .eq('id', clipId)
       .single()
 
@@ -153,6 +153,12 @@ export async function POST(
       console.error('Error creating comment:', createError)
       return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
     }
+
+    // Increment the clip's comment_count
+    await supabase
+      .from('call_clips')
+      .update({ comment_count: (clip.comment_count || 0) + 1 })
+      .eq('id', clipId)
 
     const profile = Array.isArray(comment.profiles) ? comment.profiles[0] : comment.profiles
 
