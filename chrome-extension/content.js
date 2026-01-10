@@ -104,26 +104,48 @@
     const url = window.location.href
     const hostname = window.location.hostname
 
-    // Must be on a zoom.us domain
-    if (!hostname.includes('zoom.us')) {
-      return false
+    // Check for Zoom
+    if (hostname.includes('zoom.us')) {
+      const isMeetingUrl = url.includes('zoom.us/wc/') ||
+                           url.includes('zoom.us/j/') ||
+                           url.includes('zoom.us/s/') ||
+                           (url.includes('/start') && url.match(/\/wc\/\d+\/start/)) ||
+                           (url.includes('/join') && url.match(/\/wc\/\d+\/join/))
+
+      const hasMeetingUI = document.querySelector('#webclient') !== null ||
+                           document.querySelector('.meeting-client') !== null ||
+                           document.querySelector('[data-type="meeting"]') !== null
+
+      console.log('[RevPilot] Zoom check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      return isMeetingUrl || hasMeetingUI
     }
 
-    // Check for actual meeting URLs (more strict patterns)
-    const isMeetingUrl = url.includes('zoom.us/wc/') ||  // Web client meeting
-                         url.includes('zoom.us/j/') ||   // Join meeting
-                         url.includes('zoom.us/s/') ||   // Scheduled meeting
-                         (url.includes('/start') && url.match(/\/wc\/\d+\/start/)) ||  // Starting a meeting
-                         (url.includes('/join') && url.match(/\/wc\/\d+\/join/))       // Joining a meeting
+    // Check for Google Meet
+    if (hostname === 'meet.google.com') {
+      const isMeetingUrl = url.match(/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i) !== null
+      const hasMeetingUI = document.querySelector('[data-meeting-title]') !== null ||
+                           document.querySelector('[data-call-active="true"]') !== null
+      console.log('[RevPilot] Google Meet check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      return isMeetingUrl || hasMeetingUI
+    }
 
-    // Also check for meeting UI elements (specific to Zoom web client)
-    const hasMeetingUI = document.querySelector('#webclient') !== null ||
-                         document.querySelector('.meeting-client') !== null ||
-                         document.querySelector('[data-type="meeting"]') !== null
+    // Check for Microsoft Teams
+    if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) {
+      const isMeetingUrl = url.includes('/meet/') || url.includes('/l/meetup-join/')
+      const hasMeetingUI = document.querySelector('[data-tid="calling-screen"]') !== null
+      console.log('[RevPilot] Teams check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      return isMeetingUrl || hasMeetingUI
+    }
 
-    console.log('[RevPilot] isZoomPage check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+    return false
+  }
 
-    return isMeetingUrl || hasMeetingUI
+  function getMeetingPlatform() {
+    const hostname = window.location.hostname
+    if (hostname.includes('zoom.us')) return 'Zoom'
+    if (hostname === 'meet.google.com') return 'Google Meet'
+    if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) return 'Microsoft Teams'
+    return 'Meeting'
   }
 
   function createOverlay() {
@@ -1092,12 +1114,123 @@
       session = message.session
       showCoachingUI()
       subscribeToSuggestions()
+
+      // Check if this is a bot-free session with active capture
+      if (message.session.botFree && message.session.captureActive) {
+        showLiveCaptureBanner()
+      } else if (message.session.captureError) {
+        // Tab capture failed - fall back to demo mode
+        startDemoMode(message.session.captureError)
+      }
     }
 
     if (message.type === 'SESSION_STOPPED') {
       cleanupSession()
     }
+
+    if (message.type === 'CAPTURE_ACTIVE') {
+      console.log('[RevPilot] Live capture active')
+      showLiveCaptureBanner()
+    }
+
+    if (message.type === 'TRANSCRIPT_UPDATE') {
+      // Show real-time transcript in the overlay
+      handleTranscriptUpdate(message.transcript)
+    }
+
+    if (message.type === 'SPEECH_EVENT') {
+      // Update talk ratio indicator
+      if (message.event === 'started') {
+        updateTalkRatioIndicator(true)
+      }
+    }
   })
+
+  // Handle real-time transcript updates
+  let transcriptHistory = []
+  function handleTranscriptUpdate(transcript) {
+    console.log('[RevPilot] Transcript:', transcript.text?.substring(0, 50))
+
+    if (!transcript || !transcript.text) return
+
+    // Add to history for context
+    transcriptHistory.push({
+      text: transcript.text,
+      speaker: transcript.speaker,
+      timestamp: Date.now()
+    })
+
+    // Keep only last 20 transcript entries
+    if (transcriptHistory.length > 20) {
+      transcriptHistory = transcriptHistory.slice(-20)
+    }
+
+    // Update the live transcript display
+    updateLiveTranscript(transcript)
+  }
+
+  function updateLiveTranscript(transcript) {
+    const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
+    // Remove "Listening..." placeholder
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
+    // Create transcript bubble
+    const el = document.createElement('div')
+    el.className = 'revpilot-transcript'
+    const speakerLabel = transcript.speaker !== null && transcript.speaker !== undefined
+      ? `Speaker ${transcript.speaker}`
+      : 'Transcript'
+    el.innerHTML = `
+      <div class="revpilot-transcript-header">
+        <span class="revpilot-transcript-speaker">${speakerLabel}</span>
+        <span class="revpilot-transcript-time">${formatTime(new Date().toISOString())}</span>
+      </div>
+      <p class="revpilot-transcript-text">${transcript.text}</p>
+    `
+
+    container.insertBefore(el, container.firstChild)
+
+    // Keep only last 8 items visible
+    while (container.children.length > 8) {
+      container.removeChild(container.lastChild)
+    }
+
+    // Animate
+    el.classList.add('revpilot-suggestion-new')
+    setTimeout(() => el.classList.remove('revpilot-suggestion-new'), 1000)
+  }
+
+  function updateTalkRatioIndicator(speaking) {
+    // Visual feedback that speech is being detected
+    const liveIndicator = document.querySelector('.revpilot-live-indicator')
+    if (liveIndicator) {
+      liveIndicator.classList.toggle('revpilot-speaking', speaking)
+    }
+  }
+
+  // Show banner for bot-free live capture mode
+  function showLiveCaptureBanner() {
+    const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
+    // Remove any existing banners
+    const existingBanner = container.querySelector('.revpilot-mode-banner')
+    if (existingBanner) existingBanner.remove()
+
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
+    const banner = document.createElement('div')
+    banner.className = 'revpilot-mode-banner revpilot-live-banner'
+    banner.innerHTML = `
+      <span class="revpilot-banner-icon">🎙️</span>
+      <span>Live transcription active - no bot in your call!</span>
+    `
+    container.insertBefore(banner, container.firstChild)
+  }
 
   // Expose debug function to window for troubleshooting
   window.revpilotDebug = async function() {
