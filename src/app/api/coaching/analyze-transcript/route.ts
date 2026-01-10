@@ -14,9 +14,13 @@ import {
   detectBuyingSignals,
   calculateTalkRatio,
   buildCoachingPrompt,
+  buildScriptCoachingPrompt,
   ConversationStage,
   SalesMethodology,
   ConversationContext,
+  ScriptContext,
+  detectScriptSection,
+  getScriptCoaching,
 } from '@/lib/coaching/intelligence'
 
 export async function OPTIONS() {
@@ -38,6 +42,9 @@ interface SessionState {
   startTime: number
   lastStage: ConversationStage
   methodology: SalesMethodology
+  // Script tracking (for RevPilot methodology)
+  currentScriptSection: string
+  scriptProgress: number
   keyInfo: {
     painPoints: string[]
     budget: string | null
@@ -202,6 +209,9 @@ export async function POST(request: NextRequest) {
         startTime: new Date(session.created_at).getTime(),
         lastStage: 'opening',
         methodology: methodology,
+        // Initialize script tracking
+        currentScriptSection: 'set_expectations',
+        scriptProgress: 0,
         keyInfo: {
           painPoints: [],
           budget: null,
@@ -288,16 +298,72 @@ export async function POST(request: NextRequest) {
       previousSuggestions: state.previousSuggestions,
     }
 
-    const systemPrompt = buildCoachingPrompt(context)
+    let systemPrompt: string
+    let scriptContext: ScriptContext | null = null
 
-    // Use GPT-4o for better coaching quality (fall back to gpt-4o-mini for cost)
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',  // Using GPT-4o for highest quality coaching
-      messages: [
-        { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: `Analyze this moment in the conversation and provide coaching.
+    // Use script-aware coaching for RevPilot methodology
+    if (state.methodology === 'revpilot') {
+      // Detect current script section based on conversation
+      const sectionDetection = detectScriptSection(
+        state.fullTranscript,
+        state.currentScriptSection
+      )
+
+      // Update state with detected section
+      state.currentScriptSection = sectionDetection.section
+
+      // Get script-specific coaching context
+      const scriptCoaching = getScriptCoaching(
+        sectionDetection.section,
+        state.fullTranscript,
+        state.keyInfo
+      )
+
+      // Update script progress
+      state.scriptProgress = scriptCoaching.progressPercentage
+
+      // Build script context
+      scriptContext = {
+        currentSection: scriptCoaching.currentSection,
+        previousSectionId: state.currentScriptSection,
+        suggestedQuestions: scriptCoaching.suggestedQuestions,
+        coachingTip: scriptCoaching.coachingTip,
+        warningMessage: scriptCoaching.warningMessage,
+        progressPercentage: scriptCoaching.progressPercentage,
+        keyInfo: state.keyInfo,
+      }
+
+      // Add script context to conversation context
+      context.scriptSection = sectionDetection.section
+      context.scriptProgress = scriptCoaching.progressPercentage
+      context.scriptWarning = scriptCoaching.warningMessage
+
+      // Build script-aware coaching prompt
+      systemPrompt = buildScriptCoachingPrompt(context, scriptContext)
+
+      console.log(`[Analyze] Script Section: ${sectionDetection.section} (${scriptCoaching.progressPercentage}% progress)`)
+    } else {
+      // Use standard methodology-based coaching
+      systemPrompt = buildCoachingPrompt(context)
+    }
+
+    // Build user message based on methodology
+    const userMessage = state.methodology === 'revpilot'
+      ? `Analyze this moment and provide script-aware coaching.
+
+Current Script Section: ${scriptContext?.currentSection.name} (${scriptContext?.progressPercentage}% complete)
+Section Objective: ${scriptContext?.currentSection.objective}
+
+Key information gathered:
+- Pain Points: ${state.keyInfo.painPoints.join('; ') || 'NOT YET IDENTIFIED - Critical for Section 2!'}
+- Budget: ${state.keyInfo.budget || 'Not discussed'}
+- Timeline: ${state.keyInfo.timeline || 'Not discussed'}
+- Decision Makers: ${state.keyInfo.decisionMakers.join(', ') || 'Unknown'}
+
+${scriptContext?.warningMessage ? `⚠️ WARNING: ${scriptContext.warningMessage}` : ''}
+${detectedObjections.length > 0 ? `🚨 OBJECTION: ${detectedObjections[0].category}` : ''}
+${detectedBuyingSignals.length > 0 ? `✅ BUYING SIGNAL: ${detectedBuyingSignals[0].signal}` : ''}`
+      : `Analyze this moment in the conversation and provide coaching.
 
 Key information gathered so far:
 - Pain points: ${state.keyInfo.painPoints.join('; ') || 'None identified yet'}
@@ -310,9 +376,15 @@ Key information gathered so far:
 Current conversation stage: ${currentStage}
 ${detectedObjections.length > 0 ? `\n⚠️ OBJECTION IN PROGRESS: ${detectedObjections[0].category}` : ''}
 ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSignals[0].signal}` : ''}`
-        }
+
+    // Use GPT-4o for better coaching quality (fall back to gpt-4o-mini for cost)
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',  // Using GPT-4o for highest quality coaching
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userMessage }
       ],
-      max_tokens: 300,
+      max_tokens: 400,  // Increased for script-aware responses
       temperature: 0.7,
       response_format: { type: 'json_object' }
     })
@@ -351,6 +423,14 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
             conversationInsight: analysis.conversationInsight,
             predictedNextMove: analysis.predictedNextMove,
             keyInfo: state.keyInfo,
+            // Script-specific metadata
+            ...(state.methodology === 'revpilot' && scriptContext ? {
+              scriptSection: scriptContext.currentSection.id,
+              scriptSectionName: scriptContext.currentSection.name,
+              scriptProgress: scriptContext.progressPercentage,
+              shouldAdvanceSection: analysis.shouldAdvanceSection,
+              sectionCoverage: analysis.sectionCoverage,
+            } : {}),
           }
         })
 
@@ -374,7 +454,8 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
         }),
       })
 
-    return NextResponse.json({
+    // Build response with script-specific data if using RevPilot methodology
+    const response: Record<string, unknown> = {
       status: 'analyzed',
       suggestion: analysis.suggestion || null,
       conversationInsight: analysis.conversationInsight,
@@ -382,7 +463,25 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
       stage: currentStage,
       talkRatio,
       keyInfo: state.keyInfo,
-    }, { headers: CORS_HEADERS })
+    }
+
+    // Add script-specific data for RevPilot methodology
+    if (state.methodology === 'revpilot' && scriptContext) {
+      response.script = {
+        section: scriptContext.currentSection.id,
+        sectionName: scriptContext.currentSection.name,
+        sectionOrder: scriptContext.currentSection.order,
+        sectionObjective: scriptContext.currentSection.objective,
+        progress: scriptContext.progressPercentage,
+        suggestedQuestions: scriptContext.suggestedQuestions,
+        coachingTip: scriptContext.coachingTip,
+        warning: scriptContext.warningMessage,
+        shouldAdvance: analysis.shouldAdvanceSection,
+        sectionCoverage: analysis.sectionCoverage,
+      }
+    }
+
+    return NextResponse.json(response, { headers: CORS_HEADERS })
 
   } catch (error) {
     console.error('[Analyze] Error:', error)

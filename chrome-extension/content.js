@@ -282,6 +282,7 @@
             <div class="revpilot-methodology-selector" id="revpilot-methodology-selector">
               <label class="revpilot-methodology-label">Framework:</label>
               <select id="revpilot-methodology" class="revpilot-select">
+                <option value="revpilot" selected>RevPilot Script</option>
                 <option value="general">General</option>
                 <option value="meddic">MEDDIC</option>
                 <option value="spin">SPIN</option>
@@ -289,6 +290,32 @@
                 <option value="sandler">Sandler</option>
                 <option value="bant">BANT</option>
               </select>
+            </div>
+
+            <div class="revpilot-script-progress" id="revpilot-script-progress" style="display: none;">
+              <div class="revpilot-script-header">
+                <span class="revpilot-script-icon">📜</span>
+                <span class="revpilot-script-section" id="revpilot-script-section">Set Expectations</span>
+                <span class="revpilot-script-order" id="revpilot-script-order">1/17</span>
+              </div>
+              <div class="revpilot-script-bar">
+                <div class="revpilot-script-fill" id="revpilot-script-fill" style="width: 0%"></div>
+              </div>
+              <div class="revpilot-script-objective" id="revpilot-script-objective">
+                Get permission to ask questions and establish consultative dynamic
+              </div>
+              <div class="revpilot-script-tip hidden" id="revpilot-script-tip">
+                <span class="revpilot-tip-icon">💡</span>
+                <span class="revpilot-tip-text" id="revpilot-tip-text"></span>
+              </div>
+              <div class="revpilot-script-warning hidden" id="revpilot-script-warning">
+                <span class="revpilot-warning-icon">⚠️</span>
+                <span class="revpilot-warning-text" id="revpilot-warning-text"></span>
+              </div>
+              <div class="revpilot-script-questions hidden" id="revpilot-script-questions">
+                <div class="revpilot-questions-header">📝 Suggested Questions</div>
+                <ul class="revpilot-questions-list" id="revpilot-questions-list"></ul>
+              </div>
             </div>
 
             <div class="revpilot-prediction" id="revpilot-prediction" style="display: none;">
@@ -384,13 +411,31 @@
       chrome.storage.local.set({ selectedMethodology: methodology })
       // Notify background/offscreen of methodology change
       chrome.runtime.sendMessage({ type: 'SET_METHODOLOGY', methodology })
+
+      // Show/hide script progress UI based on methodology
+      const scriptProgressEl = document.getElementById('revpilot-script-progress')
+      const stageIndicatorEl = document.getElementById('revpilot-stage')
+      if (methodology === 'revpilot') {
+        if (scriptProgressEl) scriptProgressEl.style.display = 'block'
+        if (stageIndicatorEl) stageIndicatorEl.style.display = 'none'
+      } else {
+        if (scriptProgressEl) scriptProgressEl.style.display = 'none'
+        if (stageIndicatorEl) stageIndicatorEl.style.display = 'flex'
+      }
     })
 
     // Load saved methodology preference
     chrome.storage.local.get(['selectedMethodology']).then(stored => {
-      if (stored.selectedMethodology) {
-        const selector = document.getElementById('revpilot-methodology')
-        if (selector) selector.value = stored.selectedMethodology
+      const methodology = stored.selectedMethodology || 'revpilot'
+      const selector = document.getElementById('revpilot-methodology')
+      if (selector) selector.value = methodology
+
+      // Show script progress UI if RevPilot is selected
+      const scriptProgressEl = document.getElementById('revpilot-script-progress')
+      const stageIndicatorEl = document.getElementById('revpilot-stage')
+      if (methodology === 'revpilot') {
+        if (scriptProgressEl) scriptProgressEl.style.display = 'block'
+        if (stageIndicatorEl) stageIndicatorEl.style.display = 'none'
       }
     })
 
@@ -1224,7 +1269,8 @@
       'positive': '✅',
       'transition': '➡️',
       'methodology': '📚',
-      'buying_signal': '🔥'
+      'buying_signal': '🔥',
+      'script_guidance': '📜'
     }
     return icons[type] || '💬'
   }
@@ -1314,6 +1360,85 @@
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
+  // Update script progress UI (RevPilot methodology)
+  function updateScriptProgress(script) {
+    if (!script) return
+
+    console.log('[RevPilot] Updating script progress:', script.sectionName, script.progress + '%')
+
+    // Show script progress container
+    const progressEl = document.getElementById('revpilot-script-progress')
+    if (progressEl) progressEl.style.display = 'block'
+
+    // Update section name
+    const sectionEl = document.getElementById('revpilot-script-section')
+    if (sectionEl && script.sectionName) {
+      sectionEl.textContent = script.sectionName
+    }
+
+    // Update section order
+    const orderEl = document.getElementById('revpilot-script-order')
+    if (orderEl && script.sectionOrder) {
+      orderEl.textContent = `${script.sectionOrder}/17`
+    }
+
+    // Update progress bar
+    const fillEl = document.getElementById('revpilot-script-fill')
+    if (fillEl && typeof script.progress === 'number') {
+      fillEl.style.width = `${script.progress}%`
+      // Color coding based on progress
+      if (script.progress < 30) {
+        fillEl.style.background = 'linear-gradient(90deg, #00ffc1, #00d4a1)'
+      } else if (script.progress < 70) {
+        fillEl.style.background = 'linear-gradient(90deg, #00d4a1, #ffc107)'
+      } else {
+        fillEl.style.background = 'linear-gradient(90deg, #ffc107, #ff6b6b)'
+      }
+    }
+
+    // Update objective
+    const objectiveEl = document.getElementById('revpilot-script-objective')
+    if (objectiveEl && script.sectionObjective) {
+      objectiveEl.textContent = script.sectionObjective
+    }
+
+    // Update coaching tip
+    const tipEl = document.getElementById('revpilot-script-tip')
+    const tipTextEl = document.getElementById('revpilot-tip-text')
+    if (tipEl && tipTextEl && script.coachingTip) {
+      tipTextEl.textContent = script.coachingTip
+      tipEl.classList.remove('hidden')
+    } else if (tipEl) {
+      tipEl.classList.add('hidden')
+    }
+
+    // Update warning
+    const warningEl = document.getElementById('revpilot-script-warning')
+    const warningTextEl = document.getElementById('revpilot-warning-text')
+    if (warningEl && warningTextEl && script.warning) {
+      warningTextEl.textContent = script.warning
+      warningEl.classList.remove('hidden')
+      // Add attention-grabbing animation for important warnings
+      warningEl.classList.add('revpilot-warning-pulse')
+      setTimeout(() => warningEl.classList.remove('revpilot-warning-pulse'), 3000)
+    } else if (warningEl) {
+      warningEl.classList.add('hidden')
+    }
+
+    // Update suggested questions
+    const questionsEl = document.getElementById('revpilot-script-questions')
+    const questionsListEl = document.getElementById('revpilot-questions-list')
+    if (questionsEl && questionsListEl && script.suggestedQuestions && script.suggestedQuestions.length > 0) {
+      questionsListEl.innerHTML = script.suggestedQuestions
+        .slice(0, 3)
+        .map(q => `<li>${q}</li>`)
+        .join('')
+      questionsEl.classList.remove('hidden')
+    } else if (questionsEl) {
+      questionsEl.classList.add('hidden')
+    }
+  }
+
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((message) => {
     console.log('[RevPilot] Received message:', message.type)
@@ -1375,6 +1500,11 @@
       // Update talk ratio
       if (message.talkRatio) {
         updateStats({ talk_ratio: message.talkRatio.repPercent })
+      }
+
+      // Update script progress (RevPilot methodology)
+      if (message.script) {
+        updateScriptProgress(message.script)
       }
     }
   })

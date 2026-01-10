@@ -4,10 +4,19 @@
  * This is the brain of the live coaching system. It provides:
  * - Conversation stage detection
  * - Sales methodology frameworks (MEDDIC, SPIN, Challenger, Sandler, BANT)
+ * - Custom script tracking and guidance
  * - Predictive next-question generation
  * - Real-time objection detection
  * - Context-aware coaching suggestions
  */
+
+import {
+  REVPILOT_SCRIPT,
+  detectScriptSection,
+  getScriptCoaching,
+  getNextSection,
+  type ScriptSection,
+} from './revpilot-script'
 
 // =============================================================================
 // CONVERSATION STAGES
@@ -85,7 +94,7 @@ export const STAGE_INDICATORS: StageIndicators[] = [
 // SALES METHODOLOGIES
 // =============================================================================
 
-export type SalesMethodology = 'meddic' | 'spin' | 'challenger' | 'sandler' | 'bant' | 'general'
+export type SalesMethodology = 'meddic' | 'spin' | 'challenger' | 'sandler' | 'bant' | 'general' | 'revpilot'
 
 export interface MethodologyFramework {
   name: string
@@ -465,6 +474,110 @@ export const METHODOLOGIES: Record<SalesMethodology, MethodologyFramework> = {
       closing: ['Ask for the business', 'Handle final objections', 'Confirm next steps'],
       wrap_up: ['Summarize agreements', 'Confirm action items', 'Set follow-up']
     }
+  },
+
+  revpilot: {
+    name: 'RevPilot Script',
+    fullName: 'RevPilot Consultative B2B Sales Script',
+    description: 'Custom 17-section consultative sales script for Close CRM optimization',
+    components: [
+      {
+        letter: '1',
+        name: 'Set Expectations',
+        description: 'Open with transparency, set consultative tone',
+        discoveryQuestions: [
+          "Thanks for taking the time to chat. I've got some questions to get context and see if we're a fit.",
+          "Before we start, is there anything you'd like to know about me or RevPilot?"
+        ],
+        indicators: ['thanks for taking', 'appreciate your time', 'before we begin']
+      },
+      {
+        letter: '2',
+        name: 'Isolate Problem',
+        description: 'Find and anchor on a specific sales ops problem',
+        discoveryQuestions: [
+          "What made you book this call today?",
+          "What's going on in your sales operations that prompted this?",
+          "What specific challenge are you hoping to solve?"
+        ],
+        indicators: ['problem', 'challenge', 'issue', 'pain point', 'struggling']
+      },
+      {
+        letter: '3',
+        name: 'Background',
+        description: 'Understand company, team, product, market context',
+        discoveryQuestions: [
+          "Tell me about your company – what do you sell and who do you sell to?",
+          "How big is your sales team?",
+          "What's your typical deal size and sales cycle?"
+        ],
+        indicators: ['company', 'team size', 'deal size', 'sales cycle', 'market']
+      },
+      {
+        letter: '4-6',
+        name: 'Deep Discovery',
+        description: 'Current situation, past efforts, chunking down on problems',
+        discoveryQuestions: [
+          "Walk me through your current sales process from lead to close.",
+          "What have you tried so far to fix this?",
+          "Can you give me a specific example from the last week?"
+        ],
+        indicators: ['process', 'workflow', 'tried before', 'example', 'how often']
+      },
+      {
+        letter: '7',
+        name: 'Financial Qualifier',
+        description: 'Quantify cost of problem and gauge budget',
+        discoveryQuestions: [
+          "What do you think this problem is costing you?",
+          "If you had to put a number on it – lost deals, wasted time – what would that be?",
+          "What kind of budget do you have allocated?"
+        ],
+        indicators: ['cost', 'budget', 'investment', 'ROI', 'losing']
+      },
+      {
+        letter: '8-10',
+        name: 'Urgency Building',
+        description: 'Doubt questions, solution vision, why now',
+        discoveryQuestions: [
+          "What happens if you don't fix this in the next 6 months?",
+          "In an ideal world, what does this look like when it's fixed?",
+          "Why is now the right time to solve this?"
+        ],
+        indicators: ['if nothing changes', 'risk', 'ideal', 'timing', 'urgent']
+      },
+      {
+        letter: '11-12',
+        name: 'Support & Vision',
+        description: 'Map decision makers, paint future state',
+        discoveryQuestions: [
+          "Who else would be involved in making this decision?",
+          "Imagine 90 days from now, this is all working. What does that look like?"
+        ],
+        indicators: ['decision maker', 'stakeholder', 'future', 'imagine', 'vision']
+      },
+      {
+        letter: '13-17',
+        name: 'Close',
+        description: 'Permission transition, pitch, commitment, investment',
+        discoveryQuestions: [
+          "Based on everything you've shared, would you like me to walk you through how we'd approach this?",
+          "On a scale of 1-10, where are you right now?",
+          "The investment for this engagement is..."
+        ],
+        indicators: ['how we work', 'approach', 'investment', 'price', 'next steps']
+      }
+    ],
+    stageGuidance: {
+      opening: ['Keep brief (30-60 sec)', 'Sound relaxed, not scripted', 'Get permission to ask questions'],
+      discovery: ['STAY in problem isolation until you find a specific anchor problem', 'Listen for sales ops pain', 'Take notes on everything'],
+      qualification: ['Quantify the cost of their problem', 'Map all decision makers', 'Understand budget capacity'],
+      presentation: ['Get explicit permission before pitching', 'Connect each step to their problems', 'Use their words back to them'],
+      objection_handling: ['Acknowledge with curiosity, not defense', 'Return to implications if price objection', 'Ask what would change their mind'],
+      negotiation: ['Don\'t discount without getting something', 'Reference the cost of inaction', 'Use their ROI numbers'],
+      closing: ['Use commitment scale (1-10)', 'SHUT UP after stating investment', 'Let them respond first'],
+      wrap_up: ['Confirm specific next steps', 'Schedule follow-up if needed', 'Send recap email']
+    }
   }
 }
 
@@ -724,6 +837,10 @@ export interface ConversationContext {
   talkRatio: { repPercent: number; prospectPercent: number }
   callDurationMinutes: number
   previousSuggestions: string[]
+  // Script-specific context
+  scriptSection?: string
+  scriptProgress?: number
+  scriptWarning?: string
 }
 
 export function buildCoachingPrompt(context: ConversationContext): string {
@@ -834,4 +951,196 @@ Response format (JSON):
 
 If the conversation is going well and no intervention is needed, respond with:
 {"suggestion": null, "conversationInsight": "...", "predictedNextMove": "..."}`
+}
+
+// =============================================================================
+// SCRIPT-AWARE COACHING PROMPT BUILDER
+// =============================================================================
+
+export interface ScriptContext {
+  currentSection: ScriptSection
+  previousSectionId?: string
+  suggestedQuestions: string[]
+  coachingTip: string
+  warningMessage?: string
+  progressPercentage: number
+  keyInfo: {
+    painPoints: string[]
+    budget: string | null
+    timeline: string | null
+    decisionMakers: string[]
+    objections: string[]
+    buyingSignals: string[]
+  }
+}
+
+export function buildScriptCoachingPrompt(
+  context: ConversationContext,
+  scriptContext: ScriptContext
+): string {
+  const section = scriptContext.currentSection
+  const nextSection = getNextSection(section.id)
+
+  // Build critical moment alerts
+  let criticalAlerts = ''
+  if (section.criticalMoments && section.criticalMoments.length > 0) {
+    criticalAlerts = `
+🚨 CRITICAL MOMENT FOR THIS SECTION:
+${section.criticalMoments.map(m => `⚠️ ${m}`).join('\n')}
+`
+  }
+
+  // Check for warning conditions
+  let warningSection = ''
+  if (scriptContext.warningMessage) {
+    warningSection = `
+⚠️ WARNING: ${scriptContext.warningMessage}
+`
+  }
+
+  // Special section-specific warnings
+  if (section.id === 'isolate_problem' && scriptContext.keyInfo.painPoints.length === 0) {
+    warningSection += `
+🔴 STAY HERE - No anchor problem identified yet!
+Keep probing: "What's going on in your sales operations that prompted this call?"
+`
+  }
+
+  if (section.id === 'why_now') {
+    warningSection += `
+⏸️ REMEMBER: PAUSE after asking "What's the cost of waiting?" - Let them feel the weight.
+`
+  }
+
+  if (section.id === 'investment') {
+    warningSection += `
+🤐 CRITICAL: After stating the investment amount, SHUT UP. Do not speak. Let them respond first.
+`
+  }
+
+  // Build talk ratio warning
+  let talkRatioWarning = ''
+  if (context.talkRatio.repPercent > 65) {
+    talkRatioWarning = `
+⚠️ TALK RATIO ALERT: You're at ${context.talkRatio.repPercent}% - WAY too much talking!
+The prospect should be talking 70%+. Ask a question and LISTEN.
+`
+  } else if (context.talkRatio.repPercent > 50) {
+    talkRatioWarning = `
+📊 Talk ratio: ${context.talkRatio.repPercent}% you / ${context.talkRatio.prospectPercent}% them. Aim for more prospect talk time.
+`
+  }
+
+  // Build objection/buying signal alerts
+  let signalAlerts = ''
+  if (context.detectedObjections.length > 0) {
+    const obj = context.detectedObjections[0]
+    const handlers = REVPILOT_SCRIPT.objectionHandlers[obj.category] || obj.suggestedResponses
+    signalAlerts += `
+🚨 OBJECTION DETECTED: ${obj.category.toUpperCase()}
+Suggested responses:
+${handlers.slice(0, 2).map(r => `• "${r}"`).join('\n')}
+`
+  }
+
+  if (context.detectedBuyingSignals.length > 0) {
+    const signal = context.detectedBuyingSignals[0]
+    signalAlerts += `
+✅ BUYING SIGNAL: ${signal.signal.replace(/_/g, ' ').toUpperCase()}
+Action: ${signal.recommendedAction}
+`
+  }
+
+  // Build key info summary
+  let keyInfoSummary = ''
+  if (scriptContext.keyInfo.painPoints.length > 0 || scriptContext.keyInfo.budget || scriptContext.keyInfo.decisionMakers.length > 0) {
+    keyInfoSummary = `
+📋 KEY INFO GATHERED:
+${scriptContext.keyInfo.painPoints.length > 0 ? `• Pain Points: ${scriptContext.keyInfo.painPoints.slice(0, 2).join('; ')}` : '• Pain Points: Not yet identified'}
+${scriptContext.keyInfo.budget ? `• Budget: ${scriptContext.keyInfo.budget}` : '• Budget: Not discussed'}
+${scriptContext.keyInfo.timeline ? `• Timeline: ${scriptContext.keyInfo.timeline}` : '• Timeline: Not discussed'}
+${scriptContext.keyInfo.decisionMakers.length > 0 ? `• Decision Makers: ${scriptContext.keyInfo.decisionMakers.join(', ')}` : '• Decision Makers: Unknown'}
+`
+  }
+
+  return `You are an elite B2B sales coach providing REAL-TIME coaching during a live sales call.
+The rep is using the RevPilot Consultative Sales Script for Close CRM optimization services.
+
+═══════════════════════════════════════════════════════════════════════════════
+SCRIPT PROGRESS: ${scriptContext.progressPercentage}% │ Section ${section.order}/17: "${section.name}"
+═══════════════════════════════════════════════════════════════════════════════
+
+CURRENT SECTION: ${section.name.toUpperCase()}
+Objective: ${section.objective}
+
+${criticalAlerts}${warningSection}${talkRatioWarning}
+
+📝 SUGGESTED QUESTIONS FOR THIS SECTION:
+${scriptContext.suggestedQuestions.map((q, i) => `${i + 1}. "${q}"`).join('\n')}
+
+💡 COACHING TIP: ${scriptContext.coachingTip}
+
+${signalAlerts}
+
+📊 SECTION TRANSITION SIGNALS (when to move to next section):
+Ready to advance when you hear: ${section.transitionSignals.slice(0, 4).join(', ')}
+Stay in section if you hear: ${section.staySignals.slice(0, 3).join(', ')}
+
+${nextSection ? `➡️ NEXT SECTION: ${nextSection.name} - ${nextSection.description}` : '🎯 FINAL SECTION - Close the deal!'}
+
+${keyInfoSummary}
+
+═══════════════════════════════════════════════════════════════════════════════
+RECENT CONVERSATION:
+═══════════════════════════════════════════════════════════════════════════════
+${context.recentTranscript}
+
+CALL DURATION: ${context.callDurationMinutes} minutes
+TALK RATIO: ${context.talkRatio.repPercent}% rep / ${context.talkRatio.prospectPercent}% prospect
+
+PREVIOUS SUGGESTIONS (avoid repeating):
+${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-3).join('\n') : 'None yet'}
+
+═══════════════════════════════════════════════════════════════════════════════
+YOUR TASK:
+═══════════════════════════════════════════════════════════════════════════════
+
+Provide ONE highly specific, actionable coaching suggestion based on:
+1. What was just said in the conversation
+2. The current section's objective
+3. Whether they should stay in this section or advance
+4. Any detected objections or buying signals
+
+Rules:
+• Be SPECIFIC to what was just said - not generic advice
+• If suggesting a question, provide the EXACT WORDING from the script, personalized to their situation
+• If they're in Section 2 (Problem Isolation), keep them there until a clear sales ops problem is identified
+• If in Section 17 (Investment), remind them to SHUT UP after stating price
+• Use their words back to them when possible
+• Keep suggestions brief (1-2 sentences) but highly actionable
+
+Response format (JSON):
+{
+  "suggestion": {
+    "type": "question" | "tip" | "objection" | "alert" | "positive" | "transition" | "script_guidance" | "buying_signal",
+    "content": "Your specific coaching suggestion",
+    "priority": "high" | "medium" | "low"
+  },
+  "conversationInsight": "Brief insight about where the conversation is heading",
+  "predictedNextMove": "What the prospect is likely to say/do next",
+  "shouldAdvanceSection": true/false,
+  "sectionCoverage": "What key elements of this section have been covered"
+}
+
+If the conversation is going well and no intervention is needed:
+{"suggestion": null, "conversationInsight": "...", "predictedNextMove": "...", "shouldAdvanceSection": false, "sectionCoverage": "..."}`
+}
+
+// Re-export script utilities for use in other modules
+export {
+  REVPILOT_SCRIPT,
+  detectScriptSection,
+  getScriptCoaching,
+  getNextSection,
+  type ScriptSection,
 }

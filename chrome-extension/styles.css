@@ -835,3 +835,178 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ========================================
+   Script Progress UI (RevPilot Methodology)
+   ======================================== */
+
+.revpilot-script-progress {
+  background: linear-gradient(135deg, rgba(0, 255, 193, 0.05) 0%, rgba(0, 212, 161, 0.05) 100%);
+  border: 1px solid rgba(0, 255, 193, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.revpilot-script-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.revpilot-script-icon {
+  font-size: 16px;
+}
+
+.revpilot-script-section {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #00ffc1;
+}
+
+.revpilot-script-order {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(0, 255, 193, 0.15);
+  border-radius: 10px;
+  color: #00d4a1;
+  font-weight: 500;
+}
+
+.revpilot-script-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.revpilot-script-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffc1, #00d4a1);
+  border-radius: 3px;
+  transition: width 0.5s ease-out, background 0.3s;
+}
+
+.revpilot-script-objective {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.revpilot-script-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.revpilot-tip-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.revpilot-tip-text {
+  font-size: 11px;
+  color: #c4b5fd;
+  line-height: 1.5;
+}
+
+.revpilot-script-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.revpilot-warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.revpilot-warning-text {
+  font-size: 12px;
+  color: #fca5a5;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.revpilot-warning-pulse {
+  animation: warningPulse 0.5s ease-in-out 3;
+}
+
+@keyframes warningPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+}
+
+.revpilot-script-questions {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.revpilot-questions-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.revpilot-questions-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style: decimal;
+}
+
+.revpilot-questions-list li {
+  font-size: 11px;
+  color: #d1d5db;
+  line-height: 1.6;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.revpilot-questions-list li:hover {
+  color: #00ffc1;
+}
+
+.revpilot-questions-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Script Guidance suggestion type */
+.revpilot-suggestion-script_guidance {
+  border-left: 3px solid #00ffc1;
+  background: rgba(0, 255, 193, 0.08);
+}
+
+/* Hide stage indicator when using script progress */
+.revpilot-script-progress ~ .revpilot-stage-indicator {
+  display: none;
+}
