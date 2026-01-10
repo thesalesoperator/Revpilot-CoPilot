@@ -15,13 +15,20 @@ import {
   calculateTalkRatio,
   buildCoachingPrompt,
   buildScriptCoachingPrompt,
-  ConversationStage,
   SalesMethodology,
   ConversationContext,
   ScriptContext,
   detectScriptSection,
   getScriptCoaching,
 } from '@/lib/coaching/intelligence'
+import {
+  getSessionState,
+  saveSessionState,
+  extractKeyInfo,
+  updateSectionCoverage,
+  generateConversationSummary,
+  type SessionState,
+} from '@/lib/coaching/session-state'
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: CORS_HEADERS })
@@ -34,95 +41,8 @@ interface TranscriptEntry {
   timestamp: number
 }
 
-// In-memory conversation state (per session)
-// In production, this should be stored in Redis or the database
-interface SessionState {
-  fullTranscript: string
-  previousSuggestions: string[]
-  startTime: number
-  lastStage: ConversationStage
-  methodology: SalesMethodology
-  // Script tracking (for RevPilot methodology)
-  currentScriptSection: string
-  scriptProgress: number
-  keyInfo: {
-    painPoints: string[]
-    budget: string | null
-    timeline: string | null
-    decisionMakers: string[]
-    objections: string[]
-    buyingSignals: string[]
-  }
-}
-
-const sessionStates = new Map<string, SessionState>()
-
 // Rate limiting per session
 const recentAnalysis = new Map<string, number>()
-
-// Extract key information from transcript
-function extractKeyInfo(
-  transcript: string,
-  existingInfo: SessionState['keyInfo']
-): SessionState['keyInfo'] {
-  const lower = transcript.toLowerCase()
-  const info = { ...existingInfo }
-
-  // Extract pain points
-  const painPatterns = [
-    /(?:challenge|problem|struggle|frustrat|difficult|pain point)[^.]*\./gi,
-    /(?:we need|we have to|must|can't|unable to)[^.]*\./gi,
-  ]
-  for (const pattern of painPatterns) {
-    const matches = transcript.match(pattern) || []
-    for (const match of matches) {
-      if (!info.painPoints.includes(match) && info.painPoints.length < 5) {
-        info.painPoints.push(match.trim())
-      }
-    }
-  }
-
-  // Extract budget mentions
-  const budgetPatterns = [
-    /\$[\d,]+(?:\s*(?:k|K|thousand|million|M))?\b/g,
-    /budget[^.]*(?:\$[\d,]+|[\d]+\s*(?:k|thousand|million))[^.]*/gi,
-  ]
-  for (const pattern of budgetPatterns) {
-    const match = transcript.match(pattern)
-    if (match && !info.budget) {
-      info.budget = match[0]
-    }
-  }
-
-  // Extract timeline mentions
-  const timelinePatterns = [
-    /(?:by|before|within|next)\s+(?:Q[1-4]|January|February|March|April|May|June|July|August|September|October|November|December|\d+\s*(?:days?|weeks?|months?|quarters?))/gi,
-    /(?:looking to|need to|have to)\s+(?:implement|deploy|launch|start)[^.]*(?:by|before|within)[^.]*/gi,
-  ]
-  for (const pattern of timelinePatterns) {
-    const match = transcript.match(pattern)
-    if (match && !info.timeline) {
-      info.timeline = match[0]
-    }
-  }
-
-  // Extract decision maker mentions
-  const dmPatterns = [
-    /(?:my|our)\s+(?:boss|manager|VP|director|CEO|CTO|CFO|CMO|head of|chief)[^,.]*/gi,
-    /(?:report to|check with|approval from|sign-off from)[^,.]*/gi,
-  ]
-  for (const pattern of dmPatterns) {
-    const matches = transcript.match(pattern) || []
-    for (const match of matches) {
-      const trimmed = match.trim()
-      if (!info.decisionMakers.includes(trimmed) && info.decisionMakers.length < 3) {
-        info.decisionMakers.push(trimmed)
-      }
-    }
-  }
-
-  return info
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -148,7 +68,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { sessionId, transcripts, methodology = 'general' } = await request.json() as {
+    const { sessionId, transcripts, methodology = 'revpilot' } = await request.json() as {
       sessionId: string
       transcripts: TranscriptEntry[]
       methodology?: SalesMethodology
@@ -200,29 +120,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get or create session state
-    let state = sessionStates.get(sessionId)
-    if (!state) {
-      state = {
-        fullTranscript: '',
-        previousSuggestions: [],
-        startTime: new Date(session.created_at).getTime(),
-        lastStage: 'opening',
-        methodology: methodology,
-        // Initialize script tracking
-        currentScriptSection: 'set_expectations',
-        scriptProgress: 0,
-        keyInfo: {
-          painPoints: [],
-          budget: null,
-          timeline: null,
-          decisionMakers: [],
-          objections: [],
-          buyingSignals: [],
-        },
-      }
-      sessionStates.set(sessionId, state)
-    }
+    // Get session state from database (with cache)
+    const state = await getSessionState(sessionId, user.id, methodology)
 
     // Combine transcripts into conversation text
     const recentTranscript = transcripts
@@ -232,8 +131,24 @@ export async function POST(request: NextRequest) {
       })
       .join('\n')
 
-    // Update full transcript
+    // Update state with new transcript
     state.fullTranscript += '\n' + recentTranscript
+    state.recentTranscriptChunks.push(recentTranscript)
+    if (state.recentTranscriptChunks.length > 10) {
+      state.recentTranscriptChunks = state.recentTranscriptChunks.slice(-10)
+    }
+
+    // Update word counts for talk ratio tracking
+    for (const t of transcripts) {
+      const wordCount = t.text.split(/\s+/).length
+      // Assume speaker 0 is the rep
+      if (t.speaker === 0) {
+        state.repWordCount += wordCount
+      } else {
+        state.prospectWordCount += wordCount
+      }
+    }
+    state.totalWordCount = state.repWordCount + state.prospectWordCount
 
     // Store transcript in session for later summary
     const { data: existingSession } = await supabase
@@ -250,18 +165,34 @@ export async function POST(request: NextRequest) {
       .update({ transcript: updatedTranscript })
       .eq('id', sessionId)
 
-    // Analyze conversation context
+    // =========================================================================
+    // ENHANCED KEY INFO EXTRACTION
+    // =========================================================================
+
+    // Use the enhanced extraction that understands your script
+    state.keyInfo = extractKeyInfo(recentTranscript, state.keyInfo)
+
+    // =========================================================================
+    // ANALYZE CONVERSATION CONTEXT
+    // =========================================================================
+
     const currentStage = detectConversationStage(state.fullTranscript)
     const detectedObjections = detectObjections(recentTranscript)
     const detectedBuyingSignals = detectBuyingSignals(recentTranscript)
-    const talkRatio = calculateTalkRatio(transcripts)
+
+    // Calculate talk ratio from our tracked word counts
+    const totalWords = state.repWordCount + state.prospectWordCount
+    const talkRatio = {
+      repPercent: totalWords > 0 ? Math.round((state.repWordCount / totalWords) * 100) : 50,
+      prospectPercent: totalWords > 0 ? Math.round((state.prospectWordCount / totalWords) * 100) : 50,
+    }
+
     const callDurationMinutes = Math.round((now - state.startTime) / 60000)
 
     // Update state
     state.lastStage = currentStage
-    state.keyInfo = extractKeyInfo(recentTranscript, state.keyInfo)
 
-    // Track detected objections and buying signals
+    // Track detected objections and buying signals in state
     for (const obj of detectedObjections) {
       if (!state.keyInfo.objections.includes(obj.category)) {
         state.keyInfo.objections.push(obj.category)
@@ -273,54 +204,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Analyze with OpenAI if configured
-    if (!OPENAI_API_KEY) {
-      console.log('[Analyze] No OpenAI API key, skipping analysis')
-      return NextResponse.json({
-        status: 'no_openai_key',
-        stage: currentStage,
-        talkRatio,
-      }, { headers: CORS_HEADERS })
-    }
+    // =========================================================================
+    // SCRIPT SECTION TRACKING (RevPilot methodology)
+    // =========================================================================
 
-    const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
-
-    // Build sophisticated context
-    const context: ConversationContext = {
-      stage: currentStage,
-      methodology: state.methodology,
-      recentTranscript,
-      fullTranscript: state.fullTranscript,
-      detectedObjections,
-      detectedBuyingSignals,
-      talkRatio,
-      callDurationMinutes,
-      previousSuggestions: state.previousSuggestions,
-    }
-
-    let systemPrompt: string
     let scriptContext: ScriptContext | null = null
+    let systemPrompt: string
 
-    // Use script-aware coaching for RevPilot methodology
     if (state.methodology === 'revpilot') {
-      // Detect current script section based on conversation
+      // Detect current script section
       const sectionDetection = detectScriptSection(
         state.fullTranscript,
         state.currentScriptSection
       )
 
-      // Update state with detected section
-      state.currentScriptSection = sectionDetection.section
+      // Update section coverage tracking
+      updateSectionCoverage(state, sectionDetection.section, state.fullTranscript)
 
-      // Get script-specific coaching context
+      // Get script-specific coaching
       const scriptCoaching = getScriptCoaching(
         sectionDetection.section,
         state.fullTranscript,
-        state.keyInfo
+        {
+          painPoints: state.keyInfo.painPoints,
+          budget: state.keyInfo.budget,
+          timeline: state.keyInfo.timeline,
+          decisionMakers: state.keyInfo.decisionMakers,
+        }
       )
 
       // Update script progress
       state.scriptProgress = scriptCoaching.progressPercentage
+
+      // =====================================================================
+      // CRITICAL: ANCHOR PROBLEM VALIDATION FOR SECTION 2
+      // =====================================================================
+
+      let anchorProblemWarning: string | undefined = scriptCoaching.warningMessage
+
+      if (sectionDetection.section === 'isolate_problem') {
+        if (!state.keyInfo.anchorProblem.identified) {
+          anchorProblemWarning = '🔴 CRITICAL: Stay in this section! No anchor problem identified yet. Keep asking "What made you book this call?" and "What\'s going on in your sales operations?"'
+        } else {
+          // Problem identified - show what we found
+          anchorProblemWarning = `✅ Anchor problem found: ${state.keyInfo.anchorProblem.category?.toUpperCase()} - "${state.keyInfo.anchorProblem.problem?.substring(0, 80)}..."`
+        }
+      }
 
       // Build script context
       scriptContext = {
@@ -328,63 +257,146 @@ export async function POST(request: NextRequest) {
         previousSectionId: state.currentScriptSection,
         suggestedQuestions: scriptCoaching.suggestedQuestions,
         coachingTip: scriptCoaching.coachingTip,
-        warningMessage: scriptCoaching.warningMessage,
+        warningMessage: anchorProblemWarning,
         progressPercentage: scriptCoaching.progressPercentage,
-        keyInfo: state.keyInfo,
+        keyInfo: {
+          painPoints: state.keyInfo.painPoints,
+          budget: state.keyInfo.budget,
+          timeline: state.keyInfo.timeline,
+          decisionMakers: state.keyInfo.decisionMakers,
+          objections: state.keyInfo.objections,
+          buyingSignals: state.keyInfo.buyingSignals,
+        },
       }
 
-      // Add script context to conversation context
-      context.scriptSection = sectionDetection.section
-      context.scriptProgress = scriptCoaching.progressPercentage
-      context.scriptWarning = scriptCoaching.warningMessage
+      // Build context with enhanced info
+      const context: ConversationContext = {
+        stage: currentStage,
+        methodology: state.methodology,
+        recentTranscript: state.recentTranscriptChunks.slice(-3).join('\n'),
+        fullTranscript: state.fullTranscript,
+        detectedObjections,
+        detectedBuyingSignals,
+        talkRatio,
+        callDurationMinutes,
+        previousSuggestions: state.previousSuggestions,
+        scriptSection: sectionDetection.section,
+        scriptProgress: scriptCoaching.progressPercentage,
+        scriptWarning: anchorProblemWarning,
+      }
 
-      // Build script-aware coaching prompt
+      // Build script-aware coaching prompt with enhanced context
       systemPrompt = buildScriptCoachingPrompt(context, scriptContext)
 
-      console.log(`[Analyze] Script Section: ${sectionDetection.section} (${scriptCoaching.progressPercentage}% progress)`)
+      console.log(`[Analyze] Section: ${sectionDetection.section} | Progress: ${scriptCoaching.progressPercentage}% | Anchor Problem: ${state.keyInfo.anchorProblem.identified ? 'YES' : 'NO'}`)
     } else {
-      // Use standard methodology-based coaching
+      // Standard methodology-based coaching
+      const context: ConversationContext = {
+        stage: currentStage,
+        methodology: state.methodology,
+        recentTranscript,
+        fullTranscript: state.fullTranscript,
+        detectedObjections,
+        detectedBuyingSignals,
+        talkRatio,
+        callDurationMinutes,
+        previousSuggestions: state.previousSuggestions,
+      }
+
       systemPrompt = buildCoachingPrompt(context)
     }
 
-    // Build user message based on methodology
+    // =========================================================================
+    // GENERATE AI COACHING
+    // =========================================================================
+
+    if (!OPENAI_API_KEY) {
+      console.log('[Analyze] No OpenAI API key, skipping AI analysis')
+
+      // Still save state
+      await saveSessionState(state)
+
+      return NextResponse.json({
+        status: 'no_openai_key',
+        stage: currentStage,
+        talkRatio,
+        keyInfo: {
+          anchorProblem: state.keyInfo.anchorProblem,
+          painPoints: state.keyInfo.painPoints,
+          budget: state.keyInfo.budget,
+          timeline: state.keyInfo.timeline,
+          decisionMakers: state.keyInfo.decisionMakers,
+        },
+        ...(scriptContext ? {
+          script: {
+            section: scriptContext.currentSection.id,
+            sectionName: scriptContext.currentSection.name,
+            sectionOrder: scriptContext.currentSection.order,
+            sectionObjective: scriptContext.currentSection.objective,
+            progress: scriptContext.progressPercentage,
+            suggestedQuestions: scriptContext.suggestedQuestions,
+            coachingTip: scriptContext.coachingTip,
+            warning: scriptContext.warningMessage,
+          }
+        } : {})
+      }, { headers: CORS_HEADERS })
+    }
+
+    const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
+
+    // Build enhanced user message with all gathered context
     const userMessage = state.methodology === 'revpilot'
       ? `Analyze this moment and provide script-aware coaching.
 
-Current Script Section: ${scriptContext?.currentSection.name} (${scriptContext?.progressPercentage}% complete)
-Section Objective: ${scriptContext?.currentSection.objective}
+CURRENT SCRIPT SECTION: ${scriptContext?.currentSection.name} (Section ${scriptContext?.currentSection.order}/17)
+SECTION OBJECTIVE: ${scriptContext?.currentSection.objective}
+CALL PROGRESS: ${scriptContext?.progressPercentage}%
 
-Key information gathered:
-- Pain Points: ${state.keyInfo.painPoints.join('; ') || 'NOT YET IDENTIFIED - Critical for Section 2!'}
+=== KEY INFORMATION GATHERED ===
+ANCHOR PROBLEM: ${state.keyInfo.anchorProblem.identified
+  ? `✅ IDENTIFIED - ${state.keyInfo.anchorProblem.category?.toUpperCase()}: "${state.keyInfo.anchorProblem.problem}"`
+  : '❌ NOT YET IDENTIFIED - This is CRITICAL for Section 2!'
+}
+
+Company Context:
+- Team Size: ${state.keyInfo.teamSize || 'Unknown'}
+- Deal Size: ${state.keyInfo.dealSize || 'Unknown'}
+- Sales Cycle: ${state.keyInfo.salesCycle || 'Unknown'}
+- Current CRM: ${state.keyInfo.currentCRM || 'Unknown'}
+
+Qualification:
+- Budget: ${state.keyInfo.budget || 'Not discussed'}${state.keyInfo.budgetConfirmed ? ' (CONFIRMED)' : ''}
+- Timeline: ${state.keyInfo.timeline || 'Not discussed'} ${state.keyInfo.timelineUrgency ? `(${state.keyInfo.timelineUrgency.toUpperCase()} urgency)` : ''}
+- Decision Makers: ${state.keyInfo.decisionMakers.join(', ') || 'Unknown'}
+
+Signals:
+- Buying Signals: ${state.keyInfo.buyingSignals.length > 0 ? state.keyInfo.buyingSignals.join(', ') : 'None detected'}
+- Objections: ${state.keyInfo.objections.length > 0 ? state.keyInfo.objections.join(', ') : 'None raised'}
+${state.keyInfo.commitmentScore !== null ? `- Commitment Score: ${state.keyInfo.commitmentScore}/10` : ''}
+
+${scriptContext?.warningMessage ? `\n⚠️ CRITICAL WARNING: ${scriptContext.warningMessage}` : ''}
+${detectedObjections.length > 0 ? `\n🚨 LIVE OBJECTION: ${detectedObjections[0].category} - Address this now!` : ''}
+${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL DETECTED: ${detectedBuyingSignals[0].signal} - Capitalize on this!` : ''}`
+      : `Analyze this conversation moment and provide coaching.
+
+Key info:
+- Pain Points: ${state.keyInfo.painPoints.join('; ') || 'None identified'}
 - Budget: ${state.keyInfo.budget || 'Not discussed'}
 - Timeline: ${state.keyInfo.timeline || 'Not discussed'}
 - Decision Makers: ${state.keyInfo.decisionMakers.join(', ') || 'Unknown'}
+- Stage: ${currentStage}
 
-${scriptContext?.warningMessage ? `⚠️ WARNING: ${scriptContext.warningMessage}` : ''}
-${detectedObjections.length > 0 ? `🚨 OBJECTION: ${detectedObjections[0].category}` : ''}
-${detectedBuyingSignals.length > 0 ? `✅ BUYING SIGNAL: ${detectedBuyingSignals[0].signal}` : ''}`
-      : `Analyze this moment in the conversation and provide coaching.
+${detectedObjections.length > 0 ? `Objection detected: ${detectedObjections[0].category}` : ''}
+${detectedBuyingSignals.length > 0 ? `Buying signal: ${detectedBuyingSignals[0].signal}` : ''}`
 
-Key information gathered so far:
-- Pain points: ${state.keyInfo.painPoints.join('; ') || 'None identified yet'}
-- Budget: ${state.keyInfo.budget || 'Not discussed'}
-- Timeline: ${state.keyInfo.timeline || 'Not discussed'}
-- Decision makers: ${state.keyInfo.decisionMakers.join(', ') || 'Unknown'}
-- Previous objections: ${state.keyInfo.objections.join(', ') || 'None'}
-- Buying signals seen: ${state.keyInfo.buyingSignals.join(', ') || 'None'}
-
-Current conversation stage: ${currentStage}
-${detectedObjections.length > 0 ? `\n⚠️ OBJECTION IN PROGRESS: ${detectedObjections[0].category}` : ''}
-${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSignals[0].signal}` : ''}`
-
-    // Use GPT-4o for better coaching quality (fall back to gpt-4o-mini for cost)
+    // Use GPT-4o for highest quality coaching
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',  // Using GPT-4o for highest quality coaching
+      model: 'gpt-4o',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      max_tokens: 400,  // Increased for script-aware responses
+      max_tokens: 500,  // Increased for comprehensive responses
       temperature: 0.7,
       response_format: { type: 'json_object' }
     })
@@ -396,6 +408,10 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
       analysis = JSON.parse(responseText)
     } catch {
       console.error('[Analyze] Failed to parse OpenAI response:', responseText)
+
+      // Save state even on parse error
+      await saveSessionState(state)
+
       return NextResponse.json({
         status: 'parse_error',
         stage: currentStage,
@@ -403,14 +419,20 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
       }, { headers: CORS_HEADERS })
     }
 
-    // If there's a suggestion, insert it into the database
-    if (analysis.suggestion && analysis.suggestion.content) {
-      // Track this suggestion to avoid repeating
-      state.previousSuggestions.push(analysis.suggestion.content)
-      if (state.previousSuggestions.length > 10) {
-        state.previousSuggestions = state.previousSuggestions.slice(-10)
-      }
+    // =========================================================================
+    // TRACK SUGGESTION AND SAVE STATE
+    // =========================================================================
 
+    if (analysis.suggestion && analysis.suggestion.content) {
+      // Track suggestion to avoid repetition
+      state.previousSuggestions.push(analysis.suggestion.content)
+      if (state.previousSuggestions.length > 15) {
+        state.previousSuggestions = state.previousSuggestions.slice(-15)
+      }
+      state.suggestionCount++
+      state.lastSuggestionTime = now
+
+      // Insert suggestion into database
       const { error: insertError } = await supabase
         .from('coaching_suggestions')
         .insert({
@@ -422,7 +444,15 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
             stage: currentStage,
             conversationInsight: analysis.conversationInsight,
             predictedNextMove: analysis.predictedNextMove,
-            keyInfo: state.keyInfo,
+            // Enhanced key info
+            anchorProblem: state.keyInfo.anchorProblem,
+            keyInfo: {
+              companyName: state.keyInfo.companyName,
+              teamSize: state.keyInfo.teamSize,
+              budget: state.keyInfo.budget,
+              timeline: state.keyInfo.timeline,
+              decisionMakers: state.keyInfo.decisionMakers,
+            },
             // Script-specific metadata
             ...(state.methodology === 'revpilot' && scriptContext ? {
               scriptSection: scriptContext.currentSection.id,
@@ -430,6 +460,7 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
               scriptProgress: scriptContext.progressPercentage,
               shouldAdvanceSection: analysis.shouldAdvanceSection,
               sectionCoverage: analysis.sectionCoverage,
+              questionsAsked: state.sectionCoverage[scriptContext.currentSection.id]?.questionsAsked || [],
             } : {}),
           }
         })
@@ -437,11 +468,11 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
       if (insertError) {
         console.error('[Analyze] Failed to insert suggestion:', insertError)
       } else {
-        console.log(`[Analyze] Inserted ${analysis.suggestion.priority} priority ${analysis.suggestion.type}: ${analysis.suggestion.content.substring(0, 50)}...`)
+        console.log(`[Analyze] ${analysis.suggestion.priority?.toUpperCase() || 'MEDIUM'} ${analysis.suggestion.type}: ${analysis.suggestion.content.substring(0, 60)}...`)
       }
     }
 
-    // Update talk ratio stats in database
+    // Update talk ratio stats
     await supabase
       .from('coaching_suggestions')
       .insert({
@@ -451,10 +482,22 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
           talk_ratio: talkRatio.repPercent,
           stage: currentStage,
           duration_minutes: callDurationMinutes,
+          anchor_problem_identified: state.keyInfo.anchorProblem.identified,
         }),
       })
 
-    // Build response with script-specific data if using RevPilot methodology
+    // Generate conversation summary periodically (every 5 minutes)
+    if (!state.summary || (now - state.summary.lastUpdated) > 5 * 60 * 1000) {
+      state.summary = await generateConversationSummary(state.fullTranscript, state.keyInfo)
+    }
+
+    // Save state to database
+    await saveSessionState(state)
+
+    // =========================================================================
+    // BUILD RESPONSE
+    // =========================================================================
+
     const response: Record<string, unknown> = {
       status: 'analyzed',
       suggestion: analysis.suggestion || null,
@@ -462,7 +505,25 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
       predictedNextMove: analysis.predictedNextMove,
       stage: currentStage,
       talkRatio,
-      keyInfo: state.keyInfo,
+      // Enhanced key info in response
+      keyInfo: {
+        anchorProblem: state.keyInfo.anchorProblem,
+        painPoints: state.keyInfo.painPoints,
+        budget: state.keyInfo.budget,
+        budgetConfirmed: state.keyInfo.budgetConfirmed,
+        timeline: state.keyInfo.timeline,
+        timelineUrgency: state.keyInfo.timelineUrgency,
+        decisionMakers: state.keyInfo.decisionMakers,
+        buyingSignals: state.keyInfo.buyingSignals,
+        objections: state.keyInfo.objections,
+        commitmentScore: state.keyInfo.commitmentScore,
+        companyContext: {
+          teamSize: state.keyInfo.teamSize,
+          dealSize: state.keyInfo.dealSize,
+          salesCycle: state.keyInfo.salesCycle,
+          currentCRM: state.keyInfo.currentCRM,
+        }
+      },
     }
 
     // Add script-specific data for RevPilot methodology
@@ -478,6 +539,11 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
         warning: scriptContext.warningMessage,
         shouldAdvance: analysis.shouldAdvanceSection,
         sectionCoverage: analysis.sectionCoverage,
+        // Section coverage details
+        coverage: state.sectionCoverage[scriptContext.currentSection.id],
+        // Anchor problem status (critical for Section 2)
+        anchorProblemIdentified: state.keyInfo.anchorProblem.identified,
+        anchorProblemCategory: state.keyInfo.anchorProblem.category,
       }
     }
 
@@ -491,13 +557,3 @@ ${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL: ${detectedBuyingSigna
     )
   }
 }
-
-// Cleanup old session states periodically
-setInterval(() => {
-  const cutoff = Date.now() - 2 * 60 * 60 * 1000  // 2 hours
-  for (const [sessionId, state] of sessionStates.entries()) {
-    if (state.startTime < cutoff) {
-      sessionStates.delete(sessionId)
-    }
-  }
-}, 30 * 60 * 1000)  // Run every 30 minutes
