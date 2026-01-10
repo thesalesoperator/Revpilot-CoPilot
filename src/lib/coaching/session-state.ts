@@ -28,7 +28,7 @@ export interface SectionCoverage {
 export interface AnchorProblem {
   identified: boolean
   problem: string | null
-  category: string | null  // 'data', 'pipeline', 'reporting', 'adoption', 'integration', 'process'
+  category: string | null  // Flexible - inferred from context (e.g., 'data quality', 'forecasting', 'lead routing', etc.)
   severity: 'low' | 'medium' | 'high' | null
   quotes: string[]  // Direct quotes from prospect about the problem
 }
@@ -270,66 +270,82 @@ export function clearSessionState(sessionId: string): void {
 // KEY INFO EXTRACTION - ENHANCED FOR REVPILOT SCRIPT
 // =============================================================================
 
-// Sales ops problem categories with detection patterns
-const PROBLEM_CATEGORIES = {
-  data: {
-    patterns: [
-      /data\s*(is\s*)?(mess|dirty|incomplete|duplicate|inconsistent|wrong|bad|outdated)/i,
-      /duplicate\s*(records?|contacts?|leads?|accounts?)/i,
-      /can'?t\s*trust\s*(the\s*)?data/i,
-      /data\s*quality/i,
-      /cleaning\s*(up\s*)?(the\s*)?(data|crm)/i,
-    ],
-    keywords: ['data', 'duplicate', 'records', 'contacts', 'dirty', 'clean']
-  },
-  pipeline: {
-    patterns: [
-      /pipeline\s*(is\s*)?(mess|unclear|inaccurate|wrong|confusing)/i,
-      /can'?t\s*(see|track|understand)\s*(the\s*)?pipeline/i,
-      /deals?\s*(fall|slip|disappear)/i,
-      /no\s*visibility\s*(into|on)\s*(the\s*)?pipeline/i,
-      /pipeline\s*management/i,
-    ],
-    keywords: ['pipeline', 'deals', 'visibility', 'forecast', 'stages']
-  },
-  reporting: {
-    patterns: [
-      /report(s|ing)?\s*(is\s*)?(painful|manual|time-consuming|broken|wrong)/i,
-      /can'?t\s*(get|see|pull)\s*(the\s*)?report/i,
-      /spend\s*hours?\s*(on\s*)?report/i,
-      /no\s*visibility/i,
-      /dashboard/i,
-    ],
-    keywords: ['reports', 'reporting', 'dashboard', 'metrics', 'visibility']
-  },
-  adoption: {
-    patterns: [
-      /team\s*(doesn'?t|won'?t|isn'?t)\s*(use|using|adopt)/i,
-      /no\s*one\s*(uses?|updates?)/i,
-      /reps?\s*(don'?t|won'?t|hate)\s*using/i,
-      /adoption\s*(is\s*)?(low|poor|bad|problem)/i,
-      /people\s*aren'?t\s*logging/i,
-    ],
-    keywords: ['adoption', 'using', 'reps', 'team', 'training']
-  },
-  integration: {
-    patterns: [
-      /integrat(ion|e|ed)\s*(is\s*)?(broken|missing|doesn'?t|won'?t)/i,
-      /tools?\s*(don'?t|aren'?t)\s*(talk|sync|connect)/i,
-      /manual(ly)?\s*(enter|copy|move|sync)/i,
-      /data\s*(doesn'?t|isn'?t)\s*(flow|sync)/i,
-    ],
-    keywords: ['integration', 'sync', 'connect', 'tools', 'systems']
-  },
-  process: {
-    patterns: [
-      /process\s*(is\s*)?(unclear|undefined|inconsistent|broken)/i,
-      /no\s*(standard|defined)\s*process/i,
-      /everyone\s*(does\s*it\s*)?differently/i,
-      /workflow\s*(is\s*)?(broken|manual|painful)/i,
-    ],
-    keywords: ['process', 'workflow', 'standard', 'consistent']
+// FLEXIBLE PROBLEM DETECTION
+// These patterns detect ANY problem/challenge/pain point, not just specific categories
+// The category is inferred from context rather than being constrained
+
+// General problem indicator patterns - catches broad range of issues
+const PROBLEM_INDICATOR_PATTERNS = [
+  // Direct problem statements
+  /(?:our|the|my)\s+(?:biggest|main|major|real)\s+(?:problem|issue|challenge|pain\s*point)\s+(?:is|has\s+been)\s+([^.!?]+)/i,
+  /(?:struggling|having\s+trouble|having\s+issues?)\s+(?:with|to)\s+([^.!?]+)/i,
+  /(?:frustrated|annoyed|tired)\s+(?:with|by|of)\s+([^.!?]+)/i,
+  /(?:can'?t|cannot|unable\s+to)\s+([^.!?]+)/i,
+  /(?:it'?s|that'?s)\s+(?:really\s+)?(?:hard|difficult|tough|impossible)\s+(?:to\s+)?([^.!?]+)/i,
+
+  // Pain language
+  /(?:killing|hurting|costing)\s+us\s+([^.!?]+)/i,
+  /(?:wasting|spending|losing)\s+(?:too\s+much\s+)?(?:time|money|resources)\s+(?:on\s+)?([^.!?]+)/i,
+  /(?:we'?re|i'?m)\s+(?:losing|missing|dropping)\s+([^.!?]+)/i,
+
+  // Broken/not working language
+  /(?:our|the|my)\s+(\w+(?:\s+\w+)?)\s+(?:is|isn'?t|are|aren'?t)\s+(?:broken|not\s+working|a\s+mess|terrible|awful|horrible)/i,
+  /(\w+(?:\s+\w+)?)\s+(?:doesn'?t|don'?t|won'?t)\s+(?:work|function|do\s+what)/i,
+
+  // Need/want improvement
+  /(?:need|want)\s+(?:to\s+)?(?:fix|improve|solve|address|figure\s+out)\s+([^.!?]+)/i,
+  /(?:looking\s+for|trying\s+to\s+find)\s+(?:a\s+)?(?:solution|way|help)\s+(?:for|with|to)\s+([^.!?]+)/i,
+
+  // Lack of something
+  /(?:no|don'?t\s+have|lack(?:ing)?)\s+(?:good|proper|real|any)?\s*(?:visibility|insight|control|process|system)\s+(?:into|over|for)?\s*([^.!?]*)/i,
+
+  // Generic challenge patterns
+  /(?:the\s+)?(?:challenge|problem|issue|difficulty)\s+(?:is|we\s+have|we'?re\s+facing)\s+([^.!?]+)/i,
+  /(?:what'?s|that'?s)\s+(?:been\s+)?(?:holding\s+us\s+back|slowing\s+us\s+down|causing\s+problems?)\s+(?:is\s+)?([^.!?]+)/i,
+]
+
+// Patterns to extract what topic/area the problem relates to (for category inference)
+const TOPIC_KEYWORDS: Record<string, string[]> = {
+  'data quality': ['data', 'records', 'duplicates', 'contacts', 'dirty', 'clean', 'accurate', 'integrity'],
+  'pipeline': ['pipeline', 'deals', 'opportunities', 'stages', 'funnel'],
+  'forecasting': ['forecast', 'predict', 'projection', 'accuracy', 'reliable'],
+  'reporting': ['report', 'dashboard', 'metrics', 'analytics', 'visibility', 'insights'],
+  'adoption': ['adoption', 'usage', 'reps', 'team', 'using', 'logging', 'updating'],
+  'integration': ['integration', 'sync', 'connect', 'api', 'tools', 'systems', 'workflow'],
+  'process': ['process', 'workflow', 'standard', 'consistent', 'procedure'],
+  'lead management': ['lead', 'leads', 'routing', 'assignment', 'distribution', 'qualification'],
+  'territory': ['territory', 'territories', 'region', 'geographic', 'coverage'],
+  'commission': ['commission', 'comp', 'compensation', 'incentive', 'payout', 'spiff'],
+  'onboarding': ['onboarding', 'ramp', 'training', 'new hire', 'new rep'],
+  'quota': ['quota', 'target', 'goal', 'attainment'],
+  'productivity': ['productivity', 'efficiency', 'time', 'manual', 'automate'],
+  'coaching': ['coaching', 'feedback', 'performance', 'improve', 'develop'],
+  'handoff': ['handoff', 'handover', 'transition', 'customer success', 'implementation'],
+  'competitive': ['competitor', 'competitive', 'win rate', 'loss', 'battle card'],
+}
+
+// Infer category from problem statement - returns null if no clear category
+function inferProblemCategory(problemStatement: string): string | null {
+  const lower = problemStatement.toLowerCase()
+  let bestMatch: string | null = null
+  let bestScore = 0
+
+  for (const [category, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+    let score = 0
+    for (const keyword of keywords) {
+      if (lower.includes(keyword)) {
+        score++
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score
+      bestMatch = category
+    }
   }
+
+  // Only return a category if we have at least one keyword match
+  // Otherwise, the problem is valid but doesn't fit our known categories - and that's OK!
+  return bestScore > 0 ? bestMatch : null
 }
 
 // Budget detection patterns
@@ -401,21 +417,28 @@ export function extractKeyInfo(transcript: string, existingInfo: ExtractedKeyInf
 
   // =========================================================================
   // ANCHOR PROBLEM DETECTION (CRITICAL FOR SECTION 2)
+  // Uses flexible patterns to catch ANY problem, not just predefined categories
   // =========================================================================
 
   if (!info.anchorProblem.identified) {
-    for (const [category, config] of Object.entries(PROBLEM_CATEGORIES)) {
-      for (const pattern of config.patterns) {
-        const match = transcript.match(pattern)
-        if (match) {
-          // Extract the full sentence containing the problem
-          const sentenceMatch = transcript.match(new RegExp(`[^.!?]*${match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.!?]*[.!?]`, 'i'))
-          const quote = sentenceMatch ? sentenceMatch[0].trim() : match[0]
+    // Try each flexible problem indicator pattern
+    for (const pattern of PROBLEM_INDICATOR_PATTERNS) {
+      const match = transcript.match(pattern)
+      if (match) {
+        // Extract the full sentence containing the problem
+        const escapedMatch = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const sentenceMatch = transcript.match(new RegExp(`[^.!?]*${escapedMatch}[^.!?]*[.!?]?`, 'i'))
+        const quote = sentenceMatch ? sentenceMatch[0].trim() : match[0]
+
+        // Only accept if it's substantial (more than just a few words)
+        if (quote.length > 15) {
+          // Infer category from keywords in the problem statement
+          const category = inferProblemCategory(quote)
 
           info.anchorProblem = {
             identified: true,
             problem: quote,
-            category: category as AnchorProblem['category'],
+            category: category,
             severity: determineSeverity(transcript, match[0]),
             quotes: [quote],
           }
@@ -428,19 +451,22 @@ export function extractKeyInfo(transcript: string, existingInfo: ExtractedKeyInf
           break
         }
       }
-      if (info.anchorProblem.identified) break
     }
   } else {
-    // Add additional problem quotes
-    for (const [category, config] of Object.entries(PROBLEM_CATEGORIES)) {
-      for (const pattern of config.patterns) {
-        const matches = transcript.matchAll(pattern)
-        for (const match of matches) {
-          const sentenceMatch = transcript.match(new RegExp(`[^.!?]*${match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^.!?]*[.!?]`, 'i'))
-          const quote = sentenceMatch ? sentenceMatch[0].trim() : match[0]
+    // Add additional problem quotes from new transcript
+    for (const pattern of PROBLEM_INDICATOR_PATTERNS) {
+      const match = transcript.match(pattern)
+      if (match) {
+        const escapedMatch = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const sentenceMatch = transcript.match(new RegExp(`[^.!?]*${escapedMatch}[^.!?]*[.!?]?`, 'i'))
+        const quote = sentenceMatch ? sentenceMatch[0].trim() : match[0]
 
-          if (quote.length > 20 && !info.anchorProblem.quotes.includes(quote) && info.anchorProblem.quotes.length < 5) {
-            info.anchorProblem.quotes.push(quote)
+        if (quote.length > 15 && !info.anchorProblem.quotes.includes(quote) && info.anchorProblem.quotes.length < 5) {
+          info.anchorProblem.quotes.push(quote)
+
+          // Also add to pain points
+          if (!info.painPoints.includes(quote)) {
+            info.painPoints.push(quote)
           }
         }
       }
