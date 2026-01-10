@@ -268,15 +268,41 @@
           </div>
 
           <div class="revpilot-coaching hidden" id="revpilot-coaching">
-            <div class="revpilot-live-indicator">
-              <span class="revpilot-pulse"></span>
-              <span>LIVE</span>
+            <div class="revpilot-coaching-header">
+              <div class="revpilot-live-indicator">
+                <span class="revpilot-pulse"></span>
+                <span>LIVE</span>
+              </div>
+              <div class="revpilot-stage-indicator" id="revpilot-stage">
+                <span class="revpilot-stage-label">Stage:</span>
+                <span class="revpilot-stage-value" id="revpilot-stage-value">Opening</span>
+              </div>
+            </div>
+
+            <div class="revpilot-methodology-selector" id="revpilot-methodology-selector">
+              <label class="revpilot-methodology-label">Framework:</label>
+              <select id="revpilot-methodology" class="revpilot-select">
+                <option value="general">General</option>
+                <option value="meddic">MEDDIC</option>
+                <option value="spin">SPIN</option>
+                <option value="challenger">Challenger</option>
+                <option value="sandler">Sandler</option>
+                <option value="bant">BANT</option>
+              </select>
+            </div>
+
+            <div class="revpilot-prediction" id="revpilot-prediction" style="display: none;">
+              <div class="revpilot-prediction-header">
+                <span class="revpilot-prediction-icon">🔮</span>
+                <span>Next Move</span>
+              </div>
+              <p class="revpilot-prediction-text" id="revpilot-prediction-text"></p>
             </div>
 
             <div class="revpilot-suggestions" id="revpilot-suggestions">
               <div class="revpilot-empty">
                 <p>Listening to your call...</p>
-                <p class="revpilot-subtext">Coaching suggestions will appear here</p>
+                <p class="revpilot-subtext">AI coaching will appear here</p>
               </div>
             </div>
 
@@ -294,6 +320,27 @@
                   <div class="revpilot-stat-fill" id="revpilot-listen-ratio" style="width: 50%"></div>
                 </div>
                 <span class="revpilot-stat-value" id="revpilot-listen-percent">50%</span>
+              </div>
+            </div>
+
+            <div class="revpilot-key-info" id="revpilot-key-info" style="display: none;">
+              <div class="revpilot-key-info-toggle" id="revpilot-key-info-toggle">
+                <span>📊 Call Intel</span>
+                <span class="revpilot-toggle-arrow">▼</span>
+              </div>
+              <div class="revpilot-key-info-content hidden" id="revpilot-key-info-content">
+                <div class="revpilot-info-item" id="revpilot-pain-points">
+                  <span class="revpilot-info-label">Pain Points:</span>
+                  <span class="revpilot-info-value">None identified</span>
+                </div>
+                <div class="revpilot-info-item" id="revpilot-budget-info">
+                  <span class="revpilot-info-label">Budget:</span>
+                  <span class="revpilot-info-value">Not discussed</span>
+                </div>
+                <div class="revpilot-info-item" id="revpilot-timeline-info">
+                  <span class="revpilot-info-label">Timeline:</span>
+                  <span class="revpilot-info-value">Not discussed</span>
+                </div>
               </div>
             </div>
 
@@ -329,6 +376,33 @@
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
     document.getElementById('revpilot-pin').addEventListener('click', togglePin)
     document.getElementById('revpilot-new-call').addEventListener('click', resetToReadyState)
+
+    // Methodology selector
+    document.getElementById('revpilot-methodology').addEventListener('change', (e) => {
+      const methodology = e.target.value
+      console.log('[RevPilot] Methodology changed to:', methodology)
+      chrome.storage.local.set({ selectedMethodology: methodology })
+      // Notify background/offscreen of methodology change
+      chrome.runtime.sendMessage({ type: 'SET_METHODOLOGY', methodology })
+    })
+
+    // Load saved methodology preference
+    chrome.storage.local.get(['selectedMethodology']).then(stored => {
+      if (stored.selectedMethodology) {
+        const selector = document.getElementById('revpilot-methodology')
+        if (selector) selector.value = stored.selectedMethodology
+      }
+    })
+
+    // Key info toggle
+    document.getElementById('revpilot-key-info-toggle')?.addEventListener('click', () => {
+      const content = document.getElementById('revpilot-key-info-content')
+      const arrow = document.querySelector('.revpilot-toggle-arrow')
+      if (content) {
+        content.classList.toggle('hidden')
+        if (arrow) arrow.textContent = content.classList.contains('hidden') ? '▼' : '▲'
+      }
+    })
 
     // Auto-start checkbox
     const autoStartCheckbox = document.getElementById('revpilot-auto-start-checkbox')
@@ -1147,9 +1221,92 @@
       'objection': '⚠️',
       'tip': '💡',
       'alert': '🚨',
-      'positive': '✅'
+      'positive': '✅',
+      'transition': '➡️',
+      'methodology': '📚',
+      'buying_signal': '🔥'
     }
     return icons[type] || '💬'
+  }
+
+  function getPriorityClass(priority) {
+    const classes = {
+      'high': 'revpilot-priority-high',
+      'medium': 'revpilot-priority-medium',
+      'low': 'revpilot-priority-low'
+    }
+    return classes[priority] || ''
+  }
+
+  function formatStageName(stage) {
+    const stageNames = {
+      'opening': 'Opening',
+      'discovery': 'Discovery',
+      'qualification': 'Qualification',
+      'presentation': 'Presentation',
+      'objection_handling': 'Objection Handling',
+      'negotiation': 'Negotiation',
+      'closing': 'Closing',
+      'wrap_up': 'Wrap Up'
+    }
+    return stageNames[stage] || stage
+  }
+
+  function updateConversationStage(stage) {
+    const stageEl = document.getElementById('revpilot-stage-value')
+    if (stageEl && stage) {
+      stageEl.textContent = formatStageName(stage)
+      stageEl.className = `revpilot-stage-value revpilot-stage-${stage}`
+    }
+  }
+
+  function updatePrediction(prediction) {
+    const predictionEl = document.getElementById('revpilot-prediction')
+    const predictionText = document.getElementById('revpilot-prediction-text')
+
+    if (predictionEl && predictionText && prediction) {
+      predictionText.textContent = prediction
+      predictionEl.style.display = 'block'
+
+      // Auto-hide after 15 seconds
+      setTimeout(() => {
+        predictionEl.style.display = 'none'
+      }, 15000)
+    }
+  }
+
+  function updateKeyInfo(keyInfo) {
+    if (!keyInfo) return
+
+    const keyInfoEl = document.getElementById('revpilot-key-info')
+    if (keyInfoEl) keyInfoEl.style.display = 'block'
+
+    // Update pain points
+    if (keyInfo.painPoints && keyInfo.painPoints.length > 0) {
+      const painEl = document.getElementById('revpilot-pain-points')
+      if (painEl) {
+        const valueEl = painEl.querySelector('.revpilot-info-value')
+        if (valueEl) valueEl.textContent = keyInfo.painPoints.slice(0, 2).join('; ').substring(0, 100)
+      }
+    }
+
+    // Update budget
+    if (keyInfo.budget) {
+      const budgetEl = document.getElementById('revpilot-budget-info')
+      if (budgetEl) {
+        const valueEl = budgetEl.querySelector('.revpilot-info-value')
+        if (valueEl) valueEl.textContent = keyInfo.budget
+      }
+    }
+
+    // Update timeline
+    if (keyInfo.timeline) {
+      const timelineEl = document.getElementById('revpilot-timeline-info')
+      if (timelineEl) {
+        const valueEl = timelineEl.querySelector('.revpilot-info-value')
+        if (valueEl) valueEl.textContent = keyInfo.timeline
+      }
+    }
   }
 
   function formatTime(timestamp) {
@@ -1193,6 +1350,31 @@
       // Update talk ratio indicator
       if (message.event === 'started') {
         updateTalkRatioIndicator(true)
+      }
+    }
+
+    if (message.type === 'COACHING_INSIGHT') {
+      // Handle enhanced coaching insights from backend
+      console.log('[RevPilot] Coaching insight received:', message.stage, message.insight?.substring(0, 50))
+
+      // Update conversation stage
+      if (message.stage) {
+        updateConversationStage(message.stage)
+      }
+
+      // Update prediction
+      if (message.prediction) {
+        updatePrediction(message.prediction)
+      }
+
+      // Update key info
+      if (message.keyInfo) {
+        updateKeyInfo(message.keyInfo)
+      }
+
+      // Update talk ratio
+      if (message.talkRatio) {
+        updateStats({ talk_ratio: message.talkRatio.repPercent })
       }
     }
   })

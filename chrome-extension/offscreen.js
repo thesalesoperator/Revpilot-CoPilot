@@ -10,6 +10,7 @@ let deepgramSocket = null
 let isCapturing = false
 let sessionId = null
 let authToken = null
+let methodology = 'general' // Sales methodology: meddic, spin, challenger, sandler, bant, general
 let transcriptBuffer = []
 let lastTranscriptSendTime = 0
 const TRANSCRIPT_SEND_INTERVAL = 3000 // Send transcripts to backend every 3 seconds
@@ -19,10 +20,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[Offscreen] Received message:', message.type)
 
   if (message.type === 'START_CAPTURE') {
+    // Accept methodology preference from background script
+    if (message.methodology) {
+      methodology = message.methodology
+    }
     startCapture(message.streamId, message.sessionId, message.authToken, message.deepgramApiKey)
       .then(() => sendResponse({ success: true }))
       .catch(err => sendResponse({ error: err.message }))
     return true // Keep channel open for async response
+  }
+
+  if (message.type === 'SET_METHODOLOGY') {
+    methodology = message.methodology || 'general'
+    console.log('[Offscreen] Methodology set to:', methodology)
+    sendResponse({ success: true })
+    return true
   }
 
   if (message.type === 'STOP_CAPTURE') {
@@ -345,7 +357,7 @@ async function sendTranscriptsForAnalysis() {
   transcriptBuffer = []
   lastTranscriptSendTime = Date.now()
 
-  console.log('[Offscreen] Sending', transcripts.length, 'transcripts for analysis')
+  console.log('[Offscreen] Sending', transcripts.length, 'transcripts for analysis with methodology:', methodology)
 
   try {
     const response = await fetch(`${API_BASE}/api/coaching/analyze-transcript`, {
@@ -356,11 +368,26 @@ async function sendTranscriptsForAnalysis() {
       },
       body: JSON.stringify({
         sessionId,
-        transcripts
+        transcripts,
+        methodology  // Include sales methodology for coaching framework
       })
     })
 
-    if (!response.ok) {
+    if (response.ok) {
+      const data = await response.json()
+
+      // Send enhanced coaching data back to content script
+      if (data.stage || data.conversationInsight || data.predictedNextMove) {
+        chrome.runtime.sendMessage({
+          type: 'COACHING_INSIGHT',
+          stage: data.stage,
+          insight: data.conversationInsight,
+          prediction: data.predictedNextMove,
+          keyInfo: data.keyInfo,
+          talkRatio: data.talkRatio
+        })
+      }
+    } else {
       console.error('[Offscreen] Failed to send transcripts:', response.status)
     }
   } catch (error) {

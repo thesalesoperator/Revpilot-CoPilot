@@ -619,3 +619,219 @@
   color: #22c55e;
   font-weight: 500;
 }
+
+/* Phase 3: Enhanced Coaching UI */
+
+/* Coaching Header */
+.revpilot-coaching-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 8px;
+}
+
+/* Stage Indicator */
+.revpilot-stage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.revpilot-stage-label {
+  color: #6b7280;
+}
+
+.revpilot-stage-value {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+}
+
+.revpilot-stage-opening { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+.revpilot-stage-discovery { background: rgba(0, 255, 193, 0.2); color: #00ffc1; }
+.revpilot-stage-qualification { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.revpilot-stage-presentation { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
+.revpilot-stage-objection_handling { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.revpilot-stage-negotiation { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+.revpilot-stage-closing { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.revpilot-stage-wrap_up { background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+
+/* Methodology Selector */
+.revpilot-methodology-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.revpilot-methodology-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.revpilot-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #e5e7eb;
+  cursor: pointer;
+  outline: none;
+  flex: 1;
+}
+
+.revpilot-select:focus {
+  border-color: rgba(0, 255, 193, 0.5);
+}
+
+.revpilot-select option {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+/* Prediction Display */
+.revpilot-prediction {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.revpilot-prediction-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.revpilot-prediction-icon {
+  font-size: 14px;
+}
+
+.revpilot-prediction-text {
+  margin: 0;
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* Priority Indicators */
+.revpilot-priority-high {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+  animation: pulseHigh 2s infinite;
+}
+
+@keyframes pulseHigh {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1); }
+}
+
+.revpilot-priority-medium {
+  border-left-width: 4px;
+}
+
+.revpilot-priority-low {
+  opacity: 0.85;
+}
+
+/* New suggestion types */
+.revpilot-suggestion-transition {
+  border-left: 3px solid #8b5cf6;
+  background: rgba(139, 92, 246, 0.05);
+}
+
+.revpilot-suggestion-methodology {
+  border-left: 3px solid #06b6d4;
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.revpilot-suggestion-buying_signal {
+  border-left: 3px solid #f97316;
+  background: rgba(249, 115, 22, 0.08);
+  animation: buyingSignalPulse 1.5s ease-in-out 2;
+}
+
+@keyframes buyingSignalPulse {
+  0%, 100% { background: rgba(249, 115, 22, 0.08); }
+  50% { background: rgba(249, 115, 22, 0.15); }
+}
+
+/* Key Info Section */
+.revpilot-key-info {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.revpilot-key-info-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #9ca3af;
+  transition: background 0.2s;
+}
+
+.revpilot-key-info-toggle:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.revpilot-toggle-arrow {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.revpilot-key-info-content {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.revpilot-info-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.revpilot-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.revpilot-info-label {
+  color: #6b7280;
+  flex-shrink: 0;
+  width: 75px;
+}
+
+.revpilot-info-value {
+  color: #d1d5db;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
