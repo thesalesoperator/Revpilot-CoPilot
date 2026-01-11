@@ -955,7 +955,7 @@ export default function SettingsPage() {
                   Download and install the RevPilot Sales Coach extension to get real-time AI coaching during your calls.
                 </p>
                 <a
-                  href="/downloads/revpilot-extension.zip"
+                  href="/downloads/revpilot-chrome-extension.zip"
                   download
                   className="btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
                 >
