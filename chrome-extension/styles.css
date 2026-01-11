@@ -433,10 +433,57 @@
   line-height: 1.4;
 }
 
+.revpilot-suggestion-text {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.revpilot-suggestion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
 .revpilot-suggestion-time {
   font-size: 9px;
   color: #64748b;
   margin-left: auto;
+}
+
+/* Mode Banners */
+.revpilot-mode-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.revpilot-live-banner {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.revpilot-demo-banner {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.revpilot-banner-icon {
+  font-size: 14px;
+}
+
+.revpilot-banner-detail {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 4px;
 }
 
 /* Warning Banner */

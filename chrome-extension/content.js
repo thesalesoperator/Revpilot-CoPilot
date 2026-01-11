@@ -450,6 +450,16 @@
     console.log('[RevPilot] Overlay created successfully!')
   }
 
+  // Helper to remove centering transform and set explicit position
+  function removeCenteringTransform(element) {
+    if (element.style.transform && element.style.transform.includes('translateX')) {
+      const rect = element.getBoundingClientRect()
+      element.style.transform = 'none'
+      element.style.left = rect.left + 'px'
+      element.style.top = rect.top + 'px'
+    }
+  }
+
   function makeDraggable(element, handle) {
     if (!element) return
 
@@ -464,6 +474,10 @@
       if (e.target.closest('button')) return
       e.preventDefault()
       e.stopPropagation()
+
+      // Remove centering transform on first drag
+      removeCenteringTransform(element)
+
       isDragging = true
       pos3 = e.clientX
       pos4 = e.clientY
@@ -510,6 +524,10 @@
     handle.addEventListener('mousedown', (e) => {
       e.preventDefault()
       e.stopPropagation()
+
+      // Remove centering transform on first resize
+      removeCenteringTransform(element)
+
       isResizing = true
       startX = e.clientX
       startY = e.clientY
@@ -526,10 +544,10 @@
       const newHeight = startHeight + (e.clientY - startY)
 
       // Min/max constraints
-      const minWidth = 400
+      const minWidth = 500
       const maxWidth = window.innerWidth - 40
-      const minHeight = 60
-      const maxHeight = 400
+      const minHeight = 80
+      const maxHeight = 300
 
       element.style.width = Math.max(minWidth, Math.min(newWidth, maxWidth)) + 'px'
       element.style.height = Math.max(minHeight, Math.min(newHeight, maxHeight)) + 'px'
@@ -568,7 +586,9 @@
 
     try {
       const { overlayPrefs } = await chrome.storage.local.get(['overlayPrefs'])
-      if (overlayPrefs) {
+      if (overlayPrefs && overlayPrefs.left) {
+        // Remove centering transform when loading saved position
+        container.style.transform = 'none'
         if (overlayPrefs.top) container.style.top = overlayPrefs.top
         if (overlayPrefs.left) container.style.left = overlayPrefs.left
         if (overlayPrefs.width) container.style.width = overlayPrefs.width
@@ -1274,11 +1294,18 @@
     const container = document.getElementById('revpilot-suggestions')
     if (!container) return
 
+    // Remove any existing banners first
+    const existingBanners = container.querySelectorAll('.revpilot-mode-banner')
+    existingBanners.forEach(b => b.remove())
+
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
     const banner = document.createElement('div')
     banner.className = 'revpilot-mode-banner revpilot-live-banner'
     banner.innerHTML = `
       <span class="revpilot-banner-icon">🎙️</span>
-      <span>Live transcription active - AI coaching based on your conversation</span>
+      <span>Live transcription active</span>
     `
     container.insertBefore(banner, container.firstChild)
   }
@@ -1288,6 +1315,10 @@
     const container = document.getElementById('revpilot-suggestions')
     if (!container) return
 
+    // Remove any existing banners first
+    const existingBanners = container.querySelectorAll('.revpilot-mode-banner')
+    existingBanners.forEach(b => b.remove())
+
     const empty = container.querySelector('.revpilot-empty')
     if (empty) empty.remove()
 
@@ -1295,8 +1326,7 @@
     banner.className = 'revpilot-mode-banner revpilot-demo-banner'
     banner.innerHTML = `
       <span class="revpilot-banner-icon">📋</span>
-      <span>Demo Mode - showing sample coaching tips</span>
-      ${botError ? `<div class="revpilot-banner-detail">Bot connection failed. Configure Recall.ai API key and region in Netlify environment variables.</div>` : ''}
+      <span>Demo Mode - sample tips</span>
     `
     container.insertBefore(banner, container.firstChild)
   }
