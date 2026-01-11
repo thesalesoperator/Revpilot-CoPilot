@@ -960,7 +960,7 @@ export default function SettingsPage() {
                   className="btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
                 >
                   <Download className="w-5 h-5" />
-                  Download Extension (v2.1.0)
+                  Download Extension (v2.2.0)
                 </a>
               </div>
 
