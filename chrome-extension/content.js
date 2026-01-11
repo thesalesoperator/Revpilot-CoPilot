@@ -684,7 +684,7 @@
           const errorMsg = chrome.runtime.lastError.message || ''
           console.error('[RevPilot] Runtime error:', errorMsg)
           if (errorMsg.includes('Extension context invalidated') || errorMsg.includes('message channel closed')) {
-            alert('Extension was updated. Please refresh this page (Cmd+R) and try again.')
+            alert('Extension was updated or reloaded. Please refresh this page (press F5 or Ctrl/Cmd+R) and try again.')
           } else {
             alert('Connection error: ' + errorMsg)
           }
