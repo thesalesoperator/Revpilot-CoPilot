@@ -431,19 +431,21 @@
 
     // Auto-start checkbox
     const autoStartCheckbox = document.getElementById('revpilot-auto-start-checkbox')
-    autoStartCheckbox.addEventListener('change', async (e) => {
-      autoStartEnabled = e.target.checked
-      await chrome.storage.local.set({ autoStartCoaching: autoStartEnabled })
-      console.log('[RevPilot] Auto-start preference saved:', autoStartEnabled)
-    })
+    if (autoStartCheckbox) {
+      autoStartCheckbox.addEventListener('change', async (e) => {
+        autoStartEnabled = e.target.checked
+        await chrome.storage.local.set({ autoStartCoaching: autoStartEnabled })
+        console.log('[RevPilot] Auto-start preference saved:', autoStartEnabled)
+      })
 
-    // Load saved auto-start preference
-    chrome.storage.local.get(['autoStartCoaching']).then(stored => {
-      if (stored.autoStartCoaching) {
-        autoStartCheckbox.checked = true
-        autoStartEnabled = true
-      }
-    })
+      // Load saved auto-start preference
+      chrome.storage.local.get(['autoStartCoaching']).then(stored => {
+        if (stored.autoStartCoaching) {
+          autoStartCheckbox.checked = true
+          autoStartEnabled = true
+        }
+      })
+    }
 
     console.log('[RevPilot] Overlay created successfully!')
   }
