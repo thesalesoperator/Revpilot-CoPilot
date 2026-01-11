@@ -205,52 +205,56 @@
     overlay = document.createElement('div')
     overlay.id = 'revpilot-overlay'
     overlay.innerHTML = `
-      <div class="revpilot-container" id="revpilot-container">
+      <div class="revpilot-container revpilot-horizontal" id="revpilot-container">
+        <!-- Drag Handle Bar -->
+        <div class="revpilot-drag-bar" id="revpilot-drag-bar">
+          <div class="revpilot-drag-indicator">⋮⋮</div>
+        </div>
+
+        <!-- Main Header with Logo and Controls -->
         <div class="revpilot-header">
           <div class="revpilot-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="#00ffc1" stroke-width="2"/>
               <path d="M8 12l3 3 5-6" stroke="#00ffc1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>RevPilot Coach</span>
+            <span>RevPilot</span>
+          </div>
+          <div class="revpilot-live-indicator" id="revpilot-live-badge" style="display: none;">
+            <span class="revpilot-pulse"></span>
+            <span>LIVE</span>
           </div>
           <div class="revpilot-controls">
-            <button id="revpilot-pin" class="revpilot-btn-icon" title="Pin to top">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v10M12 12l4-4M12 12l-4-4M5 22h14"/>
-              </svg>
-            </button>
             <button id="revpilot-minimize" class="revpilot-btn-icon" title="Minimize">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14"/>
               </svg>
             </button>
             <button id="revpilot-close" class="revpilot-btn-icon" title="Close">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             </button>
           </div>
         </div>
 
-        <div class="revpilot-body" id="revpilot-body">
-          <div class="revpilot-status" id="revpilot-status">
-            <div class="revpilot-status-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ffc1" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
+        <!-- Main Content Area - Horizontal Layout -->
+        <div class="revpilot-body revpilot-body-horizontal" id="revpilot-body">
+          <!-- Status View (before coaching starts) -->
+          <div class="revpilot-status revpilot-status-horizontal" id="revpilot-status">
+            <div class="revpilot-status-content">
+              <p>Ready to coach your call</p>
+              <button id="revpilot-start" class="revpilot-btn-primary">
+                Start Coaching
+              </button>
             </div>
-            <p>Ready to coach</p>
-            <button id="revpilot-start" class="revpilot-btn-primary">
-              Start Coaching
-            </button>
-            <label class="revpilot-auto-start" id="revpilot-auto-start-label">
+            <label class="revpilot-auto-start">
               <input type="checkbox" id="revpilot-auto-start-checkbox">
-              <span>Auto-start on future calls</span>
+              <span>Auto-start</span>
             </label>
           </div>
 
+          <!-- Summary View (after call ends) -->
           <div class="revpilot-summary hidden" id="revpilot-summary">
             <div class="revpilot-summary-header">
               <span class="revpilot-summary-icon">📋</span>
@@ -259,126 +263,93 @@
             <div class="revpilot-summary-content" id="revpilot-summary-content">
               <div class="revpilot-summary-loading">
                 <div class="revpilot-spinner"></div>
-                <span>Generating summary...</span>
+                <span>Generating...</span>
               </div>
             </div>
-            <button id="revpilot-new-call" class="revpilot-btn-primary">
-              Ready for Next Call
+            <button id="revpilot-new-call" class="revpilot-btn-primary revpilot-btn-sm">
+              Next Call
             </button>
           </div>
 
+          <!-- Coaching View (during call) -->
           <div class="revpilot-coaching hidden" id="revpilot-coaching">
-            <div class="revpilot-coaching-header">
-              <div class="revpilot-live-indicator">
-                <span class="revpilot-pulse"></span>
-                <span>LIVE</span>
+            <!-- Left Section: Script Progress -->
+            <div class="revpilot-section revpilot-section-progress">
+              <div class="revpilot-script-progress" id="revpilot-script-progress">
+                <div class="revpilot-script-header">
+                  <span class="revpilot-script-icon">📜</span>
+                  <span class="revpilot-script-section" id="revpilot-script-section">Set Expectations</span>
+                  <span class="revpilot-script-order" id="revpilot-script-order">1/17</span>
+                </div>
+                <div class="revpilot-script-bar">
+                  <div class="revpilot-script-fill" id="revpilot-script-fill" style="width: 0%"></div>
+                </div>
+                <div class="revpilot-script-objective" id="revpilot-script-objective">
+                  Get permission to ask questions
+                </div>
               </div>
-              <div class="revpilot-stage-indicator" id="revpilot-stage">
+
+              <div class="revpilot-stage-indicator" id="revpilot-stage" style="display: none;">
                 <span class="revpilot-stage-label">Stage:</span>
                 <span class="revpilot-stage-value" id="revpilot-stage-value">Opening</span>
               </div>
+
+              <div class="revpilot-methodology-selector" id="revpilot-methodology-selector">
+                <select id="revpilot-methodology" class="revpilot-select">
+                  <option value="revpilot" selected>RevPilot Script</option>
+                  <option value="general">General</option>
+                  <option value="meddic">MEDDIC</option>
+                  <option value="spin">SPIN</option>
+                  <option value="challenger">Challenger</option>
+                  <option value="sandler">Sandler</option>
+                  <option value="bant">BANT</option>
+                </select>
+              </div>
             </div>
 
-            <div class="revpilot-methodology-selector" id="revpilot-methodology-selector">
-              <label class="revpilot-methodology-label">Framework:</label>
-              <select id="revpilot-methodology" class="revpilot-select">
-                <option value="revpilot" selected>RevPilot Script</option>
-                <option value="general">General</option>
-                <option value="meddic">MEDDIC</option>
-                <option value="spin">SPIN</option>
-                <option value="challenger">Challenger</option>
-                <option value="sandler">Sandler</option>
-                <option value="bant">BANT</option>
-              </select>
-            </div>
+            <!-- Center Section: Coaching Suggestions -->
+            <div class="revpilot-section revpilot-section-suggestions">
+              <div class="revpilot-suggestions" id="revpilot-suggestions">
+                <div class="revpilot-empty">
+                  <p>Listening to your call...</p>
+                </div>
+              </div>
 
-            <div class="revpilot-script-progress" id="revpilot-script-progress" style="display: none;">
-              <div class="revpilot-script-header">
-                <span class="revpilot-script-icon">📜</span>
-                <span class="revpilot-script-section" id="revpilot-script-section">Set Expectations</span>
-                <span class="revpilot-script-order" id="revpilot-script-order">1/17</span>
-              </div>
-              <div class="revpilot-script-bar">
-                <div class="revpilot-script-fill" id="revpilot-script-fill" style="width: 0%"></div>
-              </div>
-              <div class="revpilot-script-objective" id="revpilot-script-objective">
-                Get permission to ask questions and establish consultative dynamic
-              </div>
-              <div class="revpilot-script-tip hidden" id="revpilot-script-tip">
-                <span class="revpilot-tip-icon">💡</span>
-                <span class="revpilot-tip-text" id="revpilot-tip-text"></span>
-              </div>
               <div class="revpilot-script-warning hidden" id="revpilot-script-warning">
                 <span class="revpilot-warning-icon">⚠️</span>
                 <span class="revpilot-warning-text" id="revpilot-warning-text"></span>
               </div>
-              <div class="revpilot-script-questions hidden" id="revpilot-script-questions">
-                <div class="revpilot-questions-header">📝 Suggested Questions</div>
-                <ul class="revpilot-questions-list" id="revpilot-questions-list"></ul>
-              </div>
             </div>
 
-            <div class="revpilot-prediction" id="revpilot-prediction" style="display: none;">
-              <div class="revpilot-prediction-header">
-                <span class="revpilot-prediction-icon">🔮</span>
-                <span>Next Move</span>
-              </div>
-              <p class="revpilot-prediction-text" id="revpilot-prediction-text"></p>
-            </div>
-
-            <div class="revpilot-suggestions" id="revpilot-suggestions">
-              <div class="revpilot-empty">
-                <p>Listening to your call...</p>
-                <p class="revpilot-subtext">AI coaching will appear here</p>
-              </div>
-            </div>
-
-            <div class="revpilot-stats" id="revpilot-stats">
-              <div class="revpilot-stat">
-                <span class="revpilot-stat-label">You</span>
-                <div class="revpilot-stat-bar">
-                  <div class="revpilot-stat-fill" id="revpilot-talk-ratio" style="width: 50%"></div>
+            <!-- Right Section: Stats & Controls -->
+            <div class="revpilot-section revpilot-section-stats">
+              <div class="revpilot-stats-compact" id="revpilot-stats">
+                <div class="revpilot-stat-row">
+                  <span class="revpilot-stat-label">You</span>
+                  <div class="revpilot-stat-bar">
+                    <div class="revpilot-stat-fill" id="revpilot-talk-ratio" style="width: 50%"></div>
+                  </div>
+                  <span class="revpilot-stat-value" id="revpilot-talk-percent">50%</span>
                 </div>
-                <span class="revpilot-stat-value" id="revpilot-talk-percent">50%</span>
-              </div>
-              <div class="revpilot-stat">
-                <span class="revpilot-stat-label">Prospect</span>
-                <div class="revpilot-stat-bar prospect">
-                  <div class="revpilot-stat-fill" id="revpilot-listen-ratio" style="width: 50%"></div>
+                <div class="revpilot-stat-row">
+                  <span class="revpilot-stat-label">Them</span>
+                  <div class="revpilot-stat-bar prospect">
+                    <div class="revpilot-stat-fill" id="revpilot-listen-ratio" style="width: 50%"></div>
+                  </div>
+                  <span class="revpilot-stat-value" id="revpilot-listen-percent">50%</span>
                 </div>
-                <span class="revpilot-stat-value" id="revpilot-listen-percent">50%</span>
+                <button class="revpilot-flip-btn" id="revpilot-flip-speakers" title="Swap if wrong">🔄</button>
               </div>
-              <button class="revpilot-flip-btn" id="revpilot-flip-speakers" title="Swap You/Prospect if talk ratio seems wrong">
-                🔄
+
+              <button id="revpilot-stop" class="revpilot-btn-danger revpilot-btn-sm">
+                End
               </button>
             </div>
-
-            <div class="revpilot-key-info" id="revpilot-key-info" style="display: none;">
-              <div class="revpilot-key-info-toggle" id="revpilot-key-info-toggle">
-                <span>📊 Call Intel</span>
-                <span class="revpilot-toggle-arrow">▼</span>
-              </div>
-              <div class="revpilot-key-info-content hidden" id="revpilot-key-info-content">
-                <div class="revpilot-info-item" id="revpilot-pain-points">
-                  <span class="revpilot-info-label">Pain Points:</span>
-                  <span class="revpilot-info-value">None identified</span>
-                </div>
-                <div class="revpilot-info-item" id="revpilot-budget-info">
-                  <span class="revpilot-info-label">Budget:</span>
-                  <span class="revpilot-info-value">Not discussed</span>
-                </div>
-                <div class="revpilot-info-item" id="revpilot-timeline-info">
-                  <span class="revpilot-info-label">Timeline:</span>
-                  <span class="revpilot-info-value">Not discussed</span>
-                </div>
-              </div>
-            </div>
-
-            <button id="revpilot-stop" class="revpilot-btn-danger">
-              End Coaching
-            </button>
           </div>
         </div>
+
+        <!-- Resize Handle -->
+        <div class="revpilot-resize-handle" id="revpilot-resize-handle"></div>
       </div>
 
       <div class="revpilot-minimized hidden" id="revpilot-minimized">
@@ -394,9 +365,12 @@
 
     document.body.appendChild(overlay)
 
-    // Make draggable
-    makeDraggable(overlay.querySelector('.revpilot-container'))
+    // Make draggable from the drag bar
+    makeDraggable(overlay.querySelector('.revpilot-container'), overlay.querySelector('.revpilot-drag-bar'))
     makeDraggable(overlay.querySelector('.revpilot-minimized'))
+
+    // Make resizable
+    makeResizable(overlay.querySelector('.revpilot-container'), overlay.querySelector('.revpilot-resize-handle'))
 
     // Event listeners
     document.getElementById('revpilot-start').addEventListener('click', startCoaching)
@@ -404,9 +378,11 @@
     document.getElementById('revpilot-minimize').addEventListener('click', minimize)
     document.getElementById('revpilot-expand').addEventListener('click', expand)
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
-    document.getElementById('revpilot-pin').addEventListener('click', togglePin)
     document.getElementById('revpilot-new-call').addEventListener('click', resetToReadyState)
     document.getElementById('revpilot-flip-speakers').addEventListener('click', flipSpeakers)
+
+    // Load saved position and size
+    loadOverlayPreferences()
 
     // Methodology selector
     document.getElementById('revpilot-methodology').addEventListener('change', (e) => {
@@ -472,15 +448,15 @@
     console.log('[RevPilot] Overlay created successfully!')
   }
 
-  function makeDraggable(element) {
+  function makeDraggable(element, handle) {
     if (!element) return
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
     let isDragging = false
 
-    const header = element.querySelector('.revpilot-header') || element
-    header.style.cursor = 'move'
-    header.addEventListener('mousedown', dragMouseDown)
+    const dragHandle = handle || element.querySelector('.revpilot-header') || element
+    dragHandle.style.cursor = 'move'
+    dragHandle.addEventListener('mousedown', dragMouseDown)
 
     function dragMouseDown(e) {
       if (e.target.closest('button')) return
@@ -505,7 +481,7 @@
       const newLeft = element.offsetLeft - pos1
 
       // Keep within viewport
-      const maxTop = window.innerHeight - 100
+      const maxTop = window.innerHeight - 50
       const maxLeft = window.innerWidth - 100
 
       element.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px"
@@ -518,22 +494,86 @@
       isDragging = false
       document.removeEventListener('mouseup', closeDragElement)
       document.removeEventListener('mousemove', elementDrag)
+      // Save position
+      saveOverlayPreferences()
     }
   }
 
-  function togglePin() {
-    isPinned = !isPinned
-    const container = document.getElementById('revpilot-container')
-    const pinBtn = document.getElementById('revpilot-pin')
+  function makeResizable(element, handle) {
+    if (!element || !handle) return
 
-    if (isPinned) {
-      container.classList.add('revpilot-pinned')
-      pinBtn.classList.add('revpilot-btn-active')
-      pinBtn.title = 'Unpin'
-    } else {
-      container.classList.remove('revpilot-pinned')
-      pinBtn.classList.remove('revpilot-btn-active')
-      pinBtn.title = 'Pin to top'
+    let isResizing = false
+    let startX, startY, startWidth, startHeight
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      isResizing = true
+      startX = e.clientX
+      startY = e.clientY
+      startWidth = element.offsetWidth
+      startHeight = element.offsetHeight
+      document.addEventListener('mousemove', resize)
+      document.addEventListener('mouseup', stopResize)
+    })
+
+    function resize(e) {
+      if (!isResizing) return
+
+      const newWidth = startWidth + (e.clientX - startX)
+      const newHeight = startHeight + (e.clientY - startY)
+
+      // Min/max constraints
+      const minWidth = 400
+      const maxWidth = window.innerWidth - 40
+      const minHeight = 60
+      const maxHeight = 400
+
+      element.style.width = Math.max(minWidth, Math.min(newWidth, maxWidth)) + 'px'
+      element.style.height = Math.max(minHeight, Math.min(newHeight, maxHeight)) + 'px'
+    }
+
+    function stopResize() {
+      isResizing = false
+      document.removeEventListener('mousemove', resize)
+      document.removeEventListener('mouseup', stopResize)
+      // Save size
+      saveOverlayPreferences()
+    }
+  }
+
+  async function saveOverlayPreferences() {
+    const container = document.getElementById('revpilot-container')
+    if (!container) return
+
+    const prefs = {
+      top: container.style.top,
+      left: container.style.left,
+      width: container.style.width,
+      height: container.style.height,
+    }
+
+    try {
+      await chrome.storage.local.set({ overlayPrefs: prefs })
+    } catch (e) {
+      console.log('[RevPilot] Could not save overlay preferences')
+    }
+  }
+
+  async function loadOverlayPreferences() {
+    const container = document.getElementById('revpilot-container')
+    if (!container) return
+
+    try {
+      const { overlayPrefs } = await chrome.storage.local.get(['overlayPrefs'])
+      if (overlayPrefs) {
+        if (overlayPrefs.top) container.style.top = overlayPrefs.top
+        if (overlayPrefs.left) container.style.left = overlayPrefs.left
+        if (overlayPrefs.width) container.style.width = overlayPrefs.width
+        if (overlayPrefs.height) container.style.height = overlayPrefs.height
+      }
+    } catch (e) {
+      console.log('[RevPilot] Could not load overlay preferences')
     }
   }
 
@@ -890,10 +930,12 @@
     const coachingEl = document.getElementById('revpilot-coaching')
     const statusEl = document.getElementById('revpilot-status')
     const summaryEl = document.getElementById('revpilot-summary')
+    const liveBadge = document.getElementById('revpilot-live-badge')
 
     if (coachingEl) coachingEl.classList.add('hidden')
     if (statusEl) statusEl.classList.add('hidden')
     if (summaryEl) summaryEl.classList.remove('hidden')
+    if (liveBadge) liveBadge.style.display = 'none'
   }
 
   function resetToReadyState() {
@@ -995,6 +1037,11 @@
 
     statusEl.classList.add('hidden')
     coachingEl.classList.remove('hidden')
+
+    // Show LIVE badge
+    const liveBadge = document.getElementById('revpilot-live-badge')
+    if (liveBadge) liveBadge.style.display = 'flex'
+
     console.log('[RevPilot] Coaching UI now visible')
   }
 
@@ -1003,9 +1050,11 @@
     const statusEl = document.getElementById('revpilot-status')
     const startBtn = document.getElementById('revpilot-start')
     const stopBtn = document.getElementById('revpilot-stop')
+    const liveBadge = document.getElementById('revpilot-live-badge')
 
     if (coachingEl) coachingEl.classList.add('hidden')
     if (statusEl) statusEl.classList.remove('hidden')
+    if (liveBadge) liveBadge.style.display = 'none'
 
     // Reset start button
     if (startBtn) {
