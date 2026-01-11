@@ -798,31 +798,6 @@ export function detectBuyingSignals(transcript: string): BuyingSignal[] {
   return detected
 }
 
-export function calculateTalkRatio(
-  transcripts: { speaker: number | null; text: string }[]
-): { repPercent: number; prospectPercent: number } {
-  let repWords = 0
-  let prospectWords = 0
-
-  for (const t of transcripts) {
-    const wordCount = t.text.split(/\s+/).length
-    // Assume speaker 0 is the rep (this is simplified - real implementation would need better diarization)
-    if (t.speaker === 0) {
-      repWords += wordCount
-    } else {
-      prospectWords += wordCount
-    }
-  }
-
-  const total = repWords + prospectWords
-  if (total === 0) return { repPercent: 50, prospectPercent: 50 }
-
-  return {
-    repPercent: Math.round((repWords / total) * 100),
-    prospectPercent: Math.round((prospectWords / total) * 100)
-  }
-}
-
 // =============================================================================
 // MAIN PROMPT BUILDER
 // =============================================================================

@@ -20,6 +20,10 @@ export interface ScriptSection {
   successPatterns: string[]    // Patterns that indicate doing well
   minDuration?: number         // Minimum suggested time in seconds
   criticalMoments?: string[]   // Key phrases/moments to highlight
+  fallbackSuggestion: {        // Used when AI suggestion is blocked
+    type: 'tip' | 'question'
+    content: string
+  }
 }
 
 export interface ScriptDefinition {
@@ -80,7 +84,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'prospect engaged',
         'collaborative tone set'
       ],
-      minDuration: 30
+      minDuration: 30,
+      fallbackSuggestion: {
+        type: 'tip',
+        content: 'Set a clear agenda and confirm how much time they have for this call.'
+      }
     },
     {
       id: 'isolate_problem',
@@ -134,7 +142,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
       criticalMoments: [
         'Stay here until you hear a sales ops problem you can anchor on'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "What made you book this call today? What\'s going on in your sales operations?"'
+      }
     },
     {
       id: 'background_questions',
@@ -177,7 +189,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'relevant follow-ups asked',
         'notes being taken'
       ],
-      minDuration: 90
+      minDuration: 90,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "Tell me about your company - what do you sell and who do you sell to?"'
+      }
     },
     {
       id: 'current_situation',
@@ -221,7 +237,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'pain points documented',
         'tool integrations mapped'
       ],
-      minDuration: 120
+      minDuration: 120,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "Walk me through your current sales process from lead to close."'
+      }
     },
     {
       id: 'assess_efforts',
@@ -263,7 +283,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'differentiation opportunity found',
         'trust building happening'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "What have you tried so far to fix this issue?"'
+      }
     },
     {
       id: 'chunking_down',
@@ -306,7 +330,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'impact quantified',
         'emotion surfaced'
       ],
-      minDuration: 90
+      minDuration: 90,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "Can you give me a specific example from the last week?"'
+      }
     },
     {
       id: 'financial_qualifier',
@@ -348,7 +376,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'budget conversation had',
         'ROI framework established'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "What do you think this problem is costing you - in lost deals or wasted time?"'
+      }
     },
     {
       id: 'doubt_questions',
@@ -390,7 +422,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'consequences internalized',
         'commitment building'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "What happens if you don\'t fix this in the next 6 months?"'
+      }
     },
     {
       id: 'solution_questions',
@@ -432,7 +468,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'shared vision established',
         'pitch aligned to their needs'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "In an ideal world, what does this look like when it\'s fixed?"'
+      }
     },
     {
       id: 'why_now',
@@ -477,7 +517,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
       criticalMoments: [
         '(Pause.) - Use silence after asking about cost of waiting'
       ],
-      minDuration: 45
+      minDuration: 45,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "Why is now the right time to solve this?"'
+      }
     },
     {
       id: 'support_questions',
@@ -519,7 +563,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'champion identified',
         'blockers anticipated'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "Who else would be involved in making this decision?"'
+      }
     },
     {
       id: 'desired_situation',
@@ -561,7 +609,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'emotional buy-in',
         'ready for solution'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "Imagine 90 days from now this is all working - what does that look like for you?"'
+      }
     },
     {
       id: 'transition',
@@ -601,7 +653,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'enthusiasm for solution',
         'ready to listen'
       ],
-      minDuration: 15
+      minDuration: 15,
+      fallbackSuggestion: {
+        type: 'tip',
+        content: 'Ask for permission: "Would you like me to walk you through how we\'d approach this?"'
+      }
     },
     {
       id: 'pitch',
@@ -649,7 +705,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'using their words',
         'buying signals emerging'
       ],
-      minDuration: 180
+      minDuration: 180,
+      fallbackSuggestion: {
+        type: 'tip',
+        content: 'Connect each step to their specific problems from discovery. Use their words.'
+      }
     },
     {
       id: 'commitment',
@@ -691,7 +751,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'concerns addressed',
         'ready for investment talk'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'question',
+        content: 'Ask: "On a scale of 1-10, where are you right now on moving forward with this?"'
+      }
     },
     {
       id: 'onboarding',
@@ -734,7 +798,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
         'timeline accepted',
         'ready for investment'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'tip',
+        content: 'Walk them through the onboarding timeline - make it feel achievable and low-friction.'
+      }
     },
     {
       id: 'investment',
@@ -780,7 +848,11 @@ export const REVPILOT_SCRIPT: ScriptDefinition = {
       criticalMoments: [
         '(Shut up.) - Do not speak after stating the investment'
       ],
-      minDuration: 60
+      minDuration: 60,
+      fallbackSuggestion: {
+        type: 'tip',
+        content: 'State the investment confidently, then STOP TALKING. Let them respond first.'
+      }
     }
   ],
 
@@ -1065,4 +1137,93 @@ export function getSectionByOrder(order: number): ScriptSection | undefined {
 export function getNextSection(currentSectionId: string): ScriptSection | undefined {
   const currentIndex = REVPILOT_SCRIPT.sections.findIndex(s => s.id === currentSectionId)
   return REVPILOT_SCRIPT.sections[currentIndex + 1]
+}
+
+// Export helper to get fallback suggestion for a section
+export function getFallbackSuggestion(sectionOrder: number): { type: string; content: string; priority: string } {
+  const section = REVPILOT_SCRIPT.sections.find(s => s.order === sectionOrder)
+  if (section?.fallbackSuggestion) {
+    return { ...section.fallbackSuggestion, priority: 'high' }
+  }
+  return {
+    type: 'tip',
+    content: 'Keep asking discovery questions to understand their situation better.',
+    priority: 'high'
+  }
+}
+
+// =============================================================================
+// SUGGESTION VALIDATION - Ensures AI suggestions match current section
+// =============================================================================
+
+// Forbidden phrases for early sections (1-6: Set Expectations through Chunking Down)
+export const EARLY_STAGE_FORBIDDEN_PHRASES = [
+  'present your solution',
+  'present the solution',
+  'time to present',
+  'show them',
+  'demo',
+  'pitch',
+  'pricing',
+  'investment',
+  'proposal',
+  'close the deal',
+  'ask for the business',
+  'commitment',
+  'next steps',
+  'move forward',
+  'get started',
+  'sign up',
+  'onboard',
+]
+
+// Forbidden phrases for discovery/qualification sections (1-11)
+export const DISCOVERY_FORBIDDEN_PHRASES = [
+  'present your solution',
+  'present the solution',
+  'time to present',
+  'pitch your',
+  'close the deal',
+  'ask for commitment',
+  'discuss pricing',
+  'talk about investment',
+  'share pricing',
+]
+
+// Validate and potentially replace an AI suggestion based on current section
+export function validateSuggestion(
+  suggestion: { type: string; content: string; priority?: string },
+  sectionOrder: number
+): { suggestion: { type: string; content: string; priority: string }; blocked: boolean; reason?: string } {
+  const suggestionText = suggestion.content.toLowerCase()
+
+  // Check constraints based on section
+  if (sectionOrder <= 6) {
+    // Sections 1-6: Pure discovery - NO solution talk
+    for (const forbidden of EARLY_STAGE_FORBIDDEN_PHRASES) {
+      if (suggestionText.includes(forbidden)) {
+        return {
+          suggestion: getFallbackSuggestion(sectionOrder),
+          blocked: true,
+          reason: `Blocked "${forbidden}" - inappropriate for Section ${sectionOrder} (discovery phase)`
+        }
+      }
+    }
+  } else if (sectionOrder <= 11) {
+    // Sections 7-11: Qualification - still no closing/pitching
+    for (const forbidden of DISCOVERY_FORBIDDEN_PHRASES) {
+      if (suggestionText.includes(forbidden)) {
+        return {
+          suggestion: getFallbackSuggestion(sectionOrder),
+          blocked: true,
+          reason: `Blocked "${forbidden}" - inappropriate for Section ${sectionOrder} (qualification phase)`
+        }
+      }
+    }
+  }
+
+  return {
+    suggestion: { ...suggestion, priority: suggestion.priority || 'medium' },
+    blocked: false
+  }
 }

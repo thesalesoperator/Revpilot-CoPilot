@@ -12,7 +12,6 @@ import {
   detectConversationStage,
   detectObjections,
   detectBuyingSignals,
-  calculateTalkRatio,
   buildCoachingPrompt,
   buildScriptCoachingPrompt,
   SalesMethodology,
@@ -21,6 +20,7 @@ import {
   detectScriptSection,
   getScriptCoaching,
 } from '@/lib/coaching/intelligence'
+import { validateSuggestion } from '@/lib/coaching/revpilot-script'
 import {
   getSessionState,
   saveSessionState,
@@ -499,100 +499,17 @@ ${detectedBuyingSignals.length > 0 ? `Buying signal: ${detectedBuyingSignals[0].
 
     // =========================================================================
     // POST-PROCESSING: VALIDATE SUGGESTION AGAINST CURRENT SECTION
-    // The AI sometimes ignores stage constraints - this enforces them
+    // Uses shared validation from revpilot-script.ts
     // =========================================================================
 
     if (analysis.suggestion && analysis.suggestion.content && scriptContext) {
       const sectionOrder = scriptContext.currentSection.order
-      const suggestionText = analysis.suggestion.content.toLowerCase()
+      const validation = validateSuggestion(analysis.suggestion, sectionOrder)
 
-      // Forbidden phrases for early sections (1-6: Set Expectations through Chunking Down)
-      const EARLY_STAGE_FORBIDDEN = [
-        'present your solution',
-        'present the solution',
-        'time to present',
-        'show them',
-        'demo',
-        'pitch',
-        'pricing',
-        'investment',
-        'proposal',
-        'close the deal',
-        'ask for the business',
-        'commitment',
-        'next steps',
-        'move forward',
-        'get started',
-        'sign up',
-        'onboard',
-      ]
-
-      // Forbidden phrases for discovery sections (1-11)
-      const DISCOVERY_FORBIDDEN = [
-        'present your solution',
-        'present the solution',
-        'time to present',
-        'pitch your',
-        'close the deal',
-        'ask for commitment',
-        'discuss pricing',
-        'talk about investment',
-        'share pricing',
-      ]
-
-      let suggestionBlocked = false
-      let blockReason = ''
-
-      // Check constraints based on section
-      if (sectionOrder <= 6) {
-        // Sections 1-6: Pure discovery - NO solution talk
-        for (const forbidden of EARLY_STAGE_FORBIDDEN) {
-          if (suggestionText.includes(forbidden)) {
-            suggestionBlocked = true
-            blockReason = `Blocked "${forbidden}" - inappropriate for Section ${sectionOrder} (discovery phase)`
-            break
-          }
-        }
-      } else if (sectionOrder <= 11) {
-        // Sections 7-11: Qualification - still no closing/pitching
-        for (const forbidden of DISCOVERY_FORBIDDEN) {
-          if (suggestionText.includes(forbidden)) {
-            suggestionBlocked = true
-            blockReason = `Blocked "${forbidden}" - inappropriate for Section ${sectionOrder} (qualification phase)`
-            break
-          }
-        }
-      }
-
-      if (suggestionBlocked) {
-        console.log(`[Analyze] ⛔ SUGGESTION BLOCKED: ${blockReason}`)
+      if (validation.blocked) {
+        console.log(`[Analyze] ⛔ SUGGESTION BLOCKED: ${validation.reason}`)
         console.log(`[Analyze] Original suggestion: "${analysis.suggestion.content}"`)
-
-        // Replace with section-appropriate suggestion
-        const replacementSuggestions: Record<number, { type: string; content: string }> = {
-          1: { type: 'tip', content: 'Set a clear agenda and confirm how much time they have for this call.' },
-          2: { type: 'question', content: 'Ask: "What made you book this call today? What\'s going on in your sales operations?"' },
-          3: { type: 'question', content: 'Ask: "Tell me about your company - what do you sell and who do you sell to?"' },
-          4: { type: 'question', content: 'Ask: "Walk me through your current sales process from lead to close."' },
-          5: { type: 'question', content: 'Ask: "What have you tried so far to fix this issue?"' },
-          6: { type: 'question', content: 'Ask: "Can you give me a specific example from the last week?"' },
-          7: { type: 'question', content: 'Ask: "What do you think this problem is costing you - in lost deals or wasted time?"' },
-          8: { type: 'question', content: 'Ask: "What happens if you don\'t fix this in the next 6 months?"' },
-          9: { type: 'question', content: 'Ask: "In an ideal world, what does this look like when it\'s fixed?"' },
-          10: { type: 'question', content: 'Ask: "Why is now the right time to solve this?"' },
-          11: { type: 'question', content: 'Ask: "Who else would be involved in making this decision?"' },
-        }
-
-        const replacement = replacementSuggestions[sectionOrder] || {
-          type: 'tip',
-          content: 'Keep asking discovery questions to understand their situation better.'
-        }
-
-        analysis.suggestion = {
-          ...replacement,
-          priority: 'high'
-        }
-
+        analysis.suggestion = validation.suggestion
         console.log(`[Analyze] ✅ Replaced with: "${analysis.suggestion.content}"`)
       }
     }
