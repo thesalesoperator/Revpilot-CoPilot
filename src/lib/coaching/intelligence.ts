@@ -930,13 +930,29 @@ ${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-3)
 YOUR TASK:
 Analyze the conversation and provide ONE highly specific, actionable coaching suggestion.
 
-Requirements:
+CRITICAL RULES:
 1. Be SPECIFIC to what was just said - not generic advice
 2. If suggesting a question, provide the EXACT question to ask, tailored to their situation
 3. If an objection was raised, provide a specific response strategy
 4. If a buying signal was detected, guide them to capitalize on it
 5. Consider where the conversation should go NEXT
 6. Keep suggestions brief (1-2 sentences max) but highly actionable
+
+STAGE-SPECIFIC CONSTRAINTS (MUST FOLLOW):
+• OPENING/DISCOVERY stages: NEVER suggest presenting solutions, pitching, or discussing pricing
+• DISCOVERY stage: Focus on understanding problems - do NOT jump to solutions
+• QUALIFICATION stage: Focus on budget/timeline/authority - not presentation
+• Only suggest "present solution" in PRESENTATION stage or later
+• Only suggest closing techniques in CLOSING stage
+
+TALK RATIO SANITY CHECK:
+• If talk ratio shows rep at <30% but transcript shows mostly rep talking, ignore the talk ratio data
+• If only one speaker appears in transcript, assume all speech is the rep
+• Never suggest "let prospect talk more" if they haven't spoken at all
+
+FORBIDDEN SUGGESTIONS:
+• Early stages: Do NOT suggest "present your solution", "show them the demo", "explain features", "discuss pricing"
+• Do NOT give conflicting advice in the same moment
 
 Response format (JSON):
 {
@@ -1111,13 +1127,28 @@ Provide ONE highly specific, actionable coaching suggestion based on:
 3. Whether they should stay in this section or advance
 4. Any detected objections or buying signals
 
-Rules:
+CRITICAL RULES:
 • Be SPECIFIC to what was just said - not generic advice
 • If suggesting a question, provide the EXACT WORDING from the script, personalized to their situation
-• If they're in Section 2 (Problem Isolation), keep them there until a clear sales ops problem is identified
-• If in Section 17 (Investment), remind them to SHUT UP after stating price
 • Use their words back to them when possible
 • Keep suggestions brief (1-2 sentences) but highly actionable
+
+STAGE-SPECIFIC CONSTRAINTS (MUST FOLLOW):
+• Sections 1-6 (Set Expectations through Chunking Down): NEVER suggest presenting solutions, pitching, or discussing pricing
+• Section 2 (Problem Isolation): Keep them here until a clear sales ops problem is identified - this is critical
+• Sections 7-11 (Financial Qualifier through Support Questions): Focus on qualification, not presentation
+• Section 12 (Transition): Only now can you start transitioning to solution presentation
+• Section 17 (Investment): After stating price, tell them to SHUT UP and wait for response
+
+TALK RATIO SANITY CHECK:
+• If talk ratio shows rep at <30% but transcript shows mostly rep talking, ignore the talk ratio data
+• If only one speaker detected, assume all speech is the rep
+• Never suggest "let prospect talk more" if they haven't spoken at all
+
+FORBIDDEN SUGGESTIONS BY STAGE:
+• Stages 1-6: Do NOT suggest "present your solution", "show them the demo", "explain features", "discuss pricing"
+• Stages 1-3: Do NOT suggest closing questions or commitment asks
+• All stages: Do NOT give conflicting advice (e.g., "present solution" AND "address hesitation" in same moment)
 
 Response format (JSON):
 {

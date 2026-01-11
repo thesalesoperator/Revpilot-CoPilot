@@ -316,6 +316,36 @@
   color: #e2e8f0;
 }
 
+/* Flip speakers button */
+.revpilot-flip-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 8px;
+  transition: all 0.2s ease;
+  margin-top: 6px;
+  display: block;
+  margin-left: auto;
+}
+
+.revpilot-flip-btn:hover {
+  background: rgba(0, 255, 193, 0.1);
+  border-color: rgba(0, 255, 193, 0.3);
+  color: #00ffc1;
+}
+
+.revpilot-flip-btn:active {
+  transform: scale(0.95);
+}
+
+.revpilot-flip-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ============================================
    METHODOLOGY SELECTOR - Compact
    ============================================ */

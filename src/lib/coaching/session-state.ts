@@ -108,6 +108,16 @@ export interface SessionState {
   // Talk ratio tracking
   repWordCount: number
   prospectWordCount: number
+
+  // Speaker calibration for accurate talk ratio
+  speakerCalibration: {
+    calibrated: boolean
+    repSpeakerId: number | null       // Which Deepgram speaker ID is the rep
+    firstSpeakerId: number | null     // First speaker detected (usually rep)
+    speakerWordCounts: Record<number, number>  // Track words per speaker ID
+    calibrationTranscripts: number    // Number of transcripts used for calibration
+    manualOverride: boolean           // User manually flipped speakers
+  }
 }
 
 // =============================================================================
@@ -189,6 +199,15 @@ export function createDefaultState(sessionId: string, userId: string, methodolog
 
     repWordCount: 0,
     prospectWordCount: 0,
+
+    speakerCalibration: {
+      calibrated: false,
+      repSpeakerId: null,
+      firstSpeakerId: null,
+      speakerWordCounts: {},
+      calibrationTranscripts: 0,
+      manualOverride: false,
+    },
   }
 }
 

@@ -348,6 +348,9 @@
                 </div>
                 <span class="revpilot-stat-value" id="revpilot-listen-percent">50%</span>
               </div>
+              <button class="revpilot-flip-btn" id="revpilot-flip-speakers" title="Swap You/Prospect if talk ratio seems wrong">
+                🔄
+              </button>
             </div>
 
             <div class="revpilot-key-info" id="revpilot-key-info" style="display: none;">
@@ -403,6 +406,7 @@
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
     document.getElementById('revpilot-pin').addEventListener('click', togglePin)
     document.getElementById('revpilot-new-call').addEventListener('click', resetToReadyState)
+    document.getElementById('revpilot-flip-speakers').addEventListener('click', flipSpeakers)
 
     // Methodology selector
     document.getElementById('revpilot-methodology').addEventListener('change', (e) => {
@@ -688,6 +692,73 @@
       startBtn.disabled = false
       startBtn.textContent = 'Start Coaching'
     }
+  }
+
+  // Flip speakers if talk ratio seems wrong
+  async function flipSpeakers() {
+    if (!session) {
+      console.log('[RevPilot] flipSpeakers called but no session')
+      return
+    }
+
+    const flipBtn = document.getElementById('revpilot-flip-speakers')
+    if (flipBtn) {
+      flipBtn.disabled = true
+      flipBtn.textContent = '...'
+    }
+
+    try {
+      const { authToken } = await chrome.storage.local.get(['authToken'])
+
+      // Send flip request to backend
+      const response = await fetch(`${API_BASE}/api/coaching/analyze-transcript`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          sessionId: session.id,
+          transcripts: [{ text: '', speaker: null, timestamp: Date.now() }], // Dummy transcript to trigger flip
+          flipSpeakers: true
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('[RevPilot] Speakers flipped successfully')
+
+        // Update UI with new talk ratio
+        if (data.talkRatio) {
+          updateStats({ talk_ratio: data.talkRatio.repPercent })
+        }
+
+        // Show feedback
+        showFlipFeedback('Speakers swapped!')
+      } else {
+        console.error('[RevPilot] Failed to flip speakers:', response.status)
+        showFlipFeedback('Failed to swap')
+      }
+    } catch (error) {
+      console.error('[RevPilot] Flip speakers error:', error)
+      showFlipFeedback('Error')
+    } finally {
+      if (flipBtn) {
+        flipBtn.disabled = false
+        flipBtn.textContent = '🔄'
+      }
+    }
+  }
+
+  function showFlipFeedback(message) {
+    const flipBtn = document.getElementById('revpilot-flip-speakers')
+    if (!flipBtn) return
+
+    const originalText = flipBtn.textContent
+    flipBtn.textContent = message
+    setTimeout(() => {
+      flipBtn.textContent = '🔄'
+    }, 1500)
   }
 
   async function stopCoaching() {

@@ -68,10 +68,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { sessionId, transcripts, methodology = 'revpilot' } = await request.json() as {
+    const { sessionId, transcripts, methodology = 'revpilot', flipSpeakers = false } = await request.json() as {
       sessionId: string
       transcripts: TranscriptEntry[]
       methodology?: SalesMethodology
+      flipSpeakers?: boolean  // Manual speaker flip request
     }
 
     if (!sessionId || !transcripts || transcripts.length === 0) {
@@ -123,6 +124,27 @@ export async function POST(request: NextRequest) {
     // Get session state from database (with cache)
     const state = await getSessionState(sessionId, user.id, methodology)
 
+    // Handle manual speaker flip request
+    if (flipSpeakers) {
+      console.log('[Analyze] Manual speaker flip requested')
+      const speakerIds = Object.keys(state.speakerCalibration.speakerWordCounts).map(Number)
+
+      if (speakerIds.length >= 2) {
+        // Flip between the two speakers
+        const currentRep = state.speakerCalibration.repSpeakerId ?? speakerIds[0]
+        const otherSpeaker = speakerIds.find(id => id !== currentRep) ?? speakerIds[1]
+
+        state.speakerCalibration.repSpeakerId = otherSpeaker
+        state.speakerCalibration.manualOverride = true
+        state.speakerCalibration.calibrated = true
+
+        console.log(`[Analyze] Speakers flipped: rep changed from ${currentRep} to ${otherSpeaker}`)
+      } else if (speakerIds.length === 1) {
+        // Only one speaker - can't flip, but mark as acknowledged
+        console.log('[Analyze] Only one speaker detected, cannot flip')
+      }
+    }
+
     // Combine transcripts into conversation text
     const recentTranscript = transcripts
       .map(t => {
@@ -138,11 +160,67 @@ export async function POST(request: NextRequest) {
       state.recentTranscriptChunks = state.recentTranscriptChunks.slice(-10)
     }
 
-    // Update word counts for talk ratio tracking
+    // Update word counts for talk ratio tracking with smart speaker identification
+    // Instead of assuming speaker 0 = rep, we use calibration
     for (const t of transcripts) {
       const wordCount = t.text.split(/\s+/).length
-      // Assume speaker 0 is the rep
-      if (t.speaker === 0) {
+      const speakerId = t.speaker ?? 0
+
+      // Track words per speaker ID for calibration
+      if (!state.speakerCalibration.speakerWordCounts[speakerId]) {
+        state.speakerCalibration.speakerWordCounts[speakerId] = 0
+      }
+      state.speakerCalibration.speakerWordCounts[speakerId] += wordCount
+
+      // Track first speaker (usually the rep starts the call)
+      if (state.speakerCalibration.firstSpeakerId === null) {
+        state.speakerCalibration.firstSpeakerId = speakerId
+        console.log(`[Analyze] First speaker detected: ${speakerId}`)
+      }
+
+      state.speakerCalibration.calibrationTranscripts++
+    }
+
+    // Determine rep speaker ID using smart calibration
+    // Priority: 1) Manual override, 2) Calibrated ID, 3) First speaker heuristic
+    let repSpeakerId: number
+
+    if (state.speakerCalibration.manualOverride && state.speakerCalibration.repSpeakerId !== null) {
+      // User manually set who the rep is
+      repSpeakerId = state.speakerCalibration.repSpeakerId
+    } else if (state.speakerCalibration.calibrated && state.speakerCalibration.repSpeakerId !== null) {
+      repSpeakerId = state.speakerCalibration.repSpeakerId
+    } else {
+      // Heuristic: First speaker is usually the rep (they initiate the call)
+      // But also check: if only one speaker detected, they're probably the rep
+      const speakerIds = Object.keys(state.speakerCalibration.speakerWordCounts).map(Number)
+
+      if (speakerIds.length === 1) {
+        // Only one speaker detected - definitely the rep
+        repSpeakerId = speakerIds[0]
+        console.log(`[Analyze] Single speaker detected (${repSpeakerId}), treating as rep`)
+      } else if (state.speakerCalibration.firstSpeakerId !== null) {
+        // Multiple speakers - first speaker is usually the rep
+        repSpeakerId = state.speakerCalibration.firstSpeakerId
+      } else {
+        // Fallback to speaker 0
+        repSpeakerId = 0
+      }
+
+      // Auto-calibrate after enough data (10+ transcripts)
+      if (state.speakerCalibration.calibrationTranscripts >= 10 && !state.speakerCalibration.calibrated) {
+        state.speakerCalibration.repSpeakerId = repSpeakerId
+        state.speakerCalibration.calibrated = true
+        console.log(`[Analyze] Speaker calibrated: rep = speaker ${repSpeakerId}`)
+      }
+    }
+
+    // Now calculate word counts based on identified rep
+    state.repWordCount = 0
+    state.prospectWordCount = 0
+
+    for (const [speakerId, wordCount] of Object.entries(state.speakerCalibration.speakerWordCounts)) {
+      if (Number(speakerId) === repSpeakerId) {
         state.repWordCount += wordCount
       } else {
         state.prospectWordCount += wordCount
