@@ -15,6 +15,17 @@ let transcriptBuffer = []
 let lastTranscriptSendTime = 0
 const TRANSCRIPT_SEND_INTERVAL = 3000 // Send transcripts to backend every 3 seconds
 
+// Reconnection tracking
+let reconnectAttempts = 0
+const MAX_RECONNECT_ATTEMPTS = 5
+const BASE_RECONNECT_DELAY = 1000 // 1 second base delay with exponential backoff
+
+// Audio buffering during disconnects
+let audioBuffer = []
+const MAX_AUDIO_BUFFER_SIZE = 50 // ~200ms of audio at 4096 samples
+let backendTranscriptionInterval = null // Track interval for cleanup
+let audioProcessor = null // Track processor for cleanup
+
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[Offscreen] Received message:', message.type)
@@ -136,6 +147,7 @@ async function connectDeepgram(apiKey) {
 
     deepgramSocket.onopen = () => {
       console.log('[Offscreen] Deepgram WebSocket connected')
+      reconnectAttempts = 0  // Reset on successful connection
       startAudioStreaming()
       resolve()
     }
@@ -146,19 +158,46 @@ async function connectDeepgram(apiKey) {
 
     deepgramSocket.onerror = (error) => {
       console.error('[Offscreen] Deepgram WebSocket error:', error)
+      deepgramSocket = null  // CRITICAL: Nullify so reconnect check works
       reject(new Error('Deepgram connection failed'))
     }
 
     deepgramSocket.onclose = (event) => {
       console.log('[Offscreen] Deepgram WebSocket closed:', event.code, event.reason)
+      deepgramSocket = null  // CRITICAL: Nullify on close
+
       if (isCapturing) {
-        // Attempt to reconnect if still capturing
-        setTimeout(() => {
-          if (isCapturing && !deepgramSocket) {
-            console.log('[Offscreen] Attempting to reconnect to Deepgram...')
-            connectDeepgram(apiKey).catch(console.error)
-          }
-        }, 2000)
+        // Attempt to reconnect with exponential backoff
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          reconnectAttempts++
+          const delay = BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts - 1)
+          console.log(`[Offscreen] Reconnect attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${delay}ms`)
+
+          setTimeout(() => {
+            if (isCapturing && !deepgramSocket) {
+              console.log('[Offscreen] Attempting to reconnect to Deepgram...')
+              connectDeepgram(apiKey).catch(err => {
+                console.error('[Offscreen] Reconnection failed:', err)
+                // Notify UI about connection issues
+                chrome.runtime.sendMessage({
+                  type: 'TRANSCRIPTION_ERROR',
+                  error: 'connection_lost',
+                  message: `Reconnect attempt ${reconnectAttempts} failed`
+                })
+              })
+            }
+          }, delay)
+        } else {
+          console.error('[Offscreen] Max reconnection attempts reached. Falling back to backend transcription.')
+          // Notify UI that transcription has failed
+          chrome.runtime.sendMessage({
+            type: 'TRANSCRIPTION_ERROR',
+            error: 'max_reconnects_exceeded',
+            message: 'Live transcription unavailable. Some conversation may not be captured.'
+          })
+          // Fall back to backend transcription
+          startBackendTranscription()
+        }
       }
     }
   })
@@ -237,8 +276,8 @@ function startBackendTranscription() {
 
   // Record in 5-second intervals
   mediaRecorder.start()
-  setInterval(() => {
-    if (mediaRecorder.state === 'recording') {
+  backendTranscriptionInterval = setInterval(() => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
       mediaRecorder.stop()
       mediaRecorder.start()
     }
@@ -255,13 +294,9 @@ function startAudioStreaming() {
   // Use ScriptProcessorNode for raw PCM (linear16) data
   // This is more compatible with Deepgram than MediaRecorder
   const source = audioContext.createMediaStreamSource(recordingStream)
-  const processor = audioContext.createScriptProcessor(4096, 1, 1)
+  audioProcessor = audioContext.createScriptProcessor(4096, 1, 1)
 
-  processor.onaudioprocess = (event) => {
-    if (!deepgramSocket || deepgramSocket.readyState !== WebSocket.OPEN) {
-      return
-    }
-
+  audioProcessor.onaudioprocess = (event) => {
     // Get the raw audio data
     const inputData = event.inputBuffer.getChannelData(0)
 
@@ -273,12 +308,33 @@ function startAudioStreaming() {
       pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF
     }
 
-    // Send to Deepgram
-    deepgramSocket.send(pcmData.buffer)
+    if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
+      // Socket is open - first flush any buffered audio, then send current
+      if (audioBuffer.length > 0) {
+        console.log(`[Offscreen] Flushing ${audioBuffer.length} buffered audio frames`)
+        for (const bufferedData of audioBuffer) {
+          deepgramSocket.send(bufferedData)
+        }
+        audioBuffer = []
+      }
+      // Send current audio
+      deepgramSocket.send(pcmData.buffer)
+    } else if (isCapturing && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      // Socket is disconnected but we're reconnecting - buffer the audio
+      if (audioBuffer.length < MAX_AUDIO_BUFFER_SIZE) {
+        // Make a copy of the buffer since ArrayBuffer can be reused
+        audioBuffer.push(pcmData.buffer.slice(0))
+      } else if (audioBuffer.length === MAX_AUDIO_BUFFER_SIZE) {
+        console.warn('[Offscreen] Audio buffer full - dropping oldest frames')
+        audioBuffer.shift()
+        audioBuffer.push(pcmData.buffer.slice(0))
+      }
+    }
+    // If we've exceeded max reconnects and have no socket, audio is just dropped
   }
 
-  source.connect(processor)
-  processor.connect(audioContext.destination)
+  source.connect(audioProcessor)
+  audioProcessor.connect(audioContext.destination)
 
   console.log('[Offscreen] Audio streaming started')
 }
@@ -350,11 +406,13 @@ function handleDeepgramMessage(data) {
   }
 }
 
+const MAX_TRANSCRIPT_BUFFER_SIZE = 100  // Prevent unbounded memory growth
+
 async function sendTranscriptsForAnalysis() {
   if (transcriptBuffer.length === 0) return
 
+  // Take transcripts but DON'T clear buffer yet - wait for success
   const transcripts = [...transcriptBuffer]
-  transcriptBuffer = []
   lastTranscriptSendTime = Date.now()
 
   console.log('[Offscreen] Sending', transcripts.length, 'transcripts for analysis with methodology:', methodology)
@@ -373,8 +431,18 @@ async function sendTranscriptsForAnalysis() {
       })
     })
 
+    const data = await response.json()
+
+    // Check for rate limiting or other soft failures
+    if (data.status === 'rate_limited') {
+      console.log('[Offscreen] Rate limited - keeping transcripts in buffer for retry')
+      // Don't clear buffer - will retry on next interval
+      return
+    }
+
     if (response.ok) {
-      const data = await response.json()
+      // SUCCESS - Now safe to clear the buffer
+      transcriptBuffer = []
 
       console.log('[Offscreen] Analysis response:', {
         hasStage: !!data.stage,
@@ -400,12 +468,20 @@ async function sendTranscriptsForAnalysis() {
         })
       }
     } else {
-      console.error('[Offscreen] Failed to send transcripts:', response.status)
+      console.error('[Offscreen] Failed to send transcripts:', response.status, data)
+      // Keep transcripts in buffer for retry, but limit size to prevent memory issues
+      if (transcriptBuffer.length > MAX_TRANSCRIPT_BUFFER_SIZE) {
+        console.warn('[Offscreen] Buffer overflow - dropping oldest transcripts')
+        transcriptBuffer = transcriptBuffer.slice(-MAX_TRANSCRIPT_BUFFER_SIZE)
+      }
     }
   } catch (error) {
     console.error('[Offscreen] Error sending transcripts:', error)
-    // Put transcripts back in buffer to retry
-    transcriptBuffer = [...transcripts, ...transcriptBuffer]
+    // Keep transcripts in buffer for retry, but limit size
+    if (transcriptBuffer.length > MAX_TRANSCRIPT_BUFFER_SIZE) {
+      console.warn('[Offscreen] Buffer overflow - dropping oldest transcripts')
+      transcriptBuffer = transcriptBuffer.slice(-MAX_TRANSCRIPT_BUFFER_SIZE)
+    }
   }
 }
 
@@ -435,6 +511,22 @@ async function stopCapture() {
 
 async function cleanup() {
   console.log('[Offscreen] Cleaning up resources')
+
+  // Clear backend transcription interval
+  if (backendTranscriptionInterval) {
+    clearInterval(backendTranscriptionInterval)
+    backendTranscriptionInterval = null
+  }
+
+  // Disconnect audio processor to stop audio processing
+  if (audioProcessor) {
+    try {
+      audioProcessor.disconnect()
+    } catch (e) {
+      console.error('[Offscreen] Error disconnecting audio processor:', e)
+    }
+    audioProcessor = null
+  }
 
   // Close Deepgram WebSocket
   if (deepgramSocket) {
@@ -482,8 +574,11 @@ async function cleanup() {
     mediaStream = null
   }
 
+  // Reset all buffers and tracking
   transcriptBuffer = []
+  audioBuffer = []
   lastTranscriptSendTime = 0
+  reconnectAttempts = 0
 
   console.log('[Offscreen] Cleanup complete')
 }
