@@ -1632,7 +1632,13 @@
 
     if (message.type === 'COACHING_INSIGHT') {
       // Handle enhanced coaching insights from backend
-      console.log('[RevPilot] Coaching insight received:', message.stage, message.insight?.substring(0, 50))
+      console.log('[RevPilot] Coaching insight received:', {
+        stage: message.stage,
+        scriptSection: message.script?.sectionName,
+        scriptOrder: message.script?.sectionOrder,
+        hasSuggestion: !!message.suggestion,
+        insight: message.insight?.substring(0, 50)
+      })
 
       // Update conversation stage
       if (message.stage) {
@@ -1657,6 +1663,16 @@
       // Update script progress (RevPilot methodology)
       if (message.script) {
         updateScriptProgress(message.script)
+      }
+
+      // Display suggestion immediately if provided
+      if (message.suggestion && message.suggestion.content) {
+        addSuggestion({
+          type: message.suggestion.type || 'tip',
+          content: message.suggestion.content,
+          priority: message.suggestion.priority || 'medium',
+          created_at: new Date().toISOString()
+        })
       }
     }
   })

@@ -133,14 +133,20 @@ async function handleStartCoaching(message, sender) {
     // Step 3: Create offscreen document if needed
     await ensureOffscreenDocument()
 
-    // Step 4: Start capture in offscreen document
+    // Step 4: Get selected methodology from storage (default to revpilot)
+    const { selectedMethodology } = await chrome.storage.local.get(['selectedMethodology'])
+    const methodology = selectedMethodology || 'revpilot'
+    console.log('[RevPilot BG] Using methodology:', methodology)
+
+    // Step 5: Start capture in offscreen document
     console.log('[RevPilot BG] Starting capture in offscreen document...')
     const captureResult = await sendMessageToOffscreen({
       type: 'START_CAPTURE',
       streamId,
       sessionId: sessionData.id,
       authToken,
-      deepgramApiKey: sessionData.deepgramApiKey || null
+      deepgramApiKey: sessionData.deepgramApiKey || null,
+      methodology  // CRITICAL: Pass methodology for proper script tracking
     })
 
     if (captureResult.error) {

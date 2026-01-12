@@ -376,15 +376,27 @@ async function sendTranscriptsForAnalysis() {
     if (response.ok) {
       const data = await response.json()
 
-      // Send enhanced coaching data back to content script
-      if (data.stage || data.conversationInsight || data.predictedNextMove) {
+      console.log('[Offscreen] Analysis response:', {
+        hasStage: !!data.stage,
+        hasScript: !!data.script,
+        scriptSection: data.script?.sectionName,
+        scriptOrder: data.script?.sectionOrder,
+        hasSuggestion: !!data.suggestion,
+        talkRatio: data.talkRatio
+      })
+
+      // Send coaching data back to content script
+      // Include script data for RevPilot methodology section tracking
+      if (data.stage || data.conversationInsight || data.predictedNextMove || data.script || data.suggestion) {
         chrome.runtime.sendMessage({
           type: 'COACHING_INSIGHT',
           stage: data.stage,
           insight: data.conversationInsight,
           prediction: data.predictedNextMove,
           keyInfo: data.keyInfo,
-          talkRatio: data.talkRatio
+          talkRatio: data.talkRatio,
+          script: data.script,  // CRITICAL: Include script section data for UI updates
+          suggestion: data.suggestion  // Include suggestion for immediate display
         })
       }
     } else {
