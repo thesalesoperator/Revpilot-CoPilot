@@ -1096,17 +1096,27 @@ ${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-3)
 YOUR TASK:
 ═══════════════════════════════════════════════════════════════════════════════
 
-Provide ONE highly specific, actionable coaching suggestion based on:
-1. What was just said in the conversation
-2. The current section's objective
-3. Whether they should stay in this section or advance
-4. Any detected objections or buying signals
+Analyze what was just said and decide IF coaching is needed right now.
 
-CRITICAL RULES:
-• Be SPECIFIC to what was just said - not generic advice
-• If suggesting a question, provide the EXACT WORDING from the script, personalized to their situation
-• Use their words back to them when possible
-• Keep suggestions brief (1-2 sentences) but highly actionable
+WHEN TO GIVE A SUGGESTION (only if one of these applies):
+1. The PROSPECT just finished speaking and the rep needs to respond
+2. An objection was raised that needs addressing
+3. A buying signal was detected that should be capitalized on
+4. The rep is going off-script or making a mistake
+5. It's time to transition to the next section
+
+WHEN TO RETURN NULL (no suggestion):
+1. The rep is in the middle of asking a good question - let them finish
+2. The prospect is still talking - don't interrupt their thought
+3. The conversation is flowing well and on-script
+4. You already suggested something similar recently
+5. There's not enough context yet to give meaningful advice
+
+If you DO give a suggestion, make it:
+• SPECIFIC to what was just said - not generic advice
+• A direct response to the prospect's last statement
+• Brief (1-2 sentences) but highly actionable
+• The EXACT WORDING from the script when suggesting questions
 
 ═══════════════════════════════════════════════════════════════════════════════
 🚫 ABSOLUTE RESTRICTIONS - VIOLATING THESE IS A CRITICAL ERROR 🚫

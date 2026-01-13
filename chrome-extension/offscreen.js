@@ -13,7 +13,8 @@ let authToken = null
 let methodology = 'general' // Sales methodology: meddic, spin, challenger, sandler, bant, general
 let transcriptBuffer = []
 let lastTranscriptSendTime = 0
-const TRANSCRIPT_SEND_INTERVAL = 3000 // Send transcripts to backend every 3 seconds
+const TRANSCRIPT_SEND_INTERVAL = 8000 // Send transcripts to backend every 8 seconds for better context
+const MIN_WORDS_FOR_ANALYSIS = 10 // Minimum words before triggering analysis
 
 // Reconnection tracking
 let reconnectAttempts = 0
@@ -379,8 +380,14 @@ function handleDeepgramMessage(data) {
         })
 
         // Check if we should send accumulated transcripts to backend for analysis
+        // Only send if enough time has passed AND we have sufficient content
         const now = Date.now()
-        if (now - lastTranscriptSendTime >= TRANSCRIPT_SEND_INTERVAL && transcriptBuffer.length > 0) {
+        const totalWords = transcriptBuffer.reduce((sum, t) => sum + t.text.split(/\s+/).length, 0)
+        const hasEnoughContent = totalWords >= MIN_WORDS_FOR_ANALYSIS
+        const timeToSend = now - lastTranscriptSendTime >= TRANSCRIPT_SEND_INTERVAL
+
+        if (timeToSend && hasEnoughContent) {
+          console.log(`[Offscreen] Sending for analysis: ${totalWords} words, ${transcriptBuffer.length} entries`)
           sendTranscriptsForAnalysis()
         }
       }
@@ -390,8 +397,13 @@ function handleDeepgramMessage(data) {
   // Handle utterance end (speaker finished talking)
   if (data.type === 'UtteranceEnd') {
     console.log('[Offscreen] Utterance ended')
-    // Good time to send transcripts for analysis
-    if (transcriptBuffer.length > 0) {
+    // Only send if we have enough content (prevents rapid-fire suggestions)
+    const totalWords = transcriptBuffer.reduce((sum, t) => sum + t.text.split(/\s+/).length, 0)
+    const now = Date.now()
+    const minTimePassed = now - lastTranscriptSendTime >= 4000 // At least 4 seconds since last send
+
+    if (transcriptBuffer.length > 0 && totalWords >= MIN_WORDS_FOR_ANALYSIS && minTimePassed) {
+      console.log(`[Offscreen] Utterance end - sending ${totalWords} words for analysis`)
       sendTranscriptsForAnalysis()
     }
   }

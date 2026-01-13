@@ -317,11 +317,28 @@
               </div>
             </div>
 
-            <!-- Center Section: Coaching Suggestions -->
+            <!-- Center Section: Transcript & Coaching -->
             <div class="revpilot-section revpilot-section-suggestions">
-              <div class="revpilot-suggestions" id="revpilot-suggestions">
-                <div class="revpilot-empty">
-                  <p>Listening to your call...</p>
+              <!-- Live Transcript Box -->
+              <div class="revpilot-transcript-box" id="revpilot-transcript-box">
+                <div class="revpilot-transcript-header-bar">
+                  <span class="revpilot-transcript-title">📝 Live Transcript</span>
+                  <button class="revpilot-clear-btn" id="revpilot-clear-transcript" title="Clear">✕</button>
+                </div>
+                <div class="revpilot-transcript-content" id="revpilot-transcript-content">
+                  <div class="revpilot-transcript-empty">Waiting for speech...</div>
+                </div>
+              </div>
+
+              <!-- Coaching Suggestions Box -->
+              <div class="revpilot-coaching-box" id="revpilot-coaching-box">
+                <div class="revpilot-coaching-header-bar">
+                  <span class="revpilot-coaching-title">💡 Coaching</span>
+                </div>
+                <div class="revpilot-suggestions" id="revpilot-suggestions">
+                  <div class="revpilot-empty">
+                    <p>Listening to your call...</p>
+                  </div>
                 </div>
               </div>
 
@@ -390,6 +407,7 @@
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
     document.getElementById('revpilot-new-call').addEventListener('click', resetToReadyState)
     document.getElementById('revpilot-flip-speakers').addEventListener('click', flipSpeakers)
+    document.getElementById('revpilot-clear-transcript').addEventListener('click', clearTranscript)
 
     // Load saved position and size
     loadOverlayPreferences()
@@ -851,6 +869,15 @@
     setTimeout(() => {
       flipBtn.textContent = '🔄'
     }, 1500)
+  }
+
+  function clearTranscript() {
+    const container = document.getElementById('revpilot-transcript-content')
+    if (!container) return
+
+    container.innerHTML = '<div class="revpilot-transcript-empty">Transcript cleared</div>'
+    transcriptHistory = []
+    console.log('[RevPilot] Transcript cleared')
   }
 
   async function stopCoaching() {
@@ -1731,37 +1758,40 @@
   }
 
   function updateLiveTranscript(transcript) {
-    const container = document.getElementById('revpilot-suggestions')
+    const container = document.getElementById('revpilot-transcript-content')
     if (!container) return
 
-    // Remove "Listening..." placeholder
-    const empty = container.querySelector('.revpilot-empty')
+    // Remove "Waiting for speech..." placeholder
+    const empty = container.querySelector('.revpilot-transcript-empty')
     if (empty) empty.remove()
 
-    // Create transcript bubble
+    // Create transcript entry
     const el = document.createElement('div')
-    el.className = 'revpilot-transcript'
+    el.className = 'revpilot-transcript-entry'
     const speakerLabel = transcript.speaker !== null && transcript.speaker !== undefined
       ? `Speaker ${transcript.speaker}`
-      : 'Transcript'
+      : 'Unknown'
+    const speakerClass = transcript.speaker === 0 ? 'speaker-0' : 'speaker-1'
     el.innerHTML = `
-      <div class="revpilot-transcript-header">
-        <span class="revpilot-transcript-speaker">${speakerLabel}</span>
-        <span class="revpilot-transcript-time">${formatTime(new Date().toISOString())}</span>
-      </div>
+      <span class="revpilot-speaker-label ${speakerClass}">${speakerLabel}</span>
+      <span class="revpilot-transcript-time">${formatTime(new Date().toISOString())}</span>
       <p class="revpilot-transcript-text">${transcript.text}</p>
     `
 
-    container.insertBefore(el, container.firstChild)
+    // Append to bottom (chronological order)
+    container.appendChild(el)
 
-    // Keep only last 8 items visible
-    while (container.children.length > 8) {
-      container.removeChild(container.lastChild)
+    // Auto-scroll to bottom
+    container.scrollTop = container.scrollHeight
+
+    // Keep only last 15 entries
+    while (container.children.length > 15) {
+      container.removeChild(container.firstChild)
     }
 
-    // Animate
-    el.classList.add('revpilot-suggestion-new')
-    setTimeout(() => el.classList.remove('revpilot-suggestion-new'), 1000)
+    // Animate new entry
+    el.classList.add('revpilot-transcript-new')
+    setTimeout(() => el.classList.remove('revpilot-transcript-new'), 500)
   }
 
   function updateTalkRatioIndicator(speaking) {
