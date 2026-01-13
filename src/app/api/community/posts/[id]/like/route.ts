@@ -71,6 +71,12 @@ export async function POST(
       newLikeCount = post.like_count + 1
     }
 
+    // Update the post's like_count
+    await supabase
+      .from('community_posts')
+      .update({ like_count: newLikeCount })
+      .eq('id', postId)
+
     const response: LikeResponse = {
       liked,
       like_count: newLikeCount,

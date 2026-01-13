@@ -24,6 +24,8 @@ import {
   Download,
   Video,
   ExternalLink,
+  Sparkles,
+  Play,
 } from 'lucide-react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import Modal from '@/components/ui/Modal'
@@ -59,15 +61,15 @@ function formatFileSize(bytes: number | null): string {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-green-400'
-  if (score >= 60) return 'text-yellow-400'
-  return 'text-red-400'
+  if (score >= 80) return 'text-[#5eead4]'
+  if (score >= 60) return 'text-[#5eead4]'
+  return 'text-gray-400'
 }
 
 function getScoreBg(score: number): string {
-  if (score >= 80) return 'bg-green-500/20 border-green-500/30'
-  if (score >= 60) return 'bg-yellow-500/20 border-yellow-500/30'
-  return 'bg-red-500/20 border-red-500/30'
+  if (score >= 80) return 'bg-[#5eead4]/20 border-[#5eead4]/30'
+  if (score >= 60) return 'bg-[#5eead4]/20 border-[#5eead4]/30'
+  return 'bg-gray-500/20 border-gray-500/30'
 }
 
 export default function CallsPage() {
@@ -85,6 +87,7 @@ export default function CallsPage() {
   const [fathomConnected, setFathomConnected] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [reanalyzingId, setReanalyzingId] = useState<string | null>(null)
+  const [creatingScenarioId, setCreatingScenarioId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { user } = useAuth()
@@ -412,15 +415,56 @@ export default function CallsPage() {
     }
   }
 
+  const handleCreateScenario = async (recordingId: string) => {
+    if (!user) return
+    setCreatingScenarioId(recordingId)
+
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.access_token) {
+        throw new Error('Not authenticated')
+      }
+
+      // Note: Call recordings use a different source than coaching_sessions
+      // For now, we'll create a scenario using the transcript directly
+      // The API needs to be extended to support call_recordings as source
+
+      const response = await fetch('/api/scenarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({
+          source_session_id: recordingId, // This will need API modification
+          name: `Practice Scenario from Call`,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create scenario')
+      }
+
+      showToast('success', 'AI Scenario created! Go to Practice to try it.')
+    } catch (error) {
+      console.error('Create scenario error:', error)
+      showToast('error', error instanceof Error ? error.message : 'Failed to create scenario')
+    } finally {
+      setCreatingScenarioId(null)
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="w-5 h-5 text-green-400" />
+        return <CheckCircle className="w-5 h-5 text-[#5eead4]" />
       case 'failed':
-        return <XCircle className="w-5 h-5 text-red-400" />
+        return <XCircle className="w-5 h-5 text-gray-400" />
       case 'transcribing':
       case 'analyzing':
-        return <Loader2 className="w-5 h-5 text-[#00ffc1] animate-spin" />
+        return <Loader2 className="w-5 h-5 text-[#5eead4] animate-spin" />
       default:
         return <Clock className="w-5 h-5 text-gray-400" />
     }
@@ -494,7 +538,7 @@ export default function CallsPage() {
         {uploading && (
           <div className="glass-card p-4">
             <div className="flex items-center gap-4">
-              <Loader2 className="w-6 h-6 text-[#00ffc1] animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#5eead4] animate-spin" />
               <div className="flex-1">
                 <p className="text-white font-medium">
                   {uploadProgress < 30
@@ -507,7 +551,7 @@ export default function CallsPage() {
                 </p>
                 <div className="mt-2 h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -541,8 +585,8 @@ export default function CallsPage() {
                   className="p-4 flex items-center gap-4 cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors"
                   onClick={() => setExpandedId(expandedId === recording.id ? null : recording.id)}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
-                    <FileAudio className="w-6 h-6 text-[#00ffc1]" />
+                  <div className="w-12 h-12 rounded-xl bg-[rgba(94,234,212,0.1)] flex items-center justify-center">
+                    <FileAudio className="w-6 h-6 text-[#5eead4]" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -578,7 +622,7 @@ export default function CallsPage() {
                         e.stopPropagation()
                         handleDeleteRecording(recording.id, recording.file_url)
                       }}
-                      className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-red-400 transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -593,7 +637,13 @@ export default function CallsPage() {
 
                 {/* Expanded Analysis */}
                 {expandedId === recording.id && recording.status === 'completed' && recording.analysis && (
-                  <AnalysisView analysis={recording.analysis} transcript={recording.transcript} />
+                  <AnalysisView
+                    analysis={recording.analysis}
+                    transcript={recording.transcript}
+                    recordingId={recording.id}
+                    onCreateScenario={handleCreateScenario}
+                    isCreatingScenario={creatingScenarioId === recording.id}
+                  />
                 )}
 
                 {/* Missing Analysis State - completed but no analysis data */}
@@ -609,7 +659,7 @@ export default function CallsPage() {
                 {/* Error State */}
                 {expandedId === recording.id && recording.status === 'failed' && (
                   <div className="p-6 border-t border-[rgba(255,255,255,0.05)]">
-                    <div className="flex items-center gap-3 text-red-400">
+                    <div className="flex items-center gap-3 text-gray-400">
                       <XCircle className="w-5 h-5" />
                       <span>{recording.error_message || 'An error occurred during analysis'}</span>
                     </div>
@@ -620,7 +670,7 @@ export default function CallsPage() {
                 {expandedId === recording.id &&
                   (recording.status === 'transcribing' || recording.status === 'analyzing') && (
                     <div className="p-6 border-t border-[rgba(255,255,255,0.05)]">
-                      <div className="flex items-center gap-3 text-[#00ffc1]">
+                      <div className="flex items-center gap-3 text-[#5eead4]">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span>
                           {recording.status === 'transcribing'
@@ -641,10 +691,10 @@ export default function CallsPage() {
         <div className="space-y-6">
           <div className="text-center">
             <div
-              className="border-2 border-dashed border-[rgba(0,255,193,0.3)] rounded-xl p-8 hover:border-[#00ffc1] transition-colors cursor-pointer"
+              className="border-2 border-dashed border-[rgba(94,234,212,0.3)] rounded-xl p-8 hover:border-[#5eead4] transition-colors cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="w-12 h-12 text-[#00ffc1] mx-auto mb-4" />
+              <Upload className="w-12 h-12 text-[#5eead4] mx-auto mb-4" />
               <p className="text-white font-medium mb-2">Click to upload or drag and drop</p>
               <p className="text-gray-400 text-sm">MP3, MP4, WAV, M4A, or WebM (max 25MB)</p>
             </div>
@@ -657,23 +707,23 @@ export default function CallsPage() {
             />
           </div>
 
-          <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4">
+          <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
             <h4 className="font-medium text-white mb-2">What you&apos;ll get:</h4>
             <ul className="space-y-2 text-sm text-gray-400">
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 Full transcript of your call
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 Scores for 6 key sales skills
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 Specific feedback with examples
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-[#00ffc1]" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4]" />
                 Actionable improvement suggestions
               </li>
             </ul>
@@ -686,7 +736,7 @@ export default function CallsPage() {
         <div className="space-y-4">
           {loadingFathom ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+              <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin" />
             </div>
           ) : fathomCalls.length === 0 ? (
             <div className="text-center py-8">
@@ -703,7 +753,7 @@ export default function CallsPage() {
                     type="checkbox"
                     checked={selectedFathomCalls.size === fathomCalls.length && fathomCalls.length > 0}
                     onChange={toggleSelectAllFathomCalls}
-                    className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#00ffc1]"
+                    className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#5eead4]"
                   />
                   Select All ({fathomCalls.length})
                 </label>
@@ -733,8 +783,8 @@ export default function CallsPage() {
                     onClick={() => toggleFathomCallSelection(meetingId)}
                     className={`bg-[rgba(255,255,255,0.02)] border rounded-xl p-4 flex items-center gap-3 cursor-pointer transition-colors ${
                       selectedFathomCalls.has(meetingId)
-                        ? 'border-[#00ffc1] bg-[rgba(0,255,193,0.05)]'
-                        : 'border-[rgba(255,255,255,0.05)] hover:border-[rgba(0,255,193,0.2)]'
+                        ? 'border-[#5eead4] bg-[rgba(94,234,212,0.05)]'
+                        : 'border-[rgba(255,255,255,0.05)] hover:border-[rgba(94,234,212,0.2)]'
                     }`}
                   >
                     <input
@@ -742,10 +792,10 @@ export default function CallsPage() {
                       checked={selectedFathomCalls.has(meetingId)}
                       onChange={() => toggleFathomCallSelection(meetingId)}
                       onClick={(e) => e.stopPropagation()}
-                      className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#00ffc1]"
+                      className="w-4 h-4 rounded border-gray-600 bg-transparent accent-[#5eead4]"
                     />
-                    <div className="w-10 h-10 rounded-lg bg-[rgba(0,255,193,0.1)] flex items-center justify-center">
-                      <Video className="w-5 h-5 text-[#00ffc1]" />
+                    <div className="w-10 h-10 rounded-lg bg-[rgba(94,234,212,0.1)] flex items-center justify-center">
+                      <Video className="w-5 h-5 text-[#5eead4]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-white truncate">
@@ -788,7 +838,7 @@ export default function CallsPage() {
               href="https://fathom.video/home"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-[#00ffc1] hover:underline flex items-center gap-1"
+              className="text-sm text-[#5eead4] hover:underline flex items-center gap-1"
             >
               Open Fathom <ExternalLink className="w-3 h-3" />
             </a>
@@ -821,8 +871,8 @@ function MissingAnalysisView({ recordingId, transcript, onReanalyze, isReanalyzi
   return (
     <div className="border-t border-[rgba(255,255,255,0.05)] p-6">
       <div className="text-center py-6">
-        <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
-          <XCircle className="w-8 h-8 text-amber-500" />
+        <div className="w-16 h-16 rounded-full bg-[#5eead4]/10 flex items-center justify-center mx-auto mb-4">
+          <XCircle className="w-8 h-8 text-[#5eead4]" />
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Analysis Data Missing</h3>
         <p className="text-gray-400 mb-6 max-w-md mx-auto">
@@ -876,9 +926,12 @@ function MissingAnalysisView({ recordingId, transcript, onReanalyze, isReanalyzi
 interface AnalysisViewProps {
   analysis: CallAnalysis
   transcript: string | null
+  recordingId?: string
+  onCreateScenario?: (recordingId: string) => void
+  isCreatingScenario?: boolean
 }
 
-function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
+function AnalysisView({ analysis, transcript, recordingId, onCreateScenario, isCreatingScenario }: AnalysisViewProps) {
   const [showTranscript, setShowTranscript] = useState(false)
 
   // Safety check for malformed analysis data
@@ -903,7 +956,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
   return (
     <div className="border-t border-[rgba(255,255,255,0.05)]">
       {/* Summary */}
-      <div className="p-6 bg-[rgba(0,255,193,0.02)]">
+      <div className="p-6 bg-[rgba(94,234,212,0.02)]">
         <h4 className="font-semibold text-white mb-2">Summary</h4>
         <p className="text-gray-300">{analysis.summary || 'No summary available'}</p>
       </div>
@@ -940,7 +993,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
                 </div>
                 <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#00ffc1]"
+                    className="h-full bg-[#5eead4]"
                     style={{ width: `${analysis.talk_listen_ratio.rep_percentage || 0}%` }}
                   />
                 </div>
@@ -952,7 +1005,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
                 </div>
                 <div className="h-2 bg-[rgba(255,255,255,0.1)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#ff9855]"
+                    className="h-full bg-[#5eead4]"
                     style={{ width: `${analysis.talk_listen_ratio.prospect_percentage || 0}%` }}
                   />
                 </div>
@@ -972,7 +1025,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Icon className="w-4 h-4 text-[#00ffc1]" />
+                <Icon className="w-4 h-4 text-[#5eead4]" />
                 <span className="font-medium text-white">{label}</span>
               </div>
               <span className={`font-bold ${getScoreColor(data.score || 0)}`}>{data.score || 0}/100</span>
@@ -983,7 +1036,7 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
                 {data.highlights.map((highlight, i) => (
                   <div
                     key={i}
-                    className="text-sm text-gray-400 pl-3 border-l-2 border-[rgba(0,255,193,0.3)] italic"
+                    className="text-sm text-gray-400 pl-3 border-l-2 border-[rgba(94,234,212,0.3)] italic"
                   >
                     &quot;{highlight}&quot;
                   </div>
@@ -996,15 +1049,15 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
 
       {/* Strengths & Improvements */}
       <div className="px-6 pb-6 grid md:grid-cols-2 gap-4">
-        <div className="bg-[rgba(0,255,193,0.05)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4">
+        <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-5 h-5 text-green-400" />
+            <TrendingUp className="w-5 h-5 text-[#5eead4]" />
             <h4 className="font-medium text-white">Strengths</h4>
           </div>
           <ul className="space-y-2">
             {(analysis.strengths || []).map((strength, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                <CheckCircle className="w-4 h-4 text-[#5eead4] mt-0.5 shrink-0" />
                 {strength}
               </li>
             ))}
@@ -1014,15 +1067,15 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
           </ul>
         </div>
 
-        <div className="bg-[rgba(255,152,85,0.05)] border border-[rgba(255,152,85,0.1)] rounded-xl p-4">
+        <div className="bg-[rgba(94,234,212,0.05)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
-            <TrendingDown className="w-5 h-5 text-orange-400" />
+            <TrendingDown className="w-5 h-5 text-[#5eead4]" />
             <h4 className="font-medium text-white">Key Improvements</h4>
           </div>
           <ul className="space-y-2">
             {(analysis.key_improvements || []).map((improvement, i) => (
               <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
-                <Target className="w-4 h-4 text-orange-400 mt-0.5 shrink-0" />
+                <Target className="w-4 h-4 text-[#5eead4] mt-0.5 shrink-0" />
                 {improvement}
               </li>
             ))}
@@ -1033,12 +1086,49 @@ function AnalysisView({ analysis, transcript }: AnalysisViewProps) {
         </div>
       </div>
 
+      {/* Create AI Scenario CTA */}
+      {recordingId && onCreateScenario && transcript && (
+        <div className="px-6 pb-6">
+          <div className="bg-gradient-to-r from-[rgba(0,255,193,0.1)] to-[rgba(139,92,246,0.1)] border border-[rgba(0,255,193,0.2)] rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00ffc1] to-[#8b5cf6] flex items-center justify-center shrink-0">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-semibold text-white mb-1">Practice This Call Again</h4>
+                <p className="text-sm text-gray-400 mb-4">
+                  Create an AI scenario from this call. The AI will roleplay as the prospect with their
+                  personality, objections, and pain points - so you can practice handling it better.
+                </p>
+                <button
+                  onClick={() => onCreateScenario(recordingId)}
+                  disabled={isCreatingScenario}
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  {isCreatingScenario ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Creating Scenario...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      Create AI Scenario
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Transcript Toggle */}
       {transcript && (
         <div className="px-6 pb-6">
           <button
             onClick={() => setShowTranscript(!showTranscript)}
-            className="flex items-center gap-2 text-[#00ffc1] hover:underline text-sm"
+            className="flex items-center gap-2 text-[#5eead4] hover:underline text-sm"
           >
             {showTranscript ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             {showTranscript ? 'Hide Transcript' : 'Show Full Transcript'}

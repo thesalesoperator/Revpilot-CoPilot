@@ -9,7 +9,8 @@ export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const RECALL_API_KEY = process.env.RECALL_API_KEY
 export const RECALL_API_REGION = process.env.RECALL_API_REGION || 'us-east-1'
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY
-export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://revpilot-commission-calculator.netlify.app'
+export const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY
+export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://revpilot-copilot.netlify.app'
 
 // Recall.ai regional API endpoints
 const RECALL_REGION_MAP: Record<string, string> = {

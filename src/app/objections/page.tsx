@@ -191,9 +191,9 @@ const objections = [
 ]
 
 const difficultyColors = {
-  common: { bg: 'bg-green-500/20', text: 'text-green-400', label: 'Common' },
-  medium: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', label: 'Medium' },
-  hard: { bg: 'bg-red-500/20', text: 'text-red-400', label: 'Hard' },
+  common: { bg: 'bg-[#5eead4]/20', text: 'text-[#5eead4]', label: 'Common' },
+  medium: { bg: 'bg-[#5eead4]/20', text: 'text-[#5eead4]', label: 'Medium' },
+  hard: { bg: 'bg-gray-500/20', text: 'text-gray-400', label: 'Hard' },
 }
 
 export default function ObjectionsPage() {
@@ -245,7 +245,7 @@ export default function ObjectionsPage() {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity"
           >
             <Plus className="w-5 h-5" />
             Add Objection
@@ -261,7 +261,7 @@ export default function ObjectionsPage() {
               placeholder="Search objections..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ export default function ObjectionsPage() {
                 onClick={() => setSortBy(sort as typeof sortBy)}
                 className={`px-4 py-2 rounded-xl transition-all capitalize ${
                   sortBy === sort
-                    ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                    ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                     : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                 }`}
               >
@@ -296,7 +296,7 @@ export default function ObjectionsPage() {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all ${
                       selectedCategory === cat.id
-                        ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1]'
+                        ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4]'
                         : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
                     }`}
                   >
@@ -320,10 +320,10 @@ export default function ObjectionsPage() {
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                         index === 0
-                          ? 'bg-yellow-500 text-black'
+                          ? 'bg-[#5eead4] text-black'
                           : index === 1
                             ? 'bg-gray-400 text-black'
-                            : 'bg-amber-700 text-white'
+                            : 'bg-gray-500 text-white'
                       }`}
                     >
                       {index + 1}
@@ -332,7 +332,7 @@ export default function ObjectionsPage() {
                       <p className="text-sm font-medium text-white">{contributor.name}</p>
                       <p className="text-xs text-gray-500">Lv.{contributor.level}</p>
                     </div>
-                    <span className="text-sm text-[#00ffc1]">{contributor.contributions}</span>
+                    <span className="text-sm text-[#5eead4]">{contributor.contributions}</span>
                   </div>
                 ))}
               </div>
@@ -353,7 +353,7 @@ export default function ObjectionsPage() {
                     className="w-full p-6 text-left hover:bg-[rgba(255,255,255,0.02)] transition-colors"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-500 to-[#5eead4] flex items-center justify-center flex-shrink-0">
                         <Shield className="w-6 h-6 text-white" />
                       </div>
                       <div className="flex-1">
@@ -379,7 +379,7 @@ export default function ObjectionsPage() {
                           }}
                           className={`p-2 rounded-lg transition-colors ${
                             savedObjections.has(objection.id)
-                              ? 'bg-[#00ffc1]/20 text-[#00ffc1]'
+                              ? 'bg-[#5eead4]/20 text-[#5eead4]'
                               : 'hover:bg-[rgba(255,255,255,0.1)] text-gray-400'
                           }`}
                         >
@@ -408,19 +408,19 @@ export default function ObjectionsPage() {
                             index < objection.responses.length - 1
                               ? 'border-b border-[rgba(255,255,255,0.05)]'
                               : ''
-                          } ${response.isTopResponse ? 'bg-[rgba(0,255,193,0.02)]' : ''}`}
+                          } ${response.isTopResponse ? 'bg-[rgba(94,234,212,0.02)]' : ''}`}
                         >
                           {response.isTopResponse && (
                             <div className="flex items-center gap-2 mb-3">
-                              <Award className="w-4 h-4 text-yellow-400" />
-                              <span className="text-xs font-semibold text-yellow-400">TOP RESPONSE</span>
+                              <Award className="w-4 h-4 text-[#5eead4]" />
+                              <span className="text-xs font-semibold text-[#5eead4]">TOP RESPONSE</span>
                             </div>
                           )}
                           <p className="text-gray-300 mb-4 leading-relaxed">{response.text}</p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-semibold">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-white text-sm font-semibold">
                                   {response.author[0]}
                                 </div>
                                 <div>
@@ -429,11 +429,11 @@ export default function ObjectionsPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <button className="flex items-center gap-1 text-gray-400 hover:text-green-400 transition-colors">
+                                <button className="flex items-center gap-1 text-gray-400 hover:text-[#5eead4] transition-colors">
                                   <ThumbsUp className="w-4 h-4" />
                                   <span className="text-sm">{response.upvotes}</span>
                                 </button>
-                                <button className="flex items-center gap-1 text-gray-400 hover:text-red-400 transition-colors">
+                                <button className="flex items-center gap-1 text-gray-400 hover:text-gray-400 transition-colors">
                                   <ThumbsDown className="w-4 h-4" />
                                   <span className="text-sm">{response.downvotes}</span>
                                 </button>
@@ -450,8 +450,8 @@ export default function ObjectionsPage() {
                               >
                                 {copiedId === response.id ? (
                                   <>
-                                    <Check className="w-4 h-4 text-green-400" />
-                                    <span className="text-sm text-green-400">Copied</span>
+                                    <Check className="w-4 h-4 text-[#5eead4]" />
+                                    <span className="text-sm text-[#5eead4]">Copied</span>
                                   </>
                                 ) : (
                                   <>
@@ -460,7 +460,7 @@ export default function ObjectionsPage() {
                                   </>
                                 )}
                               </button>
-                              <button className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[rgba(0,255,193,0.1)] text-[#00ffc1] hover:bg-[rgba(0,255,193,0.2)] transition-colors">
+                              <button className="flex items-center gap-1 px-3 py-1 rounded-lg bg-[rgba(94,234,212,0.1)] text-[#5eead4] hover:bg-[rgba(94,234,212,0.2)] transition-colors">
                                 <Play className="w-4 h-4" />
                                 <span className="text-sm">Practice</span>
                               </button>
@@ -493,12 +493,12 @@ export default function ObjectionsPage() {
             <input
               type="text"
               placeholder='e.g., "We need to see more case studies"'
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">Category</label>
-            <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00ffc1]">
+            <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#5eead4]">
               {categories.slice(1).map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.label}
@@ -511,7 +511,7 @@ export default function ObjectionsPage() {
             <textarea
               rows={4}
               placeholder="Share your best response to this objection..."
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1] resize-none"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4] resize-none"
             />
           </div>
           <div className="flex gap-3 pt-4">
@@ -521,7 +521,7 @@ export default function ObjectionsPage() {
             >
               Cancel
             </button>
-            <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+            <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
               Submit
             </button>
           </div>

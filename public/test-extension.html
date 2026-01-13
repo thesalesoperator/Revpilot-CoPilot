@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevPilot Extension Test - Full Call Simulation</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0a0f1c;
+      color: #fff;
+    }
+    h1 { color: #00ffc1; }
+    h2 { color: #ff9855; margin-top: 0; }
+    .test-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    button {
+      background: #00ffc1;
+      color: #0a0f1c;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .warning {
+      background: rgba(255,107,107,0.2);
+      border: 1px solid #ff6b6b;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .success {
+      background: rgba(0,255,193,0.1);
+      border: 1px solid #00ffc1;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .instructions {
+      background: rgba(0,255,193,0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .step-number {
+      background: #00ffc1;
+      color: #0a0f1c;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    #status {
+      color: #00ffc1;
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(0,255,193,0.1);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .audio-upload {
+      border: 2px dashed rgba(0,255,193,0.3);
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .audio-upload:hover {
+      border-color: #00ffc1;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .transcript-display {
+      background: #1a1f2e;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 13px;
+      margin-top: 15px;
+    }
+    audio {
+      width: 100%;
+      margin: 15px 0;
+    }
+    .method-card {
+      background: rgba(255,255,255,0.05);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .method-card h3 {
+      color: #00ffc1;
+      margin-top: 0;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+    .tag.recommended { background: #00ffc1; color: #0a0f1c; }
+    .tag.works { background: #51cf66; color: white; }
+    .tag.limited { background: #ffd43b; color: #333; }
+  </style>
+</head>
+<body>
+  <h1>🎯 RevPilot Extension Test Page</h1>
+
+  <div class="warning">
+    <strong>⚠️ Important:</strong> Chrome's tab capture can only record audio that plays <em>through the tab</em>.
+    Browser text-to-speech (TTS) bypasses the tab and goes directly to your speakers, so it won't be captured.
+    Use one of the methods below that actually play audio through this tab.
+  </div>
+
+  <div class="test-section">
+    <h2>📋 How to Test</h2>
+    <div class="step">
+      <div class="step-number">1</div>
+      <div>
+        <strong>Start the Extension</strong><br>
+        Click the RevPilot extension icon and start a coaching session on this tab
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div>
+        <strong>Play Audio (use methods below)</strong><br>
+        Upload a sales call recording OR use the Web Audio synthesizer
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div>
+        <strong>Watch the Coaching Panel</strong><br>
+        The extension should transcribe the conversation and provide coaching suggestions
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>🎵 Method 1: Upload Sales Call Recording <span class="tag recommended">RECOMMENDED</span></h2>
+    <p>Upload an MP3, WAV, or any audio file of a sales call. This is the most realistic test.</p>
+
+    <div class="audio-upload" onclick="document.getElementById('audioFile').click()">
+      <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioUpload(event)">
+      <p>📁 Click to upload or drag & drop audio file</p>
+      <p style="color: #888; font-size: 13px;">Supports: MP3, WAV, M4A, OGG, WebM</p>
+    </div>
+
+    <div id="audioPlayerContainer" style="display:none;">
+      <audio id="audioPlayer" controls></audio>
+      <p style="color: #00ffc1; font-size: 13px;">✅ Press play - the extension WILL capture this audio</p>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>🔊 Method 2: Web Audio Speech Synthesizer <span class="tag works">WORKS</span></h2>
+    <p>Uses Web Audio API to generate speech-like tones that play through the tab (capturable).</p>
+    <p style="color: #888; font-size: 13px;">Note: This creates audible tones, not actual speech. Good for testing the capture pipeline.</p>
+
+    <button onclick="playTestTone()">🔊 Play Test Tone (5 sec)</button>
+    <button onclick="stopTestTone()">⏹️ Stop</button>
+
+    <div id="toneStatus" style="margin-top: 10px; color: #888;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>🎬 Method 3: Sample Sales Call Audio</h2>
+    <p>Click to load a sample sales conversation audio file:</p>
+
+    <div class="method-card">
+      <h3>Option A: Use a YouTube Sales Call</h3>
+      <p>Open YouTube in another tab, find a sales call recording, and run the extension on that tab instead.</p>
+      <p style="color: #888; font-size: 13px;">Search: "sales call recording" or "cold call example"</p>
+      <a href="https://www.youtube.com/results?search_query=sales+call+recording+roleplay" target="_blank">
+        <button>🔗 Search YouTube for Sales Calls</button>
+      </a>
+    </div>
+
+    <div class="method-card">
+      <h3>Option B: Record Yourself</h3>
+      <p>Use your phone or computer to record a practice sales conversation, then upload it above.</p>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>🧪 Debug Information</h2>
+    <p>Open Chrome DevTools (F12) and check the console for these logs:</p>
+
+    <div class="transcript-display">
+      <strong>Expected logs when working:</strong><br><br>
+      [RevPilot] Content script loaded on: .../test-extension.html<br>
+      [RevPilot] Test page detected<br>
+      [RevPilot BG] Starting coaching session<br>
+      [RevPilot BG] Got stream ID<br>
+      [Offscreen] Deepgram WebSocket connected<br>
+      [Offscreen] Audio streaming started<br>
+      <span style="color: #00ffc1;">[Offscreen] Transcript: FINAL "Hello this is..."</span><br><br>
+
+      <strong style="color: #ff6b6b;">If you see NO transcript logs:</strong><br>
+      - Audio is not being captured (check method used)<br>
+      - Deepgram connection failed (check API key)<br>
+      - Offscreen document not created<br>
+    </div>
+
+    <button onclick="copyDebugInfo()">📋 Copy Debug Info</button>
+  </div>
+
+  <div class="test-section">
+    <h2>✅ What to Verify</h2>
+    <table style="width:100%; border-collapse: collapse;">
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">✓ Extension overlay appears</td>
+        <td style="padding: 10px; color: #888;">Coaching panel shows on page</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">✓ "LIVE" indicator shows</td>
+        <td style="padding: 10px; color: #888;">Session is active</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">✓ Console shows transcript logs</td>
+        <td style="padding: 10px; color: #888;">[Offscreen] Transcript: FINAL messages</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">✓ Script progress updates</td>
+        <td style="padding: 10px; color: #888;">1/17 → 2/17, etc.</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">✓ AI suggestions appear</td>
+        <td style="padding: 10px; color: #888;">Tips change based on conversation</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="status">
+    <strong>Status:</strong> Ready - Start coaching session, then play audio using Method 1 or 2 above
+  </div>
+
+  <script>
+    // Audio context for Web Audio API
+    let audioContext = null;
+    let oscillator = null;
+    let gainNode = null;
+
+    // Audio File Upload - THIS WORKS because <audio> element plays through the tab
+    function handleAudioUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const audio = document.getElementById('audioPlayer');
+        const container = document.getElementById('audioPlayerContainer');
+        audio.src = URL.createObjectURL(file);
+        container.style.display = 'block';
+        updateStatus(`✅ Audio loaded: ${file.name} - Press play to start. This WILL be captured.`);
+      }
+    }
+
+    // Web Audio API Test Tone - THIS WORKS because Web Audio plays through the tab
+    function playTestTone() {
+      if (audioContext) {
+        stopTestTone();
+      }
+
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      oscillator = audioContext.createOscillator();
+      gainNode = audioContext.createGain();
+
+      // Create a more complex sound (speech-like frequencies)
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+
+      // Modulate frequency to simulate speech patterns
+      oscillator.frequency.linearRampToValueAtTime(300, audioContext.currentTime + 1);
+      oscillator.frequency.linearRampToValueAtTime(150, audioContext.currentTime + 2);
+      oscillator.frequency.linearRampToValueAtTime(250, audioContext.currentTime + 3);
+      oscillator.frequency.linearRampToValueAtTime(180, audioContext.currentTime + 4);
+      oscillator.frequency.linearRampToValueAtTime(220, audioContext.currentTime + 5);
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 5);
+
+      document.getElementById('toneStatus').innerHTML = '🔊 Playing test tone... (check if extension detects audio)';
+      updateStatus('🔊 Test tone playing - watch the extension for transcript activity');
+
+      oscillator.onended = () => {
+        document.getElementById('toneStatus').innerHTML = '✅ Tone finished. Check console for [Offscreen] Transcript logs.';
+        audioContext = null;
+      };
+    }
+
+    function stopTestTone() {
+      if (oscillator) {
+        try { oscillator.stop(); } catch(e) {}
+        oscillator = null;
+      }
+      if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+      }
+      document.getElementById('toneStatus').innerHTML = '⏹️ Stopped';
+    }
+
+    function updateStatus(message) {
+      document.getElementById('status').innerHTML = `<strong>Status:</strong> ${message}`;
+    }
+
+    function copyDebugInfo() {
+      const info = `RevPilot Extension Debug Info
+============================
+URL: ${window.location.href}
+Time: ${new Date().toISOString()}
+User Agent: ${navigator.userAgent}
+
+Instructions:
+1. Open Chrome DevTools (F12)
+2. Go to Console tab
+3. Look for [RevPilot], [Offscreen], [RevPilot BG] logs
+4. Copy any error messages
+
+Expected flow:
+- [RevPilot] Test page detected
+- [RevPilot BG] Starting coaching session
+- [RevPilot BG] Got stream ID
+- [Offscreen] Deepgram WebSocket connected
+- [Offscreen] Transcript: FINAL "..."
+`;
+      navigator.clipboard.writeText(info).then(() => {
+        alert('Debug info copied to clipboard!');
+      });
+    }
+
+    // Drag and drop support
+    const uploadArea = document.querySelector('.audio-upload');
+    if (uploadArea) {
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = '#00ffc1';
+      });
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = 'rgba(0,255,193,0.3)';
+      });
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.style.borderColor = 'rgba(0,255,193,0.3)';
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('audio/')) {
+          document.getElementById('audioFile').files = e.dataTransfer.files;
+          handleAudioUpload({ target: { files: [file] } });
+        }
+      });
+    }
+
+    console.log('[Test Page] Loaded - Use audio upload or Web Audio test tone for capturable audio');
+    console.log('[Test Page] Note: Browser TTS (speechSynthesis) is NOT captured by tab capture');
+  </script>
+</body>
+</html>

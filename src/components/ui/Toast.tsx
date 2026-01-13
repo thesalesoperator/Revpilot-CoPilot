@@ -19,7 +19,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const showToast = useCallback((type: Toast['type'], message: string) => {
-    const id = Math.random().toString(36).substr(2, 9)
+    const id = Math.random().toString(36).substring(2, 11)
     setToasts((prev) => [...prev, { id, type, message }])
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -37,9 +37,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }
 
   const colors = {
-    success: 'border-[#00ffc1] text-[#00ffc1]',
-    error: 'border-[#ff6b8a] text-[#ff6b8a]',
-    info: 'border-[#ffbe57] text-[#ffbe57]',
+    success: 'border-[#5eead4] text-[#5eead4]',
+    error: 'border-gray-400 text-gray-400',
+    info: 'border-[#5eead4] text-[#5eead4]',
   }
 
   return (

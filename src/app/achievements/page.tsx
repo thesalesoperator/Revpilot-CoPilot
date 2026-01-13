@@ -402,9 +402,9 @@ const achievements = [
 
 const rarityColors = {
   common: { bg: 'from-gray-500 to-gray-600', border: 'border-gray-500', text: 'text-gray-400' },
-  rare: { bg: 'from-blue-500 to-blue-600', border: 'border-blue-500', text: 'text-blue-400' },
-  epic: { bg: 'from-purple-500 to-purple-600', border: 'border-purple-500', text: 'text-purple-400' },
-  legendary: { bg: 'from-yellow-500 to-orange-500', border: 'border-yellow-500', text: 'text-yellow-400' },
+  rare: { bg: 'from-[#5eead4] to-[#4fd1c5]', border: 'border-[#5eead4]', text: 'text-[#5eead4]' },
+  epic: { bg: 'from-[#5eead4] to-[#4fd1c5]', border: 'border-[#5eead4]', text: 'text-[#5eead4]' },
+  legendary: { bg: 'from-[#5eead4] to-[#5eead4]', border: 'border-[#5eead4]', text: 'text-[#5eead4]' },
 }
 
 export default function AchievementsPage() {
@@ -442,15 +442,15 @@ export default function AchievementsPage() {
           {/* Level Card */}
           <div className="glass-card p-6 col-span-2">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center">
-                <span className="text-3xl font-bold text-[#00102e]">{level}</span>
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center">
+                <span className="text-3xl font-bold text-[#0a0a0f]">{level}</span>
               </div>
               <div className="flex-1">
                 <p className="text-gray-400 text-sm mb-1">Current Level</p>
                 <p className="text-2xl font-bold text-white mb-2">Sales Champion</p>
                 <div className="w-full bg-[rgba(255,255,255,0.1)] rounded-full h-3">
                   <div
-                    className="bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] h-3 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] h-3 rounded-full transition-all duration-500"
                     style={{ width: `${(currentLevelXP / nextLevelXP) * 100}%` }}
                   />
                 </div>
@@ -464,7 +464,7 @@ export default function AchievementsPage() {
           {/* Total XP */}
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
+              <Zap className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Total XP</span>
             </div>
             <p className="text-3xl font-bold text-white">{totalXP.toLocaleString()}</p>
@@ -473,7 +473,7 @@ export default function AchievementsPage() {
           {/* Completion */}
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-2">
-              <Trophy className="w-5 h-5 text-[#00ffc1]" />
+              <Trophy className="w-5 h-5 text-[#5eead4]" />
               <span className="text-gray-400 text-sm">Unlocked</span>
             </div>
             <p className="text-3xl font-bold text-white">
@@ -491,7 +491,7 @@ export default function AchievementsPage() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
                 selectedCategory === cat.id
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -505,7 +505,7 @@ export default function AchievementsPage() {
               onClick={() => setShowUnlockedOnly(!showUnlockedOnly)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
                 showUnlockedOnly
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4]'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -585,7 +585,7 @@ export default function AchievementsPage() {
 
                     {/* XP and unlock date */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1 text-yellow-400">
+                      <div className="flex items-center gap-1 text-[#5eead4]">
                         <Zap className="w-4 h-4" />
                         <span className="text-sm font-medium">+{achievement.xp} XP</span>
                       </div>

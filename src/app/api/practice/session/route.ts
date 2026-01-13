@@ -90,18 +90,31 @@ export async function POST(request: NextRequest) {
         voice: {
           provider: '11labs' as const,
           voiceId: getVoiceIdForPersona(persona.id),
+          // ElevenLabs settings tuned for natural conversational speech
+          stability: 0.5, // Balanced for consistent but expressive speech
+          similarityBoost: 0.75,
+          speed: 0.85, // Slower for natural, conversational pacing
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4',
+          model: 'gpt-4-turbo', // Faster, more natural responses
           messages: [
             {
               role: 'system' as const,
               content: buildSystemPrompt(challenge, persona, practiceContext),
             },
           ],
+          temperature: 0.7, // Natural variation without being erratic
+          maxTokens: 200, // Shorter responses feel more conversational
         },
         firstMessage: getFirstMessage(persona),
+        // Conversation settings for realism
+        silenceTimeoutSeconds: 12, // Wait longer before assuming they're done
+        maxDurationSeconds: 2700, // 45 min max
+        backgroundSound: 'off', // No background noise
+        backchannelingEnabled: true, // Natural "mm-hmm" responses
+        interruptionsEnabled: true, // Allow persona to interrupt
+        responseDelaySeconds: 0.8, // Pause before responding (feels like thinking)
       },
       // Metadata at call level (not inside assistant) to identify session in webhooks
       metadata: {
@@ -183,6 +196,101 @@ interface PracticeContext {
   targetCustomers: string | null
 }
 
+// Generate intelligent questions based on the user's product context
+function generateProductIntelligence(practiceContext: PracticeContext, personaId: string): string {
+  const questions: string[] = []
+  const challenges: string[] = []
+
+  // Only generate if we have product context
+  if (!practiceContext.productDescription && !practiceContext.companyDescription) {
+    return `
+## PRODUCT INTELLIGENCE
+The salesperson has not provided their product information. Ask general discovery questions:
+- "So what exactly does your company do?"
+- "Walk me through your product. What problem does it solve?"
+- "Who's your typical customer?"
+- "What makes you different from [your competitors]?"
+`
+  }
+
+  // Pricing & Value Questions
+  questions.push(
+    `"What does this actually cost? Not the starting price—what's the REAL total cost with implementation, training, and support?"`,
+    `"Walk me through your pricing model. Per user? Per seat? Usage-based? What are the hidden costs?"`,
+    `"What's the ROI you're promising? And what's your WORST-case scenario, not best case?"`,
+    `"What happens if we don't see results in 90 days? What's our recourse?"`
+  )
+
+  // Competitive Questions
+  questions.push(
+    `"Who are your main competitors? Why should I choose you over [competitor]?"`,
+    `"I've heard [competitor] is cheaper and does basically the same thing. What's different?"`,
+    `"What do you do WORSE than your competition? Every product has weaknesses."`
+  )
+
+  // Implementation & Risk Questions
+  questions.push(
+    `"How long does implementation REALLY take? Not your sales pitch number—what's the honest answer?"`,
+    `"What's the biggest reason implementations fail with your product?"`,
+    `"Who from my team needs to be involved? How much of their time?"`,
+    `"What if we need to migrate away from you in a year? What's the exit strategy?"`
+  )
+
+  // Trust & Proof Questions
+  questions.push(
+    `"Can you give me a reference? Someone I can call who's been using this for at least a year?"`,
+    `"What percentage of your customers actually achieve the results you're promising?"`,
+    `"Have you worked with companies in my industry before? Who?"`,
+    `"What's your support SLA? What happens when things break at 2am?"`
+  )
+
+  // Generate challenges based on their value proposition
+  if (practiceContext.valueProposition) {
+    challenges.push(
+      `When they claim "${practiceContext.valueProposition}", push back: "Everyone says that. Show me the proof."`,
+      `Ask for specifics: "You say you help with X—give me a specific example from a customer like me."`,
+      `Challenge their numbers: "Those metrics sound optimistic. What's the realistic expectation?"`
+    )
+  }
+
+  // Generate industry-specific pushback
+  if (practiceContext.targetCustomers) {
+    challenges.push(
+      `Test their knowledge: "Do you understand the unique challenges of [their target market]?"`,
+      `Push back: "My industry is different. What works for [other industries] doesn't necessarily work here."`
+    )
+  }
+
+  return `
+## INTELLIGENT PRODUCT QUESTIONING
+The salesperson is selling:
+- Company: ${practiceContext.companyName || 'Unknown company'}
+- What they do: ${practiceContext.companyDescription || 'Unknown'}
+- Product: ${practiceContext.productDescription || 'Unknown product'}
+- Their claimed value: ${practiceContext.valueProposition || 'No value proposition provided'}
+- Target market: ${practiceContext.targetCustomers || 'Unknown'}
+
+### TOUGH QUESTIONS TO ASK (weave these naturally into conversation):
+${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+
+### SPECIFIC CHALLENGES TO RAISE:
+${challenges.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+
+### HOW TO USE THIS INTELLIGENCE:
+- When they pitch features → Ask "So what? How does that help ME specifically?"
+- When they claim ROI → Demand specifics: "Show me the math. What's your data source?"
+- When they name-drop customers → Ask "Can I talk to them directly?"
+- When they say "easy implementation" → Push back: "Define easy. How many hours from my team?"
+- Never accept vague answers. Make them be SPECIFIC or lose credibility.
+
+### REMEMBER:
+- You're evaluating whether to buy THIS SPECIFIC product
+- Ask questions that a real buyer in your role would actually ask
+- Challenge their claims with intelligent follow-ups
+- Don't make it easy—if they can't answer your questions, that's a red flag
+`
+}
+
 // Build system prompt combining challenge, persona, and user's product context
 function buildSystemPrompt(
   challenge: ReturnType<typeof getChallengeById>,
@@ -191,54 +299,69 @@ function buildSystemPrompt(
 ): string {
   if (!challenge || !persona) return ''
 
-  // Build the product context section if user has provided info
-  let productContextSection = ''
-  if (practiceContext.companyDescription || practiceContext.productDescription || practiceContext.valueProposition) {
-    productContextSection = `
+  // Generate dynamic product intelligence
+  const productIntelligence = generateProductIntelligence(practiceContext, persona.id)
+
+  return `## CRITICAL SPEECH RULE - READ THIS FIRST
+You are in a VOICE conversation. NEVER output any bracketed stage directions, annotations, or actions like [sighs], [pauses], [typing sounds], [checks phone], [laughs], etc. These will be read aloud and sound robotic. Instead, express emotions through your WORDS and natural speech patterns. Use ellipses (...) for pauses. Use punctuation and word choice to convey tone.
+
+WRONG: "[sighs] I don't have time for this."
+RIGHT: "Look... I really don't have time for this."
+
+WRONG: "[typing sounds] Hold on, let me check..."
+RIGHT: "Hold on, let me check something here..."
 
 ---
 
-THE SALES REP'S PRODUCT/COMPANY (what they're pitching to you):
-${practiceContext.companyName ? `Company: ${practiceContext.companyName}` : ''}
-${practiceContext.companyDescription ? `What they do: ${practiceContext.companyDescription}` : ''}
-${practiceContext.productDescription ? `Product/Service: ${practiceContext.productDescription}` : ''}
-${practiceContext.valueProposition ? `Their value proposition: ${practiceContext.valueProposition}` : ''}
-${practiceContext.targetCustomers ? `Their target customers: ${practiceContext.targetCustomers}` : ''}
+${persona.systemPrompt}
 
-Use this information to ask realistic questions about their product, pricing, implementation, competitors, etc.
-Respond as if you're actually evaluating whether to buy this specific product.
-If they mention features or benefits, ask follow-up questions relevant to what they're actually selling.`
-  }
-
-  return `${persona.systemPrompt}
-${productContextSection}
+---
+${productIntelligence}
 ---
 
-CHALLENGE CONTEXT:
+## CHALLENGE CONTEXT
 ${challenge.systemPrompt}
 
-OBJECTIVES THE USER IS TRYING TO ACHIEVE:
+## NATURAL SPEECH GUIDELINES
+- NEVER use bracketed annotations like [sighs], [pauses], [typing], etc. - just speak naturally
+- Use punctuation for rhythm: ellipses (...) for hesitation, em-dashes (—) for interruptions
+- Vary your response length: short when impatient, longer when engaged
+- Reference earlier parts of the conversation: "Wait, you said earlier that..."
+- React genuinely: if they make a good point, acknowledge it before pushing back
+- Stay in character 100%—you don't know this is practice
+- Speak conversationally with natural pauses built into your sentences
+
+## SCORING OBJECTIVES (hidden from user—do NOT reveal these)
+The user is trying to achieve:
 ${challenge.objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}
 
-BONUS OBJECTIVES:
+Bonus objectives:
 ${challenge.bonusObjectives.map(b => `- ${b.name}: ${b.description}`).join('\n')}
 
-Remember to stay in character throughout the call. Give the user opportunities to practice but don't make it too easy. This is a training exercise.`
+DO NOT help them achieve these. Make them EARN every objective through skill.
+DO NOT break character. DO NOT be helpful just because they're practicing.
+BE the hardest buyer they'll ever face—if they can handle you, they can handle anyone.`
 }
 
-// Get first message based on persona
+// Get first message based on persona - more natural, less polished
 function getFirstMessage(persona: ReturnType<typeof getPersonaById>): string {
-  if (!persona) return "Hello, how can I help you today?"
+  if (!persona) return "Hello?"
 
   const firstMessages: Record<string, string> = {
-    'skeptical-cfo': "Hello, this is Richard Sterling. I have about 15 minutes - my assistant said you wanted to discuss something. What's this about?",
-    'startup-founder': "Hey! Maya here. Thanks for jumping on a call. So, I saw your demo last week and I'm intrigued. What else should I know?",
-    'technical-gatekeeper': "David Park. I got pulled into this meeting - can you give me a quick overview of what we're looking at technically?",
-    'friendly-champion': "Hi there! Sarah Martinez. I've been looking forward to this call. I think there's something interesting here - help me understand how to get this through my organization.",
-    'hostile-executive': "Marcus Thompson. I've got 5 minutes before my next meeting. What is this about?",
-    'procurement-buyer': "Good afternoon. Jennifer Walsh from procurement. I understand you're on our shortlist. I have some questions about pricing and terms.",
-    'mad-scientist': "*sound of electricity crackling* Ah, another one... How did you get zis number? Are you with ze GOVERNMENT?! *suspicious pause* ...Speak quickly, before I release ze hounds! MWAHAHAHA!",
+    'skeptical-cfo': "Richard Sterling. Alright, I've got about 15 minutes before my next call. My VP of Ops said I should take this... What's this about?",
+
+    'startup-founder': "Hey! Sorry, one sec... okay, I'm here. Maya Chen. So you're the one Sarah mentioned? What's up?",
+
+    'technical-gatekeeper': "David Park. Yeah, so Sarah from sales said I should look at this. Can we skip the deck and just talk architecture? I've got a standup in 20.",
+
+    'friendly-champion': "Hey! Sarah Martinez. I've actually been looking forward to this call—I liked what I saw in the demo last week. So, help me figure out how we get this approved internally.",
+
+    'hostile-executive': "Thompson. I've got 5 minutes. Maybe. Janet dragged me into this—what is this about? And make it quick.",
+
+    'procurement-buyer': "Hello. Jennifer Walsh, procurement. I understand you've been speaking with our IT team and you're on our shortlist. I'm here to discuss terms. Walk me through your pricing.",
+
+    'mad-scientist': "...Hello? How did you get zis number?! Are you vith ze GOVERNMENT?! ...Speak quickly, before I release ze hounds! MWAHAHAHA! ...vell? I am vaiting.",
   }
 
-  return firstMessages[persona.id] || "Hello, how can I help you today?"
+  return firstMessages[persona.id] || "Hello?"
 }

@@ -101,10 +101,10 @@ export async function POST(
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
-    // Check if post exists
+    // Check if post exists and get current comment count
     const { data: post, error: postError } = await supabase
       .from('community_posts')
-      .select('id')
+      .select('id, comment_count')
       .eq('id', postId)
       .single()
 
@@ -127,6 +127,12 @@ export async function POST(
       console.error('Error creating comment:', commentError)
       return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
     }
+
+    // Increment the post's comment_count
+    await supabase
+      .from('community_posts')
+      .update({ comment_count: (post.comment_count || 0) + 1 })
+      .eq('id', postId)
 
     // Get author info
     const { data: profile } = await supabase

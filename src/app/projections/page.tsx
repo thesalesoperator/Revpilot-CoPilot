@@ -58,7 +58,7 @@ export default function ProjectionsPage() {
 
   const addProjectedSale = () => {
     const newSale: ProjectedSale = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       productName: '',
       totalPrice: 0,
       upfrontPayment: 0,
@@ -157,7 +157,7 @@ export default function ProjectionsPage() {
           <button
             onClick={() => {
               const newSales: ProjectedSale[] = Array(5).fill(null).map(() => ({
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).substring(2, 11),
                 productName: 'Standard Package',
                 totalPrice: 3000,
                 upfrontPayment: 1000,
@@ -166,11 +166,11 @@ export default function ProjectionsPage() {
               }))
               setProjectedSales([...projectedSales, ...newSales])
             }}
-            className="glass-card p-6 text-left hover:border-[rgba(0,255,193,0.3)] transition-all group"
+            className="glass-card p-6 text-left hover:border-[rgba(94,234,212,0.3)] transition-all group"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-[rgba(0,255,193,0.1)] group-hover:bg-[rgba(0,255,193,0.2)] transition-colors">
-                <Target className="w-5 h-5 text-[#00ffc1]" />
+              <div className="p-2 rounded-lg bg-[rgba(94,234,212,0.1)] group-hover:bg-[rgba(94,234,212,0.2)] transition-colors">
+                <Target className="w-5 h-5 text-[#5eead4]" />
               </div>
               <span className="text-sm text-gray-400">Quick Add</span>
             </div>
@@ -181,7 +181,7 @@ export default function ProjectionsPage() {
           <button
             onClick={() => {
               const newSales: ProjectedSale[] = Array(10).fill(null).map(() => ({
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).substring(2, 11),
                 productName: 'Standard Package',
                 totalPrice: 3000,
                 upfrontPayment: 1000,
@@ -190,11 +190,11 @@ export default function ProjectionsPage() {
               }))
               setProjectedSales([...projectedSales, ...newSales])
             }}
-            className="glass-card p-6 text-left hover:border-[rgba(0,255,193,0.3)] transition-all group"
+            className="glass-card p-6 text-left hover:border-[rgba(94,234,212,0.3)] transition-all group"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-[rgba(255,152,85,0.1)] group-hover:bg-[rgba(255,152,85,0.2)] transition-colors">
-                <TrendingUp className="w-5 h-5 text-[#ffbe57]" />
+              <div className="p-2 rounded-lg bg-[rgba(94,234,212,0.1)] group-hover:bg-[rgba(94,234,212,0.2)] transition-colors">
+                <TrendingUp className="w-5 h-5 text-[#5eead4]" />
               </div>
               <span className="text-sm text-gray-400">Quick Add</span>
             </div>
@@ -204,11 +204,11 @@ export default function ProjectionsPage() {
 
           <button
             onClick={() => setProjectedSales([])}
-            className="glass-card p-6 text-left hover:border-[rgba(255,0,67,0.3)] transition-all group"
+            className="glass-card p-6 text-left hover:border-[rgba(160,160,176,0.3)] transition-all group"
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 rounded-lg bg-[rgba(255,0,67,0.1)] group-hover:bg-[rgba(255,0,67,0.2)] transition-colors">
-                <Sparkles className="w-5 h-5 text-[#ff6b8a]" />
+              <div className="p-2 rounded-lg bg-[rgba(160,160,176,0.1)] group-hover:bg-[rgba(160,160,176,0.2)] transition-colors">
+                <Sparkles className="w-5 h-5 text-gray-400" />
               </div>
               <span className="text-sm text-gray-400">Reset</span>
             </div>
@@ -222,7 +222,7 @@ export default function ProjectionsPage() {
           <div className="border-gradient">
             <div className="bg-[rgba(0,16,46,0.9)] rounded-xl p-6">
               <div className="flex items-center gap-3 mb-6">
-                <Calculator className="w-6 h-6 text-[#00ffc1]" />
+                <Calculator className="w-6 h-6 text-[#5eead4]" />
                 <h2 className="text-xl font-semibold gradient-text">Projection Summary</h2>
               </div>
 
@@ -237,22 +237,22 @@ export default function ProjectionsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Cash Upfront</p>
-                  <p className="text-2xl font-bold text-[#00ffc1]">{formatCurrency(projectionTotals.totalUpfront)}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{formatCurrency(projectionTotals.totalUpfront)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Outstanding</p>
-                  <p className="text-2xl font-bold text-[#ffbe57]">{formatCurrency(projectionTotals.totalOutstanding)}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{formatCurrency(projectionTotals.totalOutstanding)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Guaranteed</p>
-                  <p className="text-2xl font-bold text-[#00ffc1]">{formatCurrency(projectionTotals.guaranteedCommission)}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{formatCurrency(projectionTotals.guaranteedCommission)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400 mb-1">Potential</p>
-                  <p className="text-2xl font-bold text-[#ffbe57]">{formatCurrency(projectionTotals.potentialCommission)}</p>
+                  <p className="text-2xl font-bold text-[#5eead4]">{formatCurrency(projectionTotals.potentialCommission)}</p>
                 </div>
-                <div className="bg-[rgba(0,255,193,0.1)] rounded-xl p-4 -m-2">
-                  <p className="text-sm text-[#00ffc1] mb-1">Total Commission</p>
+                <div className="bg-[rgba(94,234,212,0.1)] rounded-xl p-4 -m-2">
+                  <p className="text-sm text-[#5eead4] mb-1">Total Commission</p>
                   <p className="text-2xl font-bold gradient-text">{formatCurrency(projectionTotals.totalCommission)}</p>
                 </div>
               </div>
@@ -262,7 +262,7 @@ export default function ProjectionsPage() {
 
         {/* Projected Sales List */}
         <div className="glass-card">
-          <div className="p-6 border-b border-[rgba(0,255,193,0.1)]">
+          <div className="p-6 border-b border-[rgba(94,234,212,0.1)]">
             <h2 className="text-xl font-semibold gradient-text">Projected Sales</h2>
           </div>
 
@@ -281,13 +281,13 @@ export default function ProjectionsPage() {
               {projectedSales.map((sale, index) => (
                 <div
                   key={sale.id}
-                  className="bg-[rgba(0,255,193,0.02)] border border-[rgba(0,255,193,0.1)] rounded-xl p-4"
+                  className="bg-[rgba(94,234,212,0.02)] border border-[rgba(94,234,212,0.1)] rounded-xl p-4"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-sm text-gray-400">Projection #{index + 1}</span>
                     <button
                       onClick={() => removeProjectedSale(sale.id)}
-                      className="p-2 rounded-lg hover:bg-[rgba(255,0,67,0.1)] text-gray-400 hover:text-[#ff6b8a] transition-colors"
+                      className="p-2 rounded-lg hover:bg-[rgba(160,160,176,0.1)] text-gray-400 hover:text-gray-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -374,9 +374,9 @@ export default function ProjectionsPage() {
                       />
                     </div>
 
-                    <div className="bg-[rgba(0,255,193,0.1)] rounded-xl p-3 flex flex-col justify-center">
+                    <div className="bg-[rgba(94,234,212,0.1)] rounded-xl p-3 flex flex-col justify-center">
                       <p className="text-xs text-gray-400">Est. Commission</p>
-                      <p className="text-lg font-bold text-[#00ffc1]">
+                      <p className="text-lg font-bold text-[#5eead4]">
                         {formatCurrency(sale.totalPrice * sale.quantity * (sale.commissionPercent / 100))}
                       </p>
                     </div>
@@ -386,7 +386,7 @@ export default function ProjectionsPage() {
 
               <button
                 onClick={addProjectedSale}
-                className="w-full py-4 border-2 border-dashed border-[rgba(0,255,193,0.2)] rounded-xl text-gray-400 hover:text-[#00ffc1] hover:border-[rgba(0,255,193,0.4)] transition-colors flex items-center justify-center gap-2"
+                className="w-full py-4 border-2 border-dashed border-[rgba(94,234,212,0.2)] rounded-xl text-gray-400 hover:text-[#5eead4] hover:border-[rgba(94,234,212,0.4)] transition-colors flex items-center justify-center gap-2"
               >
                 <Plus className="w-5 h-5" />
                 Add Another Projection
@@ -399,7 +399,7 @@ export default function ProjectionsPage() {
         {projectedSales.length > 0 && (
           <div className="glass-card p-6">
             <div className="flex items-center gap-3 mb-6">
-              <DollarSign className="w-6 h-6 text-[#ffbe57]" />
+              <DollarSign className="w-6 h-6 text-[#5eead4]" />
               <h2 className="text-xl font-semibold gradient-text-orange">Commission Goals</h2>
             </div>
 

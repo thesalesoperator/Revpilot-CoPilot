@@ -45,10 +45,10 @@ const categories = [
 
 // Difficulty levels
 const difficulties = [
-  { id: 'easy', label: 'Easy', color: 'text-green-400 bg-green-500/20' },
-  { id: 'medium', label: 'Medium', color: 'text-yellow-400 bg-yellow-500/20' },
-  { id: 'hard', label: 'Hard', color: 'text-orange-400 bg-orange-500/20' },
-  { id: 'expert', label: 'Expert', color: 'text-red-400 bg-red-500/20' },
+  { id: 'easy', label: 'Easy', color: 'text-[#5eead4] bg-[#5eead4]/20' },
+  { id: 'medium', label: 'Medium', color: 'text-[#5eead4] bg-[#5eead4]/20' },
+  { id: 'hard', label: 'Hard', color: 'text-[#5eead4] bg-[#5eead4]/20' },
+  { id: 'expert', label: 'Expert', color: 'text-gray-400 bg-gray-500/20' },
 ]
 
 // Mock personas
@@ -224,7 +224,7 @@ export default function PersonasPage() {
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity"
           >
             <Plus className="w-5 h-5" />
             Create Persona
@@ -240,7 +240,7 @@ export default function PersonasPage() {
               placeholder="Search personas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function PersonasPage() {
               onClick={() => setSelectedCategory(cat.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
                 selectedCategory === cat.id
-                  ? 'bg-[rgba(0,255,193,0.2)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                  ? 'bg-[rgba(94,234,212,0.2)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -272,14 +272,14 @@ export default function PersonasPage() {
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-3xl">
                       {persona.avatar}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-white">{persona.name}</h3>
                         {persona.isOfficial && (
-                          <Sparkles className="w-4 h-4 text-yellow-400" />
+                          <Sparkles className="w-4 h-4 text-[#5eead4]" />
                         )}
                       </div>
                       <p className="text-sm text-gray-400">{persona.role}</p>
@@ -314,7 +314,7 @@ export default function PersonasPage() {
                 <div className="flex items-center justify-between text-sm mb-4">
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1 text-gray-400">
-                      <Star className="w-4 h-4 text-yellow-400" />
+                      <Star className="w-4 h-4 text-[#5eead4]" />
                       {persona.rating}
                     </span>
                     <span className="flex items-center gap-1 text-gray-400">
@@ -332,7 +332,7 @@ export default function PersonasPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => startPractice(persona)}
-                    className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   >
                     <Play className="w-4 h-4" />
                     Practice
@@ -382,7 +382,7 @@ export default function PersonasPage() {
               <input
                 type="text"
                 placeholder="The Skeptical CFO"
-                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
               />
             </div>
             <div>
@@ -390,7 +390,7 @@ export default function PersonasPage() {
               <input
                 type="text"
                 placeholder="Chief Financial Officer"
-                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
               />
             </div>
           </div>
@@ -398,7 +398,7 @@ export default function PersonasPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Category</label>
-              <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00ffc1]">
+              <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#5eead4]">
                 {categories.slice(1).map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.label}
@@ -408,7 +408,7 @@ export default function PersonasPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Difficulty</label>
-              <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#00ffc1]">
+              <select className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#5eead4]">
                 {difficulties.map((diff) => (
                   <option key={diff.id} value={diff.id}>
                     {diff.label}
@@ -423,7 +423,7 @@ export default function PersonasPage() {
             <textarea
               rows={3}
               placeholder="Describe this persona's behavior and what makes them challenging..."
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1] resize-none"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4] resize-none"
             />
           </div>
 
@@ -434,7 +434,7 @@ export default function PersonasPage() {
             <input
               type="text"
               placeholder="Analytical, Risk-averse, Detail-oriented"
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
 
@@ -445,7 +445,7 @@ export default function PersonasPage() {
             <textarea
               rows={4}
               placeholder="What's the total cost of ownership?&#10;Show me the ROI breakdown&#10;We need to run this by procurement"
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1] resize-none"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4] resize-none"
             />
           </div>
 
@@ -454,7 +454,7 @@ export default function PersonasPage() {
             <input
               type="text"
               placeholder="Professional, measured, asks probing questions"
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ffc1]"
+              className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#5eead4]"
             />
           </div>
 
@@ -465,7 +465,7 @@ export default function PersonasPage() {
             >
               Cancel
             </button>
-            <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity">
+            <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity">
               Create Persona
             </button>
           </div>
@@ -481,7 +481,7 @@ export default function PersonasPage() {
         {selectedPersona && (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-5xl">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5eead4] to-[#5eead4] flex items-center justify-center text-5xl">
                 {selectedPersona.avatar}
               </div>
               <div>
@@ -512,7 +512,7 @@ export default function PersonasPage() {
               <ul className="space-y-2">
                 {selectedPersona.commonObjections.map((objection, index) => (
                   <li key={index} className="flex items-start gap-2 text-gray-400">
-                    <span className="text-[#00ffc1]">•</span>
+                    <span className="text-[#5eead4]">•</span>
                     &ldquo;{objection}&rdquo;
                   </li>
                 ))}
@@ -530,7 +530,7 @@ export default function PersonasPage() {
                   startPractice(selectedPersona)
                   setShowDetailModal(false)
                 }}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#00ffc1] to-[#00d9a6] text-[#00102e] font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#5eead4] to-[#4fd1c5] text-[#0a0a0f] font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5" />
                 Start Practice

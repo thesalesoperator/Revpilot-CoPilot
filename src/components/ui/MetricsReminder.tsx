@@ -80,13 +80,13 @@ export default function MetricsReminder() {
   if (dismissed || overdueMetrics.length === 0) return null
 
   return (
-    <div className="mb-6 bg-gradient-to-r from-[rgba(255,152,85,0.15)] to-[rgba(255,190,87,0.1)] border border-[rgba(255,190,87,0.3)] rounded-xl p-4">
+    <div className="mb-6 bg-gradient-to-r from-[rgba(94,234,212,0.15)] to-[rgba(94,234,212,0.1)] border border-[rgba(94,234,212,0.3)] rounded-xl p-4">
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-lg bg-[rgba(255,190,87,0.2)] flex items-center justify-center shrink-0">
-          <Bell className="w-5 h-5 text-[#ffbe57]" />
+        <div className="w-10 h-10 rounded-lg bg-[rgba(94,234,212,0.2)] flex items-center justify-center shrink-0">
+          <Bell className="w-5 h-5 text-[#5eead4]" />
         </div>
         <div className="flex-1">
-          <h3 className="text-[#ffbe57] font-semibold mb-1">Metrics Reminder</h3>
+          <h3 className="text-[#5eead4] font-semibold mb-1">Metrics Reminder</h3>
           <p className="text-gray-300 text-sm mb-3">
             You haven&apos;t logged this week&apos;s data for:{' '}
             <span className="text-white font-medium">{overdueMetrics.join(', ')}</span>

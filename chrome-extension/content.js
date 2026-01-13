@@ -1,4 +1,5 @@
-// RevPilot Sales Coach - Content Script (Injected into Zoom pages)
+// RevPilot Sales Coach - Content Script
+// Supports: Zoom, Google Meet, Microsoft Teams
 
 ;(function() {
   'use strict'
@@ -20,28 +21,60 @@
   let pollInterval = null  // Track polling interval for cleanup
   let autoStartEnabled = false  // Track auto-start preference
   let lastSummary = null  // Store last call summary
-  const API_BASE = 'https://revpilot-commission-calculator.netlify.app'
+  const API_BASE = 'https://revpilot-copilot.netlify.app'
 
   // Initialize immediately
   console.log('[RevPilot] Content script loaded on:', window.location.href)
   console.log('[RevPilot] Running in top frame')
 
-  // Try to initialize now and also watch for changes
-  setTimeout(init, 1000) // Delay slightly to let Zoom load
-  setTimeout(init, 3000) // Try again after 3s
-  setTimeout(init, 5000) // Try again after 5s
+  // Platform-specific initialization delays
+  // Different platforms load at different speeds
+  const initDelays = getPlatformInitDelays()
+  initDelays.forEach(delay => setTimeout(init, delay))
+
+  // Watch for SPA navigation (Teams uses heavy SPA)
+  let lastUrl = window.location.href
+  const urlObserver = new MutationObserver(() => {
+    if (window.location.href !== lastUrl) {
+      lastUrl = window.location.href
+      console.log('[RevPilot] URL changed, re-checking for meeting...')
+      // Reset overlay and try again
+      if (!overlay) {
+        setTimeout(init, 1000)
+      }
+    }
+  })
+  urlObserver.observe(document.body, { childList: true, subtree: true })
+
+  function getPlatformInitDelays() {
+    const hostname = window.location.hostname
+
+    // Google Meet loads quickly
+    if (hostname === 'meet.google.com') {
+      return [500, 1500, 3000]
+    }
+
+    // Teams is a heavy SPA, needs more time
+    if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) {
+      return [1000, 3000, 6000, 10000]
+    }
+
+    // Zoom web client - standard delays
+    return [1000, 3000, 5000]
+  }
 
   async function init() {
     // Don't create multiple overlays
     if (overlay) return
 
-    // Check if we're on a Zoom page
-    if (!isZoomPage()) {
-      console.log('[RevPilot] Not a Zoom meeting page')
+    // Check if we're on a supported meeting platform
+    if (!isMeetingPage()) {
+      console.log('[RevPilot] Not a supported meeting page')
       return
     }
 
-    console.log('[RevPilot] Zoom page detected, creating overlay...')
+    const platform = getMeetingPlatform()
+    console.log(`[RevPilot] ${platform} meeting detected, creating overlay...`)
 
     // Load auto-start preference
     try {
@@ -100,30 +133,80 @@
     }
   }
 
-  function isZoomPage() {
+  function isMeetingPage() {
     const url = window.location.href
     const hostname = window.location.hostname
 
-    // Must be on a zoom.us domain
-    if (!hostname.includes('zoom.us')) {
-      return false
+    // Check for RevPilot test page (for development/testing)
+    if (hostname === 'revpilot-copilot.netlify.app' || hostname === 'localhost') {
+      if (url.includes('test-extension')) {
+        console.log('[RevPilot] Test page detected')
+        return true
+      }
     }
 
-    // Check for actual meeting URLs (more strict patterns)
-    const isMeetingUrl = url.includes('zoom.us/wc/') ||  // Web client meeting
-                         url.includes('zoom.us/j/') ||   // Join meeting
-                         url.includes('zoom.us/s/') ||   // Scheduled meeting
-                         (url.includes('/start') && url.match(/\/wc\/\d+\/start/)) ||  // Starting a meeting
-                         (url.includes('/join') && url.match(/\/wc\/\d+\/join/))       // Joining a meeting
+    // Check for Zoom
+    if (hostname.includes('zoom.us')) {
+      const isMeetingUrl = url.includes('zoom.us/wc/') ||
+                           url.includes('zoom.us/j/') ||
+                           url.includes('zoom.us/s/') ||
+                           url.match(/\/wc\/\d+\/(start|join)/) !== null
 
-    // Also check for meeting UI elements (specific to Zoom web client)
-    const hasMeetingUI = document.querySelector('#webclient') !== null ||
-                         document.querySelector('.meeting-client') !== null ||
-                         document.querySelector('[data-type="meeting"]') !== null
+      const hasMeetingUI = document.querySelector('#webclient') !== null ||
+                           document.querySelector('.meeting-client') !== null ||
+                           document.querySelector('[data-type="meeting"]') !== null ||
+                           document.querySelector('.meeting-app') !== null
 
-    console.log('[RevPilot] isZoomPage check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      console.log('[RevPilot] Zoom check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      return isMeetingUrl || hasMeetingUI
+    }
 
-    return isMeetingUrl || hasMeetingUI
+    // Check for Google Meet
+    if (hostname === 'meet.google.com') {
+      // Meet URLs: meet.google.com/xxx-xxxx-xxx or meet.google.com/lookup/xxxxx
+      const isMeetingUrl = url.match(/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/i) !== null ||
+                           url.includes('meet.google.com/lookup/')
+
+      // Meet UI detection - multiple selectors for reliability
+      const hasMeetingUI = document.querySelector('[data-meeting-title]') !== null ||
+                           document.querySelector('[data-call-active="true"]') !== null ||
+                           document.querySelector('[data-self-name]') !== null ||
+                           document.querySelector('[jscontroller][jsaction*="call"]') !== null ||
+                           document.querySelector('div[data-allocation-index]') !== null
+
+      console.log('[RevPilot] Google Meet check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      return isMeetingUrl || hasMeetingUI
+    }
+
+    // Check for Microsoft Teams
+    if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) {
+      // Teams meeting URLs
+      const isMeetingUrl = url.includes('/meet/') ||
+                           url.includes('/l/meetup-join/') ||
+                           url.includes('/meeting/') ||
+                           url.includes('context=') // Teams meeting context parameter
+
+      // Teams UI detection - multiple selectors for reliability
+      const hasMeetingUI = document.querySelector('[data-tid="calling-screen"]') !== null ||
+                           document.querySelector('[data-tid="call-composite"]') !== null ||
+                           document.querySelector('.ts-calling-screen') !== null ||
+                           document.querySelector('[data-cid="calling-participant-stream"]') !== null
+
+      console.log('[RevPilot] Teams check - URL match:', isMeetingUrl, 'UI match:', hasMeetingUI)
+      return isMeetingUrl || hasMeetingUI
+    }
+
+    return false
+  }
+
+  function getMeetingPlatform() {
+    const hostname = window.location.hostname
+    const url = window.location.href
+    if (hostname.includes('zoom.us')) return 'Zoom'
+    if (hostname === 'meet.google.com') return 'Google Meet'
+    if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) return 'Microsoft Teams'
+    if (url.includes('test-extension')) return 'Test Page'
+    return 'Meeting'
   }
 
   function createOverlay() {
@@ -132,52 +215,56 @@
     overlay = document.createElement('div')
     overlay.id = 'revpilot-overlay'
     overlay.innerHTML = `
-      <div class="revpilot-container" id="revpilot-container">
+      <div class="revpilot-container revpilot-horizontal" id="revpilot-container">
+        <!-- Drag Handle Bar -->
+        <div class="revpilot-drag-bar" id="revpilot-drag-bar">
+          <div class="revpilot-drag-indicator">⋮⋮</div>
+        </div>
+
+        <!-- Main Header with Logo and Controls -->
         <div class="revpilot-header">
           <div class="revpilot-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="#00ffc1" stroke-width="2"/>
               <path d="M8 12l3 3 5-6" stroke="#00ffc1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>RevPilot Coach</span>
+            <span>RevPilot</span>
+          </div>
+          <div class="revpilot-live-indicator" id="revpilot-live-badge" style="display: none;">
+            <span class="revpilot-pulse"></span>
+            <span>LIVE</span>
           </div>
           <div class="revpilot-controls">
-            <button id="revpilot-pin" class="revpilot-btn-icon" title="Pin to top">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2v10M12 12l4-4M12 12l-4-4M5 22h14"/>
-              </svg>
-            </button>
             <button id="revpilot-minimize" class="revpilot-btn-icon" title="Minimize">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14"/>
               </svg>
             </button>
             <button id="revpilot-close" class="revpilot-btn-icon" title="Close">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             </button>
           </div>
         </div>
 
-        <div class="revpilot-body" id="revpilot-body">
-          <div class="revpilot-status" id="revpilot-status">
-            <div class="revpilot-status-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ffc1" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
+        <!-- Main Content Area - Horizontal Layout -->
+        <div class="revpilot-body revpilot-body-horizontal" id="revpilot-body">
+          <!-- Status View (before coaching starts) -->
+          <div class="revpilot-status revpilot-status-horizontal" id="revpilot-status">
+            <div class="revpilot-status-content">
+              <p>Ready to coach your call</p>
+              <button id="revpilot-start" class="revpilot-btn-primary">
+                Start Coaching
+              </button>
             </div>
-            <p>Ready to coach</p>
-            <button id="revpilot-start" class="revpilot-btn-primary">
-              Start Coaching
-            </button>
-            <label class="revpilot-auto-start" id="revpilot-auto-start-label">
+            <label class="revpilot-auto-start">
               <input type="checkbox" id="revpilot-auto-start-checkbox">
-              <span>Auto-start on future calls</span>
+              <span>Auto-start</span>
             </label>
           </div>
 
+          <!-- Summary View (after call ends) -->
           <div class="revpilot-summary hidden" id="revpilot-summary">
             <div class="revpilot-summary-header">
               <span class="revpilot-summary-icon">📋</span>
@@ -186,49 +273,93 @@
             <div class="revpilot-summary-content" id="revpilot-summary-content">
               <div class="revpilot-summary-loading">
                 <div class="revpilot-spinner"></div>
-                <span>Generating summary...</span>
+                <span>Generating...</span>
               </div>
             </div>
-            <button id="revpilot-new-call" class="revpilot-btn-primary">
-              Ready for Next Call
+            <button id="revpilot-new-call" class="revpilot-btn-primary revpilot-btn-sm">
+              Next Call
             </button>
           </div>
 
+          <!-- Coaching View (during call) -->
           <div class="revpilot-coaching hidden" id="revpilot-coaching">
-            <div class="revpilot-live-indicator">
-              <span class="revpilot-pulse"></span>
-              <span>LIVE</span>
-            </div>
-
-            <div class="revpilot-suggestions" id="revpilot-suggestions">
-              <div class="revpilot-empty">
-                <p>Listening to your call...</p>
-                <p class="revpilot-subtext">Coaching suggestions will appear here</p>
-              </div>
-            </div>
-
-            <div class="revpilot-stats" id="revpilot-stats">
-              <div class="revpilot-stat">
-                <span class="revpilot-stat-label">You</span>
-                <div class="revpilot-stat-bar">
-                  <div class="revpilot-stat-fill" id="revpilot-talk-ratio" style="width: 50%"></div>
+            <!-- Left Section: Script Progress -->
+            <div class="revpilot-section revpilot-section-progress">
+              <div class="revpilot-script-progress" id="revpilot-script-progress">
+                <div class="revpilot-script-header">
+                  <span class="revpilot-script-icon">📜</span>
+                  <span class="revpilot-script-section" id="revpilot-script-section">Set Expectations</span>
+                  <span class="revpilot-script-order" id="revpilot-script-order">1/17</span>
                 </div>
-                <span class="revpilot-stat-value" id="revpilot-talk-percent">50%</span>
-              </div>
-              <div class="revpilot-stat">
-                <span class="revpilot-stat-label">Prospect</span>
-                <div class="revpilot-stat-bar prospect">
-                  <div class="revpilot-stat-fill" id="revpilot-listen-ratio" style="width: 50%"></div>
+                <div class="revpilot-script-bar">
+                  <div class="revpilot-script-fill" id="revpilot-script-fill" style="width: 0%"></div>
                 </div>
-                <span class="revpilot-stat-value" id="revpilot-listen-percent">50%</span>
+                <div class="revpilot-script-objective" id="revpilot-script-objective">
+                  Get permission to ask questions
+                </div>
+              </div>
+
+              <div class="revpilot-stage-indicator" id="revpilot-stage" style="display: none;">
+                <span class="revpilot-stage-label">Stage:</span>
+                <span class="revpilot-stage-value" id="revpilot-stage-value">Opening</span>
+              </div>
+
+              <div class="revpilot-methodology-selector" id="revpilot-methodology-selector">
+                <select id="revpilot-methodology" class="revpilot-select">
+                  <option value="revpilot" selected>RevPilot Script</option>
+                  <option value="general">General</option>
+                  <option value="meddic">MEDDIC</option>
+                  <option value="spin">SPIN</option>
+                  <option value="challenger">Challenger</option>
+                  <option value="sandler">Sandler</option>
+                  <option value="bant">BANT</option>
+                </select>
               </div>
             </div>
 
-            <button id="revpilot-stop" class="revpilot-btn-danger">
-              End Coaching
-            </button>
+            <!-- Center Section: Coaching Suggestions -->
+            <div class="revpilot-section revpilot-section-suggestions">
+              <div class="revpilot-suggestions" id="revpilot-suggestions">
+                <div class="revpilot-empty">
+                  <p>Listening to your call...</p>
+                </div>
+              </div>
+
+              <div class="revpilot-script-warning hidden" id="revpilot-script-warning">
+                <span class="revpilot-warning-icon">⚠️</span>
+                <span class="revpilot-warning-text" id="revpilot-warning-text"></span>
+              </div>
+            </div>
+
+            <!-- Right Section: Stats & Controls -->
+            <div class="revpilot-section revpilot-section-stats">
+              <div class="revpilot-stats-compact" id="revpilot-stats">
+                <div class="revpilot-stat-row">
+                  <span class="revpilot-stat-label">You</span>
+                  <div class="revpilot-stat-bar">
+                    <div class="revpilot-stat-fill" id="revpilot-talk-ratio" style="width: 50%"></div>
+                  </div>
+                  <span class="revpilot-stat-value" id="revpilot-talk-percent">50%</span>
+                </div>
+                <div class="revpilot-stat-row">
+                  <span class="revpilot-stat-label">Them</span>
+                  <div class="revpilot-stat-bar prospect">
+                    <div class="revpilot-stat-fill" id="revpilot-listen-ratio" style="width: 50%"></div>
+                  </div>
+                  <span class="revpilot-stat-value" id="revpilot-listen-percent">50%</span>
+                </div>
+                <button class="revpilot-flip-btn" id="revpilot-flip-speakers" title="Swap if wrong">🔄</button>
+              </div>
+
+              <button id="revpilot-stop" class="revpilot-btn-danger revpilot-btn-sm">
+                End
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- Resize Handle -->
+        <div class="revpilot-resize-handle" id="revpilot-resize-handle"></div>
       </div>
 
       <div class="revpilot-minimized hidden" id="revpilot-minimized">
@@ -244,9 +375,12 @@
 
     document.body.appendChild(overlay)
 
-    // Make draggable
-    makeDraggable(overlay.querySelector('.revpilot-container'))
+    // Make draggable from the drag bar
+    makeDraggable(overlay.querySelector('.revpilot-container'), overlay.querySelector('.revpilot-drag-bar'))
     makeDraggable(overlay.querySelector('.revpilot-minimized'))
+
+    // Make resizable
+    makeResizable(overlay.querySelector('.revpilot-container'), overlay.querySelector('.revpilot-resize-handle'))
 
     // Event listeners
     document.getElementById('revpilot-start').addEventListener('click', startCoaching)
@@ -254,42 +388,106 @@
     document.getElementById('revpilot-minimize').addEventListener('click', minimize)
     document.getElementById('revpilot-expand').addEventListener('click', expand)
     document.getElementById('revpilot-close').addEventListener('click', closeOverlay)
-    document.getElementById('revpilot-pin').addEventListener('click', togglePin)
     document.getElementById('revpilot-new-call').addEventListener('click', resetToReadyState)
+    document.getElementById('revpilot-flip-speakers').addEventListener('click', flipSpeakers)
+
+    // Load saved position and size
+    loadOverlayPreferences()
+
+    // Methodology selector
+    document.getElementById('revpilot-methodology').addEventListener('change', (e) => {
+      const methodology = e.target.value
+      console.log('[RevPilot] Methodology changed to:', methodology)
+      chrome.storage.local.set({ selectedMethodology: methodology })
+      // Notify background/offscreen of methodology change
+      chrome.runtime.sendMessage({ type: 'SET_METHODOLOGY', methodology })
+
+      // Show/hide script progress UI based on methodology
+      const scriptProgressEl = document.getElementById('revpilot-script-progress')
+      const stageIndicatorEl = document.getElementById('revpilot-stage')
+      if (methodology === 'revpilot') {
+        if (scriptProgressEl) scriptProgressEl.style.display = 'block'
+        if (stageIndicatorEl) stageIndicatorEl.style.display = 'none'
+      } else {
+        if (scriptProgressEl) scriptProgressEl.style.display = 'none'
+        if (stageIndicatorEl) stageIndicatorEl.style.display = 'flex'
+      }
+    })
+
+    // Load saved methodology preference
+    chrome.storage.local.get(['selectedMethodology']).then(stored => {
+      const methodology = stored.selectedMethodology || 'revpilot'
+      const selector = document.getElementById('revpilot-methodology')
+      if (selector) selector.value = methodology
+
+      // Show script progress UI if RevPilot is selected
+      const scriptProgressEl = document.getElementById('revpilot-script-progress')
+      const stageIndicatorEl = document.getElementById('revpilot-stage')
+      if (methodology === 'revpilot') {
+        if (scriptProgressEl) scriptProgressEl.style.display = 'block'
+        if (stageIndicatorEl) stageIndicatorEl.style.display = 'none'
+      }
+    })
+
+    // Key info toggle
+    document.getElementById('revpilot-key-info-toggle')?.addEventListener('click', () => {
+      const content = document.getElementById('revpilot-key-info-content')
+      const arrow = document.querySelector('.revpilot-toggle-arrow')
+      if (content) {
+        content.classList.toggle('hidden')
+        if (arrow) arrow.textContent = content.classList.contains('hidden') ? '▼' : '▲'
+      }
+    })
 
     // Auto-start checkbox
     const autoStartCheckbox = document.getElementById('revpilot-auto-start-checkbox')
-    autoStartCheckbox.addEventListener('change', async (e) => {
-      autoStartEnabled = e.target.checked
-      await chrome.storage.local.set({ autoStartCoaching: autoStartEnabled })
-      console.log('[RevPilot] Auto-start preference saved:', autoStartEnabled)
-    })
+    if (autoStartCheckbox) {
+      autoStartCheckbox.addEventListener('change', async (e) => {
+        autoStartEnabled = e.target.checked
+        await chrome.storage.local.set({ autoStartCoaching: autoStartEnabled })
+        console.log('[RevPilot] Auto-start preference saved:', autoStartEnabled)
+      })
 
-    // Load saved auto-start preference
-    chrome.storage.local.get(['autoStartCoaching']).then(stored => {
-      if (stored.autoStartCoaching) {
-        autoStartCheckbox.checked = true
-        autoStartEnabled = true
-      }
-    })
+      // Load saved auto-start preference
+      chrome.storage.local.get(['autoStartCoaching']).then(stored => {
+        if (stored.autoStartCoaching) {
+          autoStartCheckbox.checked = true
+          autoStartEnabled = true
+        }
+      })
+    }
 
     console.log('[RevPilot] Overlay created successfully!')
   }
 
-  function makeDraggable(element) {
+  // Helper to remove centering transform and set explicit position
+  function removeCenteringTransform(element) {
+    if (element.style.transform && element.style.transform.includes('translateX')) {
+      const rect = element.getBoundingClientRect()
+      element.style.transform = 'none'
+      element.style.left = rect.left + 'px'
+      element.style.top = rect.top + 'px'
+    }
+  }
+
+  function makeDraggable(element, handle) {
     if (!element) return
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0
     let isDragging = false
 
-    const header = element.querySelector('.revpilot-header') || element
-    header.style.cursor = 'move'
-    header.addEventListener('mousedown', dragMouseDown)
+    const dragHandle = handle || element.querySelector('.revpilot-header') || element
+    dragHandle.style.cursor = 'move'
+    dragHandle.addEventListener('mousedown', dragMouseDown)
 
     function dragMouseDown(e) {
       if (e.target.closest('button')) return
       e.preventDefault()
       e.stopPropagation()
+
+      // Remove centering transform on first drag
+      removeCenteringTransform(element)
+
       isDragging = true
       pos3 = e.clientX
       pos4 = e.clientY
@@ -309,7 +507,7 @@
       const newLeft = element.offsetLeft - pos1
 
       // Keep within viewport
-      const maxTop = window.innerHeight - 100
+      const maxTop = window.innerHeight - 50
       const maxLeft = window.innerWidth - 100
 
       element.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px"
@@ -322,22 +520,92 @@
       isDragging = false
       document.removeEventListener('mouseup', closeDragElement)
       document.removeEventListener('mousemove', elementDrag)
+      // Save position
+      saveOverlayPreferences()
     }
   }
 
-  function togglePin() {
-    isPinned = !isPinned
-    const container = document.getElementById('revpilot-container')
-    const pinBtn = document.getElementById('revpilot-pin')
+  function makeResizable(element, handle) {
+    if (!element || !handle) return
 
-    if (isPinned) {
-      container.classList.add('revpilot-pinned')
-      pinBtn.classList.add('revpilot-btn-active')
-      pinBtn.title = 'Unpin'
-    } else {
-      container.classList.remove('revpilot-pinned')
-      pinBtn.classList.remove('revpilot-btn-active')
-      pinBtn.title = 'Pin to top'
+    let isResizing = false
+    let startX, startY, startWidth, startHeight
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      // Remove centering transform on first resize
+      removeCenteringTransform(element)
+
+      isResizing = true
+      startX = e.clientX
+      startY = e.clientY
+      startWidth = element.offsetWidth
+      startHeight = element.offsetHeight
+      document.addEventListener('mousemove', resize)
+      document.addEventListener('mouseup', stopResize)
+    })
+
+    function resize(e) {
+      if (!isResizing) return
+
+      const newWidth = startWidth + (e.clientX - startX)
+      const newHeight = startHeight + (e.clientY - startY)
+
+      // Min/max constraints
+      const minWidth = 500
+      const maxWidth = window.innerWidth - 40
+      const minHeight = 80
+      const maxHeight = 300
+
+      element.style.width = Math.max(minWidth, Math.min(newWidth, maxWidth)) + 'px'
+      element.style.height = Math.max(minHeight, Math.min(newHeight, maxHeight)) + 'px'
+    }
+
+    function stopResize() {
+      isResizing = false
+      document.removeEventListener('mousemove', resize)
+      document.removeEventListener('mouseup', stopResize)
+      // Save size
+      saveOverlayPreferences()
+    }
+  }
+
+  async function saveOverlayPreferences() {
+    const container = document.getElementById('revpilot-container')
+    if (!container) return
+
+    const prefs = {
+      top: container.style.top,
+      left: container.style.left,
+      width: container.style.width,
+      height: container.style.height,
+    }
+
+    try {
+      await chrome.storage.local.set({ overlayPrefs: prefs })
+    } catch (e) {
+      console.log('[RevPilot] Could not save overlay preferences')
+    }
+  }
+
+  async function loadOverlayPreferences() {
+    const container = document.getElementById('revpilot-container')
+    if (!container) return
+
+    try {
+      const { overlayPrefs } = await chrome.storage.local.get(['overlayPrefs'])
+      if (overlayPrefs && overlayPrefs.left) {
+        // Remove centering transform when loading saved position
+        container.style.transform = 'none'
+        if (overlayPrefs.top) container.style.top = overlayPrefs.top
+        if (overlayPrefs.left) container.style.left = overlayPrefs.left
+        if (overlayPrefs.width) container.style.width = overlayPrefs.width
+        if (overlayPrefs.height) container.style.height = overlayPrefs.height
+      }
+    } catch (e) {
+      console.log('[RevPilot] Could not load overlay preferences')
     }
   }
 
@@ -379,11 +647,17 @@
         showCoachingUI()
         subscribeToSuggestions()
 
-        // Show appropriate banner
-        if (session.botId) {
+        // Show appropriate banner based on capture method
+        if (session.captureMethod === 'tab_audio' || session.botFree) {
+          // Tab capture mode - live transcription via Deepgram
+          console.log('[RevPilot] Restored tab capture session')
+          showLiveCaptureBanner()
+        } else if (session.botId) {
+          // Old Recall.ai bot method
           showLiveTranscriptionBanner()
         } else {
-          startDemoMode(session.botError)
+          // No capture method - demo mode
+          startDemoMode(session.botError || 'Session restored without capture')
         }
         return
       }
@@ -404,10 +678,17 @@
         showCoachingUI()
         subscribeToSuggestions()
 
-        if (storedSession.botId) {
+        // Show appropriate banner based on capture method
+        if (storedSession.captureMethod === 'tab_audio' || storedSession.botFree) {
+          // Tab capture mode - live transcription via Deepgram
+          console.log('[RevPilot] Restored tab capture session from background')
+          showLiveCaptureBanner()
+        } else if (storedSession.botId) {
+          // Old Recall.ai bot method
           showLiveTranscriptionBanner()
         } else {
-          startDemoMode(storedSession.botError)
+          // No capture method - demo mode
+          startDemoMode(storedSession.botError || 'Session restored without capture')
         }
       } else {
         console.log('[RevPilot] No stored session found')
@@ -448,7 +729,7 @@
           const errorMsg = chrome.runtime.lastError.message || ''
           console.error('[RevPilot] Runtime error:', errorMsg)
           if (errorMsg.includes('Extension context invalidated') || errorMsg.includes('message channel closed')) {
-            alert('Extension was updated. Please refresh this page (Cmd+R) and try again.')
+            alert('Extension was updated or reloaded. Please refresh this page (press F5 or Ctrl/Cmd+R) and try again.')
           } else {
             alert('Connection error: ' + errorMsg)
           }
@@ -472,16 +753,23 @@
           console.log('[RevPilot] Subscribing to realtime...')
           subscribeToSuggestions()
 
-          // Start demo mode if no bot (Recall.ai not configured or failed)
-          if (!response.botId) {
-            console.log('[RevPilot] No bot ID - starting demo mode for live suggestions')
-            if (response.botError) {
-              console.warn('[RevPilot] Bot error:', response.botError)
-            }
-            startDemoMode(response.botError)
-          } else {
+          // Check which capture method is active
+          if (response.botFree && response.captureActive) {
+            // New tab capture method - live transcription via Deepgram
+            console.log('[RevPilot] Tab capture active - live transcription enabled')
+            showLiveCaptureBanner()
+          } else if (response.botId) {
+            // Old Recall.ai bot method
             console.log('[RevPilot] Bot ID present:', response.botId, '- waiting for real transcription')
             showLiveTranscriptionBanner()
+          } else if (response.captureError) {
+            // Tab capture failed
+            console.warn('[RevPilot] Capture error:', response.captureError)
+            startDemoMode(response.captureError)
+          } else {
+            // No capture method available - demo mode
+            console.log('[RevPilot] No capture method - starting demo mode')
+            startDemoMode('No transcription method available')
           }
         } else {
           console.error('[RevPilot] Empty response received')
@@ -496,6 +784,73 @@
       startBtn.disabled = false
       startBtn.textContent = 'Start Coaching'
     }
+  }
+
+  // Flip speakers if talk ratio seems wrong
+  async function flipSpeakers() {
+    if (!session) {
+      console.log('[RevPilot] flipSpeakers called but no session')
+      return
+    }
+
+    const flipBtn = document.getElementById('revpilot-flip-speakers')
+    if (flipBtn) {
+      flipBtn.disabled = true
+      flipBtn.textContent = '...'
+    }
+
+    try {
+      const { authToken } = await chrome.storage.local.get(['authToken'])
+
+      // Send flip request to backend
+      const response = await fetch(`${API_BASE}/api/coaching/analyze-transcript`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          sessionId: session.id,
+          transcripts: [{ text: '', speaker: null, timestamp: Date.now() }], // Dummy transcript to trigger flip
+          flipSpeakers: true
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('[RevPilot] Speakers flipped successfully')
+
+        // Update UI with new talk ratio
+        if (data.talkRatio) {
+          updateStats({ talk_ratio: data.talkRatio.repPercent })
+        }
+
+        // Show feedback
+        showFlipFeedback('Speakers swapped!')
+      } else {
+        console.error('[RevPilot] Failed to flip speakers:', response.status)
+        showFlipFeedback('Failed to swap')
+      }
+    } catch (error) {
+      console.error('[RevPilot] Flip speakers error:', error)
+      showFlipFeedback('Error')
+    } finally {
+      if (flipBtn) {
+        flipBtn.disabled = false
+        flipBtn.textContent = '🔄'
+      }
+    }
+  }
+
+  function showFlipFeedback(message) {
+    const flipBtn = document.getElementById('revpilot-flip-speakers')
+    if (!flipBtn) return
+
+    const originalText = flipBtn.textContent
+    flipBtn.textContent = message
+    setTimeout(() => {
+      flipBtn.textContent = '🔄'
+    }, 1500)
   }
 
   async function stopCoaching() {
@@ -627,10 +982,12 @@
     const coachingEl = document.getElementById('revpilot-coaching')
     const statusEl = document.getElementById('revpilot-status')
     const summaryEl = document.getElementById('revpilot-summary')
+    const liveBadge = document.getElementById('revpilot-live-badge')
 
     if (coachingEl) coachingEl.classList.add('hidden')
     if (statusEl) statusEl.classList.add('hidden')
     if (summaryEl) summaryEl.classList.remove('hidden')
+    if (liveBadge) liveBadge.style.display = 'none'
   }
 
   function resetToReadyState() {
@@ -732,6 +1089,11 @@
 
     statusEl.classList.add('hidden')
     coachingEl.classList.remove('hidden')
+
+    // Show LIVE badge
+    const liveBadge = document.getElementById('revpilot-live-badge')
+    if (liveBadge) liveBadge.style.display = 'flex'
+
     console.log('[RevPilot] Coaching UI now visible')
   }
 
@@ -740,9 +1102,11 @@
     const statusEl = document.getElementById('revpilot-status')
     const startBtn = document.getElementById('revpilot-start')
     const stopBtn = document.getElementById('revpilot-stop')
+    const liveBadge = document.getElementById('revpilot-live-badge')
 
     if (coachingEl) coachingEl.classList.add('hidden')
     if (statusEl) statusEl.classList.remove('hidden')
+    if (liveBadge) liveBadge.style.display = 'none'
 
     // Reset start button
     if (startBtn) {
@@ -960,11 +1324,18 @@
     const container = document.getElementById('revpilot-suggestions')
     if (!container) return
 
+    // Remove any existing banners first
+    const existingBanners = container.querySelectorAll('.revpilot-mode-banner')
+    existingBanners.forEach(b => b.remove())
+
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
     const banner = document.createElement('div')
     banner.className = 'revpilot-mode-banner revpilot-live-banner'
     banner.innerHTML = `
       <span class="revpilot-banner-icon">🎙️</span>
-      <span>Live transcription active - AI coaching based on your conversation</span>
+      <span>Live transcription active</span>
     `
     container.insertBefore(banner, container.firstChild)
   }
@@ -974,6 +1345,10 @@
     const container = document.getElementById('revpilot-suggestions')
     if (!container) return
 
+    // Remove any existing banners first
+    const existingBanners = container.querySelectorAll('.revpilot-mode-banner')
+    existingBanners.forEach(b => b.remove())
+
     const empty = container.querySelector('.revpilot-empty')
     if (empty) empty.remove()
 
@@ -981,8 +1356,7 @@
     banner.className = 'revpilot-mode-banner revpilot-demo-banner'
     banner.innerHTML = `
       <span class="revpilot-banner-icon">📋</span>
-      <span>Demo Mode - showing sample coaching tips</span>
-      ${botError ? `<div class="revpilot-banner-detail">Bot connection failed. Configure Recall.ai API key and region in Netlify environment variables.</div>` : ''}
+      <span>Demo Mode - sample tips</span>
     `
     container.insertBefore(banner, container.firstChild)
   }
@@ -1074,14 +1448,177 @@
       'objection': '⚠️',
       'tip': '💡',
       'alert': '🚨',
-      'positive': '✅'
+      'positive': '✅',
+      'transition': '➡️',
+      'methodology': '📚',
+      'buying_signal': '🔥',
+      'script_guidance': '📜'
     }
     return icons[type] || '💬'
+  }
+
+  function getPriorityClass(priority) {
+    const classes = {
+      'high': 'revpilot-priority-high',
+      'medium': 'revpilot-priority-medium',
+      'low': 'revpilot-priority-low'
+    }
+    return classes[priority] || ''
+  }
+
+  function formatStageName(stage) {
+    const stageNames = {
+      'opening': 'Opening',
+      'discovery': 'Discovery',
+      'qualification': 'Qualification',
+      'presentation': 'Presentation',
+      'objection_handling': 'Objection Handling',
+      'negotiation': 'Negotiation',
+      'closing': 'Closing',
+      'wrap_up': 'Wrap Up'
+    }
+    return stageNames[stage] || stage
+  }
+
+  function updateConversationStage(stage) {
+    const stageEl = document.getElementById('revpilot-stage-value')
+    if (stageEl && stage) {
+      stageEl.textContent = formatStageName(stage)
+      stageEl.className = `revpilot-stage-value revpilot-stage-${stage}`
+    }
+  }
+
+  function updatePrediction(prediction) {
+    const predictionEl = document.getElementById('revpilot-prediction')
+    const predictionText = document.getElementById('revpilot-prediction-text')
+
+    if (predictionEl && predictionText && prediction) {
+      predictionText.textContent = prediction
+      predictionEl.style.display = 'block'
+
+      // Auto-hide after 15 seconds
+      setTimeout(() => {
+        predictionEl.style.display = 'none'
+      }, 15000)
+    }
+  }
+
+  function updateKeyInfo(keyInfo) {
+    if (!keyInfo) return
+
+    const keyInfoEl = document.getElementById('revpilot-key-info')
+    if (keyInfoEl) keyInfoEl.style.display = 'block'
+
+    // Update pain points
+    if (keyInfo.painPoints && keyInfo.painPoints.length > 0) {
+      const painEl = document.getElementById('revpilot-pain-points')
+      if (painEl) {
+        const valueEl = painEl.querySelector('.revpilot-info-value')
+        if (valueEl) valueEl.textContent = keyInfo.painPoints.slice(0, 2).join('; ').substring(0, 100)
+      }
+    }
+
+    // Update budget
+    if (keyInfo.budget) {
+      const budgetEl = document.getElementById('revpilot-budget-info')
+      if (budgetEl) {
+        const valueEl = budgetEl.querySelector('.revpilot-info-value')
+        if (valueEl) valueEl.textContent = keyInfo.budget
+      }
+    }
+
+    // Update timeline
+    if (keyInfo.timeline) {
+      const timelineEl = document.getElementById('revpilot-timeline-info')
+      if (timelineEl) {
+        const valueEl = timelineEl.querySelector('.revpilot-info-value')
+        if (valueEl) valueEl.textContent = keyInfo.timeline
+      }
+    }
   }
 
   function formatTime(timestamp) {
     const date = new Date(timestamp)
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // Update script progress UI (RevPilot methodology)
+  function updateScriptProgress(script) {
+    if (!script) return
+
+    console.log('[RevPilot] Updating script progress:', script.sectionName, script.progress + '%')
+
+    // Show script progress container
+    const progressEl = document.getElementById('revpilot-script-progress')
+    if (progressEl) progressEl.style.display = 'block'
+
+    // Update section name
+    const sectionEl = document.getElementById('revpilot-script-section')
+    if (sectionEl && script.sectionName) {
+      sectionEl.textContent = script.sectionName
+    }
+
+    // Update section order
+    const orderEl = document.getElementById('revpilot-script-order')
+    if (orderEl && script.sectionOrder) {
+      orderEl.textContent = `${script.sectionOrder}/17`
+    }
+
+    // Update progress bar
+    const fillEl = document.getElementById('revpilot-script-fill')
+    if (fillEl && typeof script.progress === 'number') {
+      fillEl.style.width = `${script.progress}%`
+      // Color coding based on progress
+      if (script.progress < 30) {
+        fillEl.style.background = 'linear-gradient(90deg, #00ffc1, #00d4a1)'
+      } else if (script.progress < 70) {
+        fillEl.style.background = 'linear-gradient(90deg, #00d4a1, #ffc107)'
+      } else {
+        fillEl.style.background = 'linear-gradient(90deg, #ffc107, #ff6b6b)'
+      }
+    }
+
+    // Update objective
+    const objectiveEl = document.getElementById('revpilot-script-objective')
+    if (objectiveEl && script.sectionObjective) {
+      objectiveEl.textContent = script.sectionObjective
+    }
+
+    // Update coaching tip
+    const tipEl = document.getElementById('revpilot-script-tip')
+    const tipTextEl = document.getElementById('revpilot-tip-text')
+    if (tipEl && tipTextEl && script.coachingTip) {
+      tipTextEl.textContent = script.coachingTip
+      tipEl.classList.remove('hidden')
+    } else if (tipEl) {
+      tipEl.classList.add('hidden')
+    }
+
+    // Update warning
+    const warningEl = document.getElementById('revpilot-script-warning')
+    const warningTextEl = document.getElementById('revpilot-warning-text')
+    if (warningEl && warningTextEl && script.warning) {
+      warningTextEl.textContent = script.warning
+      warningEl.classList.remove('hidden')
+      // Add attention-grabbing animation for important warnings
+      warningEl.classList.add('revpilot-warning-pulse')
+      setTimeout(() => warningEl.classList.remove('revpilot-warning-pulse'), 3000)
+    } else if (warningEl) {
+      warningEl.classList.add('hidden')
+    }
+
+    // Update suggested questions
+    const questionsEl = document.getElementById('revpilot-script-questions')
+    const questionsListEl = document.getElementById('revpilot-questions-list')
+    if (questionsEl && questionsListEl && script.suggestedQuestions && script.suggestedQuestions.length > 0) {
+      questionsListEl.innerHTML = script.suggestedQuestions
+        .slice(0, 3)
+        .map(q => `<li>${q}</li>`)
+        .join('')
+      questionsEl.classList.remove('hidden')
+    } else if (questionsEl) {
+      questionsEl.classList.add('hidden')
+    }
   }
 
   // Listen for messages from background script
@@ -1092,12 +1629,169 @@
       session = message.session
       showCoachingUI()
       subscribeToSuggestions()
+
+      // Check if this is a bot-free session with active capture
+      if (message.session.botFree && message.session.captureActive) {
+        showLiveCaptureBanner()
+      } else if (message.session.captureError) {
+        // Tab capture failed - fall back to demo mode
+        startDemoMode(message.session.captureError)
+      }
     }
 
     if (message.type === 'SESSION_STOPPED') {
       cleanupSession()
     }
+
+    if (message.type === 'CAPTURE_ACTIVE') {
+      console.log('[RevPilot] Live capture active')
+      showLiveCaptureBanner()
+    }
+
+    if (message.type === 'TRANSCRIPT_UPDATE') {
+      // Show real-time transcript in the overlay
+      handleTranscriptUpdate(message.transcript)
+    }
+
+    if (message.type === 'SPEECH_EVENT') {
+      // Update talk ratio indicator
+      if (message.event === 'started') {
+        updateTalkRatioIndicator(true)
+      }
+    }
+
+    if (message.type === 'COACHING_INSIGHT') {
+      // Handle enhanced coaching insights from backend
+      console.log('[RevPilot] Coaching insight received:', {
+        stage: message.stage,
+        scriptSection: message.script?.sectionName,
+        scriptOrder: message.script?.sectionOrder,
+        hasSuggestion: !!message.suggestion,
+        insight: message.insight?.substring(0, 50)
+      })
+
+      // Update conversation stage
+      if (message.stage) {
+        updateConversationStage(message.stage)
+      }
+
+      // Update prediction
+      if (message.prediction) {
+        updatePrediction(message.prediction)
+      }
+
+      // Update key info
+      if (message.keyInfo) {
+        updateKeyInfo(message.keyInfo)
+      }
+
+      // Update talk ratio
+      if (message.talkRatio) {
+        updateStats({ talk_ratio: message.talkRatio.repPercent })
+      }
+
+      // Update script progress (RevPilot methodology)
+      if (message.script) {
+        updateScriptProgress(message.script)
+      }
+
+      // Display suggestion immediately if provided
+      if (message.suggestion && message.suggestion.content) {
+        addSuggestion({
+          type: message.suggestion.type || 'tip',
+          content: message.suggestion.content,
+          priority: message.suggestion.priority || 'medium',
+          created_at: new Date().toISOString()
+        })
+      }
+    }
   })
+
+  // Handle real-time transcript updates
+  let transcriptHistory = []
+  function handleTranscriptUpdate(transcript) {
+    console.log('[RevPilot] Transcript:', transcript.text?.substring(0, 50))
+
+    if (!transcript || !transcript.text) return
+
+    // Add to history for context
+    transcriptHistory.push({
+      text: transcript.text,
+      speaker: transcript.speaker,
+      timestamp: Date.now()
+    })
+
+    // Keep only last 20 transcript entries
+    if (transcriptHistory.length > 20) {
+      transcriptHistory = transcriptHistory.slice(-20)
+    }
+
+    // Update the live transcript display
+    updateLiveTranscript(transcript)
+  }
+
+  function updateLiveTranscript(transcript) {
+    const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
+    // Remove "Listening..." placeholder
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
+    // Create transcript bubble
+    const el = document.createElement('div')
+    el.className = 'revpilot-transcript'
+    const speakerLabel = transcript.speaker !== null && transcript.speaker !== undefined
+      ? `Speaker ${transcript.speaker}`
+      : 'Transcript'
+    el.innerHTML = `
+      <div class="revpilot-transcript-header">
+        <span class="revpilot-transcript-speaker">${speakerLabel}</span>
+        <span class="revpilot-transcript-time">${formatTime(new Date().toISOString())}</span>
+      </div>
+      <p class="revpilot-transcript-text">${transcript.text}</p>
+    `
+
+    container.insertBefore(el, container.firstChild)
+
+    // Keep only last 8 items visible
+    while (container.children.length > 8) {
+      container.removeChild(container.lastChild)
+    }
+
+    // Animate
+    el.classList.add('revpilot-suggestion-new')
+    setTimeout(() => el.classList.remove('revpilot-suggestion-new'), 1000)
+  }
+
+  function updateTalkRatioIndicator(speaking) {
+    // Visual feedback that speech is being detected
+    const liveIndicator = document.querySelector('.revpilot-live-indicator')
+    if (liveIndicator) {
+      liveIndicator.classList.toggle('revpilot-speaking', speaking)
+    }
+  }
+
+  // Show banner for bot-free live capture mode
+  function showLiveCaptureBanner() {
+    const container = document.getElementById('revpilot-suggestions')
+    if (!container) return
+
+    // Remove any existing banners
+    const existingBanner = container.querySelector('.revpilot-mode-banner')
+    if (existingBanner) existingBanner.remove()
+
+    const empty = container.querySelector('.revpilot-empty')
+    if (empty) empty.remove()
+
+    const banner = document.createElement('div')
+    banner.className = 'revpilot-mode-banner revpilot-live-banner'
+    banner.innerHTML = `
+      <span class="revpilot-banner-icon">🎙️</span>
+      <span>Live transcription active - no bot in your call!</span>
+    `
+    container.insertBefore(banner, container.firstChild)
+  }
 
   // Expose debug function to window for troubleshooting
   window.revpilotDebug = async function() {

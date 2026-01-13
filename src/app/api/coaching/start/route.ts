@@ -7,6 +7,7 @@ import {
   RECALL_API_KEY,
   RECALL_API_REGION,
   RECALL_API_BASE,
+  DEEPGRAM_API_KEY,
   APP_URL,
   CORS_HEADERS,
   extractZoomMeetingId,
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     // Use service key for database operations (bypasses RLS)
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    const { meetingUrl, userId } = await request.json()
+    const { meetingUrl, userId, captureMethod } = await request.json()
 
     if (!meetingUrl) {
       return NextResponse.json(
@@ -58,13 +59,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const meetingId = extractZoomMeetingId(meetingUrl)
+    // Extract meeting ID - support Zoom, Google Meet, and Teams
+    let meetingId = extractZoomMeetingId(meetingUrl)
+
+    // Try Google Meet format
     if (!meetingId) {
-      return NextResponse.json(
-        { error: 'Invalid Zoom meeting URL' },
-        { status: 400, headers: CORS_HEADERS }
-      )
+      const meetMatch = meetingUrl.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/i)
+      if (meetMatch) meetingId = meetMatch[1]
     }
+
+    // Try Teams format
+    if (!meetingId) {
+      const teamsMatch = meetingUrl.match(/teams\.(microsoft|live)\.com.*\/(\d+)/) ||
+                         meetingUrl.match(/meetup-join\/([^/]+)/)
+      if (teamsMatch) meetingId = teamsMatch[teamsMatch.length - 1]
+    }
+
+    // Fallback to URL hash
+    if (!meetingId) {
+      meetingId = Buffer.from(meetingUrl).toString('base64').substring(0, 16)
+    }
+
+    // Check if using tab audio capture (bot-free mode)
+    const useTabCapture = captureMethod === 'tab_audio'
 
     // Create coaching session
     const { data: session, error: sessionError } = await supabase
@@ -86,7 +103,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create Recall.ai bot if configured
+    // For tab capture mode, skip Recall.ai bot and return Deepgram key
+    if (useTabCapture) {
+      console.log('[Coaching] Tab capture mode - skipping Recall.ai bot')
+
+      await supabase
+        .from('coaching_sessions')
+        .update({ status: 'active', capture_method: 'tab_audio' })
+        .eq('id', session.id)
+
+      return NextResponse.json({
+        id: session.id,
+        status: 'active',
+        botFree: true,
+        captureMethod: 'tab_audio',
+        meetingId,
+        // Provide Deepgram API key if configured (for direct client-side streaming)
+        deepgramApiKey: DEEPGRAM_API_KEY || null,
+      }, { headers: CORS_HEADERS })
+    }
+
+    // Create Recall.ai bot if configured (legacy bot-based mode)
     let botId = null
     let botError = null
 

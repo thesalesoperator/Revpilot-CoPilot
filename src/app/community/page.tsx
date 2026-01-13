@@ -821,11 +821,11 @@ export default function CommunityPage() {
 
   const getCategoryColor = (category: ClipCategory | null) => {
     const colors: Record<string, string> = {
-      objection_handling: 'from-red-500 to-orange-500',
-      closing: 'from-green-500 to-emerald-500',
-      discovery: 'from-blue-500 to-cyan-500',
-      rapport: 'from-purple-500 to-pink-500',
-      value_prop: 'from-yellow-500 to-amber-500',
+      objection_handling: 'from-gray-500 to-[#5eead4]',
+      closing: 'from-[#5eead4] to-emerald-500',
+      discovery: 'from-[#5eead4] to-[#4fd1c5]',
+      rapport: 'from-[#5eead4] to-[#4fd1c5]',
+      value_prop: 'from-[#5eead4] to-[#4fd1c5]',
       negotiation: 'from-indigo-500 to-violet-500',
       other: 'from-gray-500 to-slate-500',
     }
@@ -856,7 +856,7 @@ export default function CommunityPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <Users className="w-8 h-8 text-[#00ffc1]" />
+              <Users className="w-8 h-8 text-[#5eead4]" />
               Community
             </h1>
             <p className="text-gray-400">Connect, share, and learn from top sales professionals</p>
@@ -865,7 +865,7 @@ export default function CommunityPage() {
             <button className="relative p-2 rounded-xl bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] transition-colors">
               <Bell className="w-5 h-5 text-gray-400" />
               {incomingRequests.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gray-500 rounded-full text-xs text-white flex items-center justify-center">
                   {incomingRequests.length}
                 </span>
               )}
@@ -890,7 +890,7 @@ export default function CommunityPage() {
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
+                  ? 'bg-[#5eead4] text-[#0a0a0f] font-semibold'
                   : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
               }`}
             >
@@ -898,7 +898,7 @@ export default function CommunityPage() {
               {tab.label}
               {'count' in tab && tab.count !== undefined && (
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  activeTab === tab.id ? 'bg-[#00102e]/20' : 'bg-[rgba(255,255,255,0.1)]'
+                  activeTab === tab.id ? 'bg-[#0a0a0f]/20' : 'bg-[rgba(255,255,255,0.1)]'
                 }`}>
                   {tab.count}
                 </span>
@@ -921,7 +921,7 @@ export default function CommunityPage() {
                         onClick={() => setFeedFilter(filter)}
                         className={`px-4 py-2 rounded-xl text-sm transition-all ${
                           feedFilter === filter
-                            ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                            ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                             : 'text-gray-400 hover:text-white bg-[rgba(255,255,255,0.02)]'
                         }`}
                       >
@@ -949,7 +949,7 @@ export default function CommunityPage() {
 
                 {isLoadingPosts && (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin" />
                   </div>
                 )}
 
@@ -970,14 +970,14 @@ export default function CommunityPage() {
                       <div key={post.id} className="glass-card p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-[#0a0a0f] font-bold">
                               {getInitials(post.author.full_name, post.author.email)}
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
                                 <h3 className="font-semibold text-white">{post.author.full_name || post.author.email.split('@')[0]}</h3>
                                 {!post.is_following_author && post.author.id !== user?.id && (
-                                  <button onClick={() => handleFollow(post.author.id)} className="text-xs text-[#00ffc1] hover:underline">Follow</button>
+                                  <button onClick={() => handleFollow(post.author.id)} className="text-xs text-[#5eead4] hover:underline">Follow</button>
                                 )}
                               </div>
                               <p className="text-sm text-gray-500">{post.author.title}</p>
@@ -991,7 +991,7 @@ export default function CommunityPage() {
                         {post.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-4">
                             {post.tags.map((tag) => (
-                              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-[rgba(0,255,193,0.1)] text-[#00ffc1]">#{tag}</span>
+                              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-[rgba(94,234,212,0.1)] text-[#5eead4]">#{tag}</span>
                             ))}
                           </div>
                         )}
@@ -1002,16 +1002,16 @@ export default function CommunityPage() {
                               <Heart className={`w-5 h-5 ${post.is_liked ? 'fill-current' : ''}`} />
                               <span>{post.like_count}</span>
                             </button>
-                            <button onClick={() => toggleComments(post.id)} className={`flex items-center gap-2 transition-colors ${expandedComments.has(post.id) ? 'text-[#00ffc1]' : 'text-gray-400 hover:text-[#00ffc1]'}`}>
+                            <button onClick={() => toggleComments(post.id)} className={`flex items-center gap-2 transition-colors ${expandedComments.has(post.id) ? 'text-[#5eead4]' : 'text-gray-400 hover:text-[#5eead4]'}`}>
                               <MessageCircle className="w-5 h-5" />
                               <span>{post.comment_count}</span>
                             </button>
-                            <button className="flex items-center gap-2 text-gray-400 hover:text-[#00ffc1] transition-colors">
+                            <button className="flex items-center gap-2 text-gray-400 hover:text-[#5eead4] transition-colors">
                               <Share2 className="w-5 h-5" />
                               <span>{post.share_count}</span>
                             </button>
                           </div>
-                          <button onClick={() => handleSave(post.id)} className={post.is_saved ? 'text-[#00ffc1]' : 'text-gray-400 hover:text-[#00ffc1]'}>
+                          <button onClick={() => handleSave(post.id)} className={post.is_saved ? 'text-[#5eead4]' : 'text-gray-400 hover:text-[#5eead4]'}>
                             {post.is_saved ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
                           </button>
                         </div>
@@ -1019,7 +1019,7 @@ export default function CommunityPage() {
                         {expandedComments.has(post.id) && (
                           <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
                             <div className="flex gap-3 mb-4">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold text-sm flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-[#0a0a0f] font-bold text-sm flex-shrink-0">
                                 {user?.email?.[0]?.toUpperCase() || 'U'}
                               </div>
                               <div className="flex-1 flex gap-2">
@@ -1031,7 +1031,7 @@ export default function CommunityPage() {
                                   onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post.id)}
                                   className="input-field flex-1 py-2 text-sm"
                                 />
-                                <button onClick={() => handleAddComment(post.id)} disabled={!newComment[post.id]?.trim()} className="p-2 rounded-lg bg-[#00ffc1] text-[#00102e] hover:bg-[#00d9a6] disabled:opacity-50">
+                                <button onClick={() => handleAddComment(post.id)} disabled={!newComment[post.id]?.trim()} className="p-2 rounded-lg bg-[#5eead4] text-[#0a0a0f] hover:bg-[#4fd1c5] disabled:opacity-50">
                                   <Send className="w-4 h-4" />
                                 </button>
                               </div>
@@ -1039,7 +1039,7 @@ export default function CommunityPage() {
                             <div className="space-y-3">
                               {comments[post.id]?.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                     {getInitials(comment.author.full_name, comment.author.email)}
                                   </div>
                                   <div className="flex-1 bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
@@ -1082,7 +1082,7 @@ export default function CommunityPage() {
                         onClick={() => setClipsView(view)}
                         className={`px-4 py-2 rounded-xl text-sm transition-all ${
                           clipsView === view
-                            ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                            ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                             : 'text-gray-400 hover:text-white bg-[rgba(255,255,255,0.02)]'
                         }`}
                       >
@@ -1108,7 +1108,7 @@ export default function CommunityPage() {
                     onClick={() => setClipCategoryFilter('all')}
                     className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                       clipCategoryFilter === 'all'
-                        ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
+                        ? 'bg-[#5eead4] text-[#0a0a0f] font-semibold'
                         : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
                     }`}
                   >
@@ -1120,7 +1120,7 @@ export default function CommunityPage() {
                       onClick={() => setClipCategoryFilter(cat.value)}
                       className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
                         clipCategoryFilter === cat.value
-                          ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
+                          ? 'bg-[#5eead4] text-[#0a0a0f] font-semibold'
                           : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
                       }`}
                     >
@@ -1131,7 +1131,7 @@ export default function CommunityPage() {
 
                 {isLoadingClips ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin" />
                   </div>
                 ) : displayedClips.length === 0 ? (
                   <div className="glass-card p-12 text-center">
@@ -1152,7 +1152,7 @@ export default function CommunityPage() {
                       <div key={clip.id} className="glass-card p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-[#0a0a0f] font-bold">
                               {getInitials(clip.author.full_name, clip.author.email)}
                             </div>
                             <div>
@@ -1174,8 +1174,8 @@ export default function CommunityPage() {
                         {clip.description && <p className="text-gray-400 text-sm mb-3">{clip.description}</p>}
 
                         {/* Transcript Excerpt */}
-                        <div className="bg-[rgba(0,0,0,0.3)] rounded-xl p-4 mb-4 border-l-4 border-[#00ffc1]">
-                          <Quote className="w-5 h-5 text-[#00ffc1] mb-2" />
+                        <div className="bg-[rgba(0,0,0,0.3)] rounded-xl p-4 mb-4 border-l-4 border-[#5eead4]">
+                          <Quote className="w-5 h-5 text-[#5eead4] mb-2" />
                           <p className="text-gray-300 italic whitespace-pre-wrap">&ldquo;{clip.transcript_excerpt}&rdquo;</p>
                           {clip.call_title && (
                             <p className="text-xs text-gray-500 mt-2">From: {clip.call_title}</p>
@@ -1185,7 +1185,7 @@ export default function CommunityPage() {
                         {clip.tags.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-4">
                             {clip.tags.map((tag) => (
-                              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-[rgba(0,255,193,0.1)] text-[#00ffc1]">#{tag}</span>
+                              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-[rgba(94,234,212,0.1)] text-[#5eead4]">#{tag}</span>
                             ))}
                           </div>
                         )}
@@ -1196,7 +1196,7 @@ export default function CommunityPage() {
                               <Heart className={`w-5 h-5 ${clip.is_liked ? 'fill-current' : ''}`} />
                               <span>{clip.like_count}</span>
                             </button>
-                            <button onClick={() => toggleClipComments(clip.id)} className={`flex items-center gap-2 transition-colors ${expandedClipComments.has(clip.id) ? 'text-[#00ffc1]' : 'text-gray-400 hover:text-[#00ffc1]'}`}>
+                            <button onClick={() => toggleClipComments(clip.id)} className={`flex items-center gap-2 transition-colors ${expandedClipComments.has(clip.id) ? 'text-[#5eead4]' : 'text-gray-400 hover:text-[#5eead4]'}`}>
                               <MessageCircle className="w-5 h-5" />
                               <span>{clip.comment_count}</span>
                             </button>
@@ -1205,7 +1205,7 @@ export default function CommunityPage() {
                               <span>{clip.view_count}</span>
                             </span>
                           </div>
-                          <button onClick={() => handleClipSave(clip.id)} className={clip.is_saved ? 'text-[#00ffc1]' : 'text-gray-400 hover:text-[#00ffc1]'}>
+                          <button onClick={() => handleClipSave(clip.id)} className={clip.is_saved ? 'text-[#5eead4]' : 'text-gray-400 hover:text-[#5eead4]'}>
                             {clip.is_saved ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
                           </button>
                         </div>
@@ -1213,7 +1213,7 @@ export default function CommunityPage() {
                         {expandedClipComments.has(clip.id) && (
                           <div className="mt-4 pt-4 border-t border-[rgba(255,255,255,0.05)]">
                             <div className="flex gap-3 mb-4">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold text-sm flex-shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-[#0a0a0f] font-bold text-sm flex-shrink-0">
                                 {user?.email?.[0]?.toUpperCase() || 'U'}
                               </div>
                               <div className="flex-1 flex gap-2">
@@ -1225,7 +1225,7 @@ export default function CommunityPage() {
                                   onKeyDown={(e) => e.key === 'Enter' && handleAddClipComment(clip.id)}
                                   className="input-field flex-1 py-2 text-sm"
                                 />
-                                <button onClick={() => handleAddClipComment(clip.id)} disabled={!newClipComment[clip.id]?.trim()} className="p-2 rounded-lg bg-[#00ffc1] text-[#00102e] hover:bg-[#00d9a6] disabled:opacity-50">
+                                <button onClick={() => handleAddClipComment(clip.id)} disabled={!newClipComment[clip.id]?.trim()} className="p-2 rounded-lg bg-[#5eead4] text-[#0a0a0f] hover:bg-[#4fd1c5] disabled:opacity-50">
                                   <Send className="w-4 h-4" />
                                 </button>
                               </div>
@@ -1233,7 +1233,7 @@ export default function CommunityPage() {
                             <div className="space-y-3">
                               {clipComments[clip.id]?.map((comment) => (
                                 <div key={comment.id} className="flex gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                     {getInitials(comment.author.full_name, comment.author.email)}
                                   </div>
                                   <div className="flex-1 bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
@@ -1262,14 +1262,14 @@ export default function CommunityPage() {
                 {incomingRequests.length > 0 && (
                   <div className="glass-card p-6">
                     <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                      <UserPlus className="w-5 h-5 text-[#00ffc1]" />
+                      <UserPlus className="w-5 h-5 text-[#5eead4]" />
                       Friend Requests ({incomingRequests.length})
                     </h3>
                     <div className="space-y-3">
                       {incomingRequests.map((request) => (
                         <div key={request.id} className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] rounded-xl">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff6b8a] to-[#ffbe57] flex items-center justify-center text-white font-bold">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-400 to-[#5eead4] flex items-center justify-center text-white font-bold">
                               {getInitials(request.user.full_name, request.user.email)}
                             </div>
                             <div>
@@ -1278,7 +1278,7 @@ export default function CommunityPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => acceptFriendRequest(request.id)} disabled={processingRequestId === request.id} className="p-2 rounded-lg bg-[#00ffc1] text-[#00102e] hover:bg-[#00d9a6] disabled:opacity-50">
+                            <button onClick={() => acceptFriendRequest(request.id)} disabled={processingRequestId === request.id} className="p-2 rounded-lg bg-[#5eead4] text-[#0a0a0f] hover:bg-[#4fd1c5] disabled:opacity-50">
                               {processingRequestId === request.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                             </button>
                             <button onClick={() => declineFriendRequest(request.id)} disabled={processingRequestId === request.id} className="p-2 rounded-lg bg-[rgba(255,255,255,0.05)] text-gray-400 hover:bg-[rgba(255,255,255,0.1)]">
@@ -1294,7 +1294,7 @@ export default function CommunityPage() {
                 {outgoingRequests.length > 0 && (
                   <div className="glass-card p-6">
                     <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-yellow-400" />
+                      <Clock className="w-5 h-5 text-[#5eead4]" />
                       Pending Requests ({outgoingRequests.length})
                     </h3>
                     <div className="space-y-3">
@@ -1309,7 +1309,7 @@ export default function CommunityPage() {
                               <p className="text-xs text-gray-500">{request.user.title}</p>
                             </div>
                           </div>
-                          <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded">Pending</span>
+                          <span className="text-xs text-[#5eead4] bg-[#5eead4]/10 px-2 py-1 rounded">Pending</span>
                         </div>
                       ))}
                     </div>
@@ -1319,7 +1319,7 @@ export default function CommunityPage() {
                 <div className="glass-card p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-white flex items-center gap-2">
-                      <Users className="w-5 h-5 text-[#00ffc1]" />
+                      <Users className="w-5 h-5 text-[#5eead4]" />
                       Your Friends ({friends.length})
                     </h3>
                     <button onClick={() => setIsAddFriendOpen(true)} className="btn-secondary text-sm py-2 px-3 flex items-center gap-2">
@@ -1330,7 +1330,7 @@ export default function CommunityPage() {
 
                   {isLoadingFriends ? (
                     <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 text-[#00ffc1] animate-spin" />
+                      <Loader2 className="w-6 h-6 text-[#5eead4] animate-spin" />
                     </div>
                   ) : friends.length === 0 ? (
                     <div className="text-center py-8">
@@ -1341,13 +1341,13 @@ export default function CommunityPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {friends.map((friend) => (
-                        <div key={friend.id} className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl hover:border-[rgba(0,255,193,0.2)] transition-colors">
+                        <div key={friend.id} className="flex items-center justify-between p-4 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] rounded-xl hover:border-[rgba(94,234,212,0.2)] transition-colors">
                           <div className="flex items-center gap-3">
                             <div className="relative">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00ffc1] to-[#00d9a6] flex items-center justify-center text-[#00102e] font-bold">
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-[#0a0a0f] font-bold">
                                 {getInitials(friend.full_name, friend.email)}
                               </div>
-                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#00102e] ${friend.status === 'online' ? 'bg-green-500' : 'bg-gray-500'}`} />
+                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#0a0a0f] ${friend.status === 'online' ? 'bg-[#5eead4]' : 'bg-gray-500'}`} />
                             </div>
                             <div>
                               <h4 className="font-medium text-white">{friend.full_name || friend.email.split('@')[0]}</h4>
@@ -1376,7 +1376,7 @@ export default function CommunityPage() {
                         onClick={() => setGroupsView(view)}
                         className={`px-4 py-2 rounded-xl text-sm transition-all ${
                           groupsView === view
-                            ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]'
+                            ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]'
                             : 'text-gray-400 hover:text-white bg-[rgba(255,255,255,0.02)]'
                         }`}
                       >
@@ -1392,7 +1392,7 @@ export default function CommunityPage() {
 
                 {isLoadingGroups ? (
                   <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-[#00ffc1] animate-spin" />
+                    <Loader2 className="w-8 h-8 text-[#5eead4] animate-spin" />
                   </div>
                 ) : groupsView === 'my' ? (
                   myGroups.length === 0 ? (
@@ -1408,16 +1408,16 @@ export default function CommunityPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {myGroups.map((group) => (
-                        <div key={group.id} className="glass-card p-5 hover:border-[rgba(0,255,193,0.2)] transition-colors">
+                        <div key={group.id} className="glass-card p-5 hover:border-[rgba(94,234,212,0.2)] transition-colors">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-lg">
                                 {group.name.slice(0, 2).toUpperCase()}
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
                                   <h3 className="font-semibold text-white">{group.name}</h3>
-                                  {group.is_admin && <Crown className="w-4 h-4 text-yellow-400" />}
+                                  {group.is_admin && <Crown className="w-4 h-4 text-[#5eead4]" />}
                                   {group.is_private ? <Lock className="w-3 h-3 text-gray-500" /> : <Globe className="w-3 h-3 text-gray-500" />}
                                 </div>
                                 <p className="text-sm text-gray-500">{group.member_count} members</p>
@@ -1426,7 +1426,7 @@ export default function CommunityPage() {
                           </div>
                           {group.description && <p className="text-gray-400 text-sm mb-4 line-clamp-2">{group.description}</p>}
                           <div className="flex items-center justify-between pt-3 border-t border-[rgba(255,255,255,0.05)]">
-                            <button className="text-sm text-[#00ffc1] hover:underline">View Group</button>
+                            <button className="text-sm text-[#5eead4] hover:underline">View Group</button>
                             {!group.is_admin && (
                               <button
                                 onClick={() => leaveGroup(group.id)}
@@ -1464,10 +1464,10 @@ export default function CommunityPage() {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {filteredDiscoverGroups.map((group) => (
-                          <div key={group.id} className="glass-card p-5 hover:border-[rgba(0,255,193,0.2)] transition-colors">
+                          <div key={group.id} className="glass-card p-5 hover:border-[rgba(94,234,212,0.2)] transition-colors">
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3">
-                                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
+                                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-lg">
                                   {group.name.slice(0, 2).toUpperCase()}
                                 </div>
                                 <div>
@@ -1500,7 +1500,7 @@ export default function CommunityPage() {
             <div className="glass-card p-4">
               <h3 className="font-semibold text-white mb-3 text-sm">Quick Actions</h3>
               <div className="space-y-2">
-                <button onClick={() => setIsCreatePostOpen(true)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-[rgba(0,255,193,0.1)] text-[#00ffc1] hover:bg-[rgba(0,255,193,0.15)] transition-colors">
+                <button onClick={() => setIsCreatePostOpen(true)} className="w-full flex items-center gap-3 p-3 rounded-xl bg-[rgba(94,234,212,0.1)] text-[#5eead4] hover:bg-[rgba(94,234,212,0.15)] transition-colors">
                   <Plus className="w-5 h-5" />
                   <span className="text-sm font-medium">New Post</span>
                 </button>
@@ -1523,20 +1523,20 @@ export default function CommunityPage() {
             {myGroups.length > 0 && (
               <div className="glass-card p-4">
                 <h3 className="font-semibold text-white mb-3 text-sm flex items-center gap-2">
-                  <UsersRound className="w-4 h-4 text-[#00ffc1]" />
+                  <UsersRound className="w-4 h-4 text-[#5eead4]" />
                   My Groups
                 </h3>
                 <div className="space-y-2">
                   {myGroups.slice(0, 3).map((group) => (
                     <div key={group.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[rgba(255,255,255,0.02)] cursor-pointer transition-colors" onClick={() => setActiveTab('groups')}>
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-xs">
                         {group.name.slice(0, 2).toUpperCase()}
                       </div>
                       <span className="text-sm text-gray-300 truncate">{group.name}</span>
                     </div>
                   ))}
                   {myGroups.length > 3 && (
-                    <button onClick={() => setActiveTab('groups')} className="text-xs text-[#00ffc1] hover:underline">View all {myGroups.length} groups</button>
+                    <button onClick={() => setActiveTab('groups')} className="text-xs text-[#5eead4] hover:underline">View all {myGroups.length} groups</button>
                   )}
                 </div>
               </div>
@@ -1546,7 +1546,7 @@ export default function CommunityPage() {
             {myClips.length > 0 && (
               <div className="glass-card p-4">
                 <h3 className="font-semibold text-white mb-3 text-sm flex items-center gap-2">
-                  <Film className="w-4 h-4 text-[#00ffc1]" />
+                  <Film className="w-4 h-4 text-[#5eead4]" />
                   My Clips
                 </h3>
                 <div className="space-y-2">
@@ -1559,7 +1559,7 @@ export default function CommunityPage() {
                     </div>
                   ))}
                   {myClips.length > 3 && (
-                    <button onClick={() => { setActiveTab('clips'); setClipsView('my') }} className="text-xs text-[#00ffc1] hover:underline">View all {myClips.length} clips</button>
+                    <button onClick={() => { setActiveTab('clips'); setClipsView('my') }} className="text-xs text-[#5eead4] hover:underline">View all {myClips.length} clips</button>
                   )}
                 </div>
               </div>
@@ -1567,12 +1567,12 @@ export default function CommunityPage() {
 
             <div className="glass-card p-4">
               <h3 className="font-semibold text-white mb-3 text-sm flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-[#00ffc1]" />
+                <TrendingUp className="w-4 h-4 text-[#5eead4]" />
                 Trending
               </h3>
               <div className="flex flex-wrap gap-2">
                 {TRENDING_TAGS.map((tag) => (
-                  <button key={tag} onClick={() => { setSearchQuery(tag); setActiveTab('feed') }} className="text-xs px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.05)] text-gray-400 hover:bg-[rgba(0,255,193,0.1)] hover:text-[#00ffc1] transition-colors">
+                  <button key={tag} onClick={() => { setSearchQuery(tag); setActiveTab('feed') }} className="text-xs px-3 py-1.5 rounded-full bg-[rgba(255,255,255,0.05)] text-gray-400 hover:bg-[rgba(94,234,212,0.1)] hover:text-[#5eead4] transition-colors">
                     {tag}
                   </button>
                 ))}
@@ -1581,7 +1581,7 @@ export default function CommunityPage() {
 
             <div className="glass-card p-4">
               <h3 className="font-semibold text-white mb-3 text-sm flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-400" />
+                <Trophy className="w-4 h-4 text-[#5eead4]" />
                 Top Contributors
               </h3>
               <p className="text-sm text-gray-500">Coming soon...</p>
@@ -1629,7 +1629,7 @@ export default function CommunityPage() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setNewClipShared(!newClipShared)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all ${newClipShared ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]' : 'bg-[rgba(255,255,255,0.02)] text-gray-400'}`}>
+            <button onClick={() => setNewClipShared(!newClipShared)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all ${newClipShared ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]' : 'bg-[rgba(255,255,255,0.02)] text-gray-400'}`}>
               {newClipShared ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
               {newClipShared ? 'Public' : 'Private'}
             </button>
@@ -1652,7 +1652,7 @@ export default function CommunityPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input type="text" placeholder="Search by name or email..." value={friendSearchQuery} onChange={(e) => { setFriendSearchQuery(e.target.value); searchUsers(e.target.value) }} className="input-field pl-12" />
           </div>
-          {isSearchingFriends && <div className="flex items-center justify-center py-4"><Loader2 className="w-5 h-5 text-[#00ffc1] animate-spin" /></div>}
+          {isSearchingFriends && <div className="flex items-center justify-center py-4"><Loader2 className="w-5 h-5 text-[#5eead4] animate-spin" /></div>}
           {!isSearchingFriends && friendSearchQuery.length >= 2 && friendSearchResults.length === 0 && (
             <div className="text-center py-6 text-gray-500"><Users className="w-10 h-10 mx-auto mb-2 opacity-50" /><p>No users found</p></div>
           )}
@@ -1661,7 +1661,7 @@ export default function CommunityPage() {
               {friendSearchResults.map((searchUser) => (
                 <div key={searchUser.id} className="flex items-center justify-between p-3 bg-[rgba(255,255,255,0.02)] rounded-xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">{getInitials(searchUser.full_name, searchUser.email)}</div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5eead4] to-[#4fd1c5] flex items-center justify-center text-white font-bold text-sm">{getInitials(searchUser.full_name, searchUser.email)}</div>
                     <div>
                       <h4 className="font-medium text-white text-sm">{searchUser.full_name || searchUser.email.split('@')[0]}</h4>
                       <p className="text-xs text-gray-500">{searchUser.title}</p>
@@ -1688,7 +1688,7 @@ export default function CommunityPage() {
             <textarea placeholder="What's this group about?" value={newGroupDescription} onChange={(e) => setNewGroupDescription(e.target.value)} className="input-field min-h-[80px] resize-none" disabled={isCreatingGroup} />
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setNewGroupPrivate(!newGroupPrivate)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all ${newGroupPrivate ? 'bg-[rgba(0,255,193,0.1)] text-[#00ffc1] border border-[rgba(0,255,193,0.3)]' : 'bg-[rgba(255,255,255,0.02)] text-gray-400'}`}>
+            <button onClick={() => setNewGroupPrivate(!newGroupPrivate)} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all ${newGroupPrivate ? 'bg-[rgba(94,234,212,0.1)] text-[#5eead4] border border-[rgba(94,234,212,0.3)]' : 'bg-[rgba(255,255,255,0.02)] text-gray-400'}`}>
               {newGroupPrivate ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
               {newGroupPrivate ? 'Private' : 'Public'}
             </button>

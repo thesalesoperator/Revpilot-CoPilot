@@ -1,6 +1,6 @@
-# RevPilot - Commission Calculator & Tracker
+# RevPilot Copilot - AI Sales Performance Platform
 
-A beautiful, modern commission tracking application for sales representatives to track their sales, calculate commissions, and project future earnings.
+A comprehensive AI-powered sales enablement platform for sales representatives featuring commission tracking, AI roleplay practice, real-time call coaching, and team performance analytics.
 
 ## Features
 
@@ -46,8 +46,8 @@ A beautiful, modern commission tracking application for sales representatives to
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/revpilot-commission-calculator.git
-cd revpilot-commission-calculator
+git clone https://github.com/yourusername/revpilot-copilot.git
+cd revpilot-copilot
 ```
 
 ### 2. Install dependencies
@@ -82,21 +82,47 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ## Project Structure
 
 ```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── dashboard/          # Main sales dashboard
-│   ├── projections/        # Sales projections page
-│   ├── settings/           # User settings
-│   ├── login/              # Login page
-│   └── signup/             # Signup page
-├── components/
-│   ├── layout/             # Layout components (Sidebar, DashboardLayout)
-│   └── ui/                 # UI components (Modal, StatCard, Toast, etc.)
-├── contexts/               # React contexts (Auth)
-├── lib/
-│   ├── supabase/           # Supabase client setup
-│   └── utils.ts            # Utility functions
-└── types/                  # TypeScript types
+revpilot-commission-calculator/
+├── chrome-extension/       # RevPilot Sales Coach Chrome Extension
+│   ├── manifest.json       # Extension configuration
+│   ├── background.js       # Service worker
+│   ├── content.js          # Injected UI for coaching overlay
+│   ├── offscreen.js        # Audio capture & Deepgram transcription
+│   └── popup.js            # Extension popup
+│
+├── src/
+│   ├── app/                # Next.js App Router
+│   │   ├── api/            # Backend API routes
+│   │   │   ├── coaching/   # Real-time coaching endpoints
+│   │   │   ├── practice/   # AI roleplay practice
+│   │   │   └── community/  # Social features
+│   │   ├── dashboard/      # Main sales dashboard
+│   │   ├── coaching/       # Coaching sessions page
+│   │   ├── practice/       # Roleplay practice page
+│   │   └── settings/       # User settings & extension download
+│   │
+│   ├── components/
+│   │   ├── layout/         # Layout components (Sidebar, etc.)
+│   │   ├── ui/             # Reusable UI components
+│   │   └── practice/       # Practice-specific components
+│   │
+│   └── lib/
+│       ├── coaching/       # Coaching logic & AI prompts
+│       ├── supabase/       # Database client setup
+│       └── utils.ts        # Utility functions
+│
+├── public/
+│   └── downloads/          # Chrome extension ZIP for download
+│
+├── docs/                   # Documentation
+│   ├── GOOGLE_OAUTH_WEB_SETUP.md
+│   ├── COMMUNITY_PLAN.md
+│   └── LANDING_PAGE_STANDALONE.md
+│
+├── supabase/               # Database migrations
+│
+└── archive/                # Archived/unused code
+    └── close-extension/    # Close CRM extension (not active)
 ```
 
 ## Color Scheme
