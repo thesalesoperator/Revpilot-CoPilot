@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevPilot Extension Test Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0a0f1c;
+      color: #fff;
+    }
+    h1 { color: #00ffc1; }
+    .test-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    button {
+      background: #00ffc1;
+      color: #0a0f1c;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+    }
+    button:hover { opacity: 0.9; }
+    .script-line {
+      padding: 10px;
+      margin: 5px 0;
+      background: rgba(0,255,193,0.1);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .script-line:hover { background: rgba(0,255,193,0.2); }
+    #status { color: #00ffc1; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🎯 RevPilot Extension Test Page</h1>
+
+  <div class="test-section">
+    <h2>Option 1: Text-to-Speech Simulation</h2>
+    <p>Click these script lines to hear them spoken (simulates a sales call):</p>
+
+    <div class="script-line" onclick="speak('Hi, thanks for taking my call today. I really appreciate your time.')">
+      <strong>Rep:</strong> "Hi, thanks for taking my call today. I really appreciate your time."
+    </div>
+
+    <div class="script-line" onclick="speak('Sure, what is this about?')">
+      <strong>Prospect:</strong> "Sure, what is this about?"
+    </div>
+
+    <div class="script-line" onclick="speak('I help sales teams close more deals with AI coaching. Before I dive in, can I ask what challenges you are facing with your sales process?')">
+      <strong>Rep:</strong> "I help sales teams close more deals with AI coaching. Before I dive in, can I ask what challenges you're facing with your sales process?"
+    </div>
+
+    <div class="script-line" onclick="speak('Well, our reps are inconsistent. Some are great, others struggle with objections.')">
+      <strong>Prospect:</strong> "Well, our reps are inconsistent. Some are great, others struggle with objections."
+    </div>
+
+    <div class="script-line" onclick="speak('That is a common challenge. What would it mean for your business if all your reps performed like your top performers?')">
+      <strong>Rep:</strong> "That's a common challenge. What would it mean for your business if all your reps performed like your top performers?"
+    </div>
+
+    <div class="script-line" onclick="speak('Honestly, it would probably double our revenue. We have been trying to solve this for months.')">
+      <strong>Prospect:</strong> "Honestly, it would probably double our revenue. We've been trying to solve this for months."
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Option 2: Auto-Play Full Script</h2>
+    <p>Plays through a sample sales conversation automatically:</p>
+    <button onclick="playFullScript()">▶️ Play Full Script</button>
+    <button onclick="stopScript()">⏹️ Stop</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Option 3: Custom Text</h2>
+    <p>Type anything to have it spoken:</p>
+    <textarea id="customText" rows="3" style="width:100%; padding:10px; border-radius:6px; background:#1a1f2e; color:#fff; border:1px solid #333;" placeholder="Type your test dialogue here..."></textarea>
+    <br><br>
+    <button onclick="speak(document.getElementById('customText').value)">🔊 Speak Text</button>
+  </div>
+
+  <div class="test-section">
+    <h2>📋 How to Test</h2>
+    <ol>
+      <li>Start a coaching session from the RevPilot extension</li>
+      <li>Click script lines above or play the full script</li>
+      <li>Watch the coaching panel respond to the conversation</li>
+      <li>The extension should track script progress and provide suggestions</li>
+    </ol>
+  </div>
+
+  <script>
+    let isPlaying = false;
+    let currentUtterance = null;
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        currentUtterance.rate = 0.9;
+        currentUtterance.pitch = 1;
+
+        document.getElementById('status').textContent = '🔊 Speaking: "' + text.substring(0, 50) + '..."';
+
+        currentUtterance.onend = () => {
+          document.getElementById('status').textContent = '✅ Ready for next line';
+        };
+
+        window.speechSynthesis.speak(currentUtterance);
+      } else {
+        alert('Text-to-speech not supported in this browser');
+      }
+    }
+
+    const fullScript = [
+      { speaker: 'Rep', text: 'Hi, thanks for taking my call today. I really appreciate your time.' },
+      { speaker: 'Prospect', text: 'Sure, what is this about?' },
+      { speaker: 'Rep', text: 'I help sales teams close more deals with AI-powered real-time coaching. Before I dive in, can I ask what your current sales process looks like?' },
+      { speaker: 'Prospect', text: 'We have about 20 reps. They do cold calls and demos mostly.' },
+      { speaker: 'Rep', text: 'Got it. And what challenges are you facing with the team right now?' },
+      { speaker: 'Prospect', text: 'Honestly, consistency is the big one. Our top reps crush it, but others struggle.' },
+      { speaker: 'Rep', text: 'That makes sense. What would it mean for your business if all your reps performed like your top performers?' },
+      { speaker: 'Prospect', text: 'It would be huge. Probably a 40 percent increase in closed deals.' },
+      { speaker: 'Rep', text: 'Wow, 40 percent would be significant. Have you tried anything to solve this before?' },
+      { speaker: 'Prospect', text: 'Yeah, we did some training programs but the results did not stick.' },
+      { speaker: 'Rep', text: 'That is a common problem with traditional training. What if your reps had an AI coach giving them real-time suggestions during every call?' },
+      { speaker: 'Prospect', text: 'That sounds interesting. How does that work exactly?' },
+    ];
+
+    let scriptIndex = 0;
+
+    async function playFullScript() {
+      isPlaying = true;
+      scriptIndex = 0;
+      playNextLine();
+    }
+
+    function playNextLine() {
+      if (!isPlaying || scriptIndex >= fullScript.length) {
+        isPlaying = false;
+        document.getElementById('status').textContent = '✅ Script complete!';
+        return;
+      }
+
+      const line = fullScript[scriptIndex];
+      document.getElementById('status').textContent = `🔊 ${line.speaker}: "${line.text.substring(0, 40)}..."`;
+
+      currentUtterance = new SpeechSynthesisUtterance(line.text);
+      currentUtterance.rate = 0.9;
+
+      // Different voice for prospect vs rep
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 1 && line.speaker === 'Prospect') {
+        currentUtterance.voice = voices[1];
+      }
+
+      currentUtterance.onend = () => {
+        scriptIndex++;
+        // Pause between lines
+        setTimeout(playNextLine, 1500);
+      };
+
+      window.speechSynthesis.speak(currentUtterance);
+    }
+
+    function stopScript() {
+      isPlaying = false;
+      window.speechSynthesis.cancel();
+      document.getElementById('status').textContent = '⏹️ Stopped';
+    }
+
+    // Load voices
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
+  </script>
+</body>
+</html>
