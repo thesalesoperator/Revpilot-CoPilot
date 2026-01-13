@@ -82,21 +82,47 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ## Project Structure
 
 ```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── dashboard/          # Main sales dashboard
-│   ├── projections/        # Sales projections page
-│   ├── settings/           # User settings
-│   ├── login/              # Login page
-│   └── signup/             # Signup page
-├── components/
-│   ├── layout/             # Layout components (Sidebar, DashboardLayout)
-│   └── ui/                 # UI components (Modal, StatCard, Toast, etc.)
-├── contexts/               # React contexts (Auth)
-├── lib/
-│   ├── supabase/           # Supabase client setup
-│   └── utils.ts            # Utility functions
-└── types/                  # TypeScript types
+revpilot-commission-calculator/
+├── chrome-extension/       # RevPilot Sales Coach Chrome Extension
+│   ├── manifest.json       # Extension configuration
+│   ├── background.js       # Service worker
+│   ├── content.js          # Injected UI for coaching overlay
+│   ├── offscreen.js        # Audio capture & Deepgram transcription
+│   └── popup.js            # Extension popup
+│
+├── src/
+│   ├── app/                # Next.js App Router
+│   │   ├── api/            # Backend API routes
+│   │   │   ├── coaching/   # Real-time coaching endpoints
+│   │   │   ├── practice/   # AI roleplay practice
+│   │   │   └── community/  # Social features
+│   │   ├── dashboard/      # Main sales dashboard
+│   │   ├── coaching/       # Coaching sessions page
+│   │   ├── practice/       # Roleplay practice page
+│   │   └── settings/       # User settings & extension download
+│   │
+│   ├── components/
+│   │   ├── layout/         # Layout components (Sidebar, etc.)
+│   │   ├── ui/             # Reusable UI components
+│   │   └── practice/       # Practice-specific components
+│   │
+│   └── lib/
+│       ├── coaching/       # Coaching logic & AI prompts
+│       ├── supabase/       # Database client setup
+│       └── utils.ts        # Utility functions
+│
+├── public/
+│   └── downloads/          # Chrome extension ZIP for download
+│
+├── docs/                   # Documentation
+│   ├── GOOGLE_OAUTH_WEB_SETUP.md
+│   ├── COMMUNITY_PLAN.md
+│   └── LANDING_PAGE_STANDALONE.md
+│
+├── supabase/               # Database migrations
+│
+└── archive/                # Archived/unused code
+    └── close-extension/    # Close CRM extension (not active)
 ```
 
 ## Color Scheme
