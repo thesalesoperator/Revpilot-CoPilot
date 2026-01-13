@@ -368,6 +368,37 @@
                 <button class="revpilot-flip-btn" id="revpilot-flip-speakers" title="Swap if wrong">🔄</button>
               </div>
 
+              <!-- Key Insights Panel -->
+              <div class="revpilot-insights-panel" id="revpilot-insights">
+                <div class="revpilot-insights-header" id="revpilot-insights-toggle">
+                  <span class="revpilot-insights-icon">🎯</span>
+                  <span class="revpilot-insights-title">Key Info</span>
+                  <span class="revpilot-toggle-arrow">▼</span>
+                </div>
+                <div class="revpilot-insights-content" id="revpilot-insights-content">
+                  <div class="revpilot-insight-row" id="revpilot-pain-points">
+                    <span class="revpilot-insight-label">🔥 Pain</span>
+                    <span class="revpilot-insight-value">Not identified</span>
+                  </div>
+                  <div class="revpilot-insight-row" id="revpilot-company-info">
+                    <span class="revpilot-insight-label">🏢 Team</span>
+                    <span class="revpilot-insight-value">—</span>
+                  </div>
+                  <div class="revpilot-insight-row" id="revpilot-budget-info">
+                    <span class="revpilot-insight-label">💰 Budget</span>
+                    <span class="revpilot-insight-value">—</span>
+                  </div>
+                  <div class="revpilot-insight-row" id="revpilot-timeline-info">
+                    <span class="revpilot-insight-label">⏰ Timeline</span>
+                    <span class="revpilot-insight-value">—</span>
+                  </div>
+                  <div class="revpilot-insight-row" id="revpilot-signals-info">
+                    <span class="revpilot-insight-label">✅ Signals</span>
+                    <span class="revpilot-insight-value">0</span>
+                  </div>
+                </div>
+              </div>
+
               <button id="revpilot-stop" class="revpilot-btn-danger revpilot-btn-sm">
                 End
               </button>
@@ -447,9 +478,9 @@
       }
     })
 
-    // Key info toggle
-    document.getElementById('revpilot-key-info-toggle')?.addEventListener('click', () => {
-      const content = document.getElementById('revpilot-key-info-content')
+    // Key insights toggle
+    document.getElementById('revpilot-insights-toggle')?.addEventListener('click', () => {
+      const content = document.getElementById('revpilot-insights-content')
       const arrow = document.querySelector('.revpilot-toggle-arrow')
       if (content) {
         content.classList.toggle('hidden')
@@ -1533,33 +1564,80 @@
   function updateKeyInfo(keyInfo) {
     if (!keyInfo) return
 
-    const keyInfoEl = document.getElementById('revpilot-key-info')
-    if (keyInfoEl) keyInfoEl.style.display = 'block'
+    // Show insights panel
+    const insightsEl = document.getElementById('revpilot-insights')
+    if (insightsEl) insightsEl.style.display = 'block'
 
     // Update pain points
-    if (keyInfo.painPoints && keyInfo.painPoints.length > 0) {
-      const painEl = document.getElementById('revpilot-pain-points')
-      if (painEl) {
-        const valueEl = painEl.querySelector('.revpilot-info-value')
-        if (valueEl) valueEl.textContent = keyInfo.painPoints.slice(0, 2).join('; ').substring(0, 100)
+    const painEl = document.getElementById('revpilot-pain-points')
+    if (painEl) {
+      const valueEl = painEl.querySelector('.revpilot-insight-value')
+      if (valueEl) {
+        if (keyInfo.painPoints && keyInfo.painPoints.length > 0) {
+          // Show first pain point truncated
+          const firstPain = keyInfo.painPoints[0]
+          valueEl.textContent = firstPain.length > 40 ? firstPain.substring(0, 40) + '...' : firstPain
+          valueEl.title = keyInfo.painPoints.join('\n') // Full list on hover
+          valueEl.classList.add('revpilot-insight-found')
+        } else if (keyInfo.anchorProblem?.identified) {
+          valueEl.textContent = keyInfo.anchorProblem.category || 'Identified'
+          valueEl.classList.add('revpilot-insight-found')
+        }
+      }
+    }
+
+    // Update company/team info
+    const companyEl = document.getElementById('revpilot-company-info')
+    if (companyEl && keyInfo.companyContext) {
+      const valueEl = companyEl.querySelector('.revpilot-insight-value')
+      if (valueEl && keyInfo.companyContext.teamSize) {
+        valueEl.textContent = keyInfo.companyContext.teamSize + ' reps'
+        valueEl.classList.add('revpilot-insight-found')
       }
     }
 
     // Update budget
-    if (keyInfo.budget) {
-      const budgetEl = document.getElementById('revpilot-budget-info')
-      if (budgetEl) {
-        const valueEl = budgetEl.querySelector('.revpilot-info-value')
-        if (valueEl) valueEl.textContent = keyInfo.budget
+    const budgetEl = document.getElementById('revpilot-budget-info')
+    if (budgetEl) {
+      const valueEl = budgetEl.querySelector('.revpilot-insight-value')
+      if (valueEl && keyInfo.budget) {
+        valueEl.textContent = keyInfo.budget
+        valueEl.classList.add('revpilot-insight-found')
+        if (keyInfo.budgetConfirmed) {
+          valueEl.classList.add('revpilot-insight-confirmed')
+        }
       }
     }
 
     // Update timeline
-    if (keyInfo.timeline) {
-      const timelineEl = document.getElementById('revpilot-timeline-info')
-      if (timelineEl) {
-        const valueEl = timelineEl.querySelector('.revpilot-info-value')
-        if (valueEl) valueEl.textContent = keyInfo.timeline
+    const timelineEl = document.getElementById('revpilot-timeline-info')
+    if (timelineEl) {
+      const valueEl = timelineEl.querySelector('.revpilot-insight-value')
+      if (valueEl && keyInfo.timeline) {
+        valueEl.textContent = keyInfo.timeline
+        valueEl.classList.add('revpilot-insight-found')
+        if (keyInfo.timelineUrgency === 'high') {
+          valueEl.classList.add('revpilot-insight-urgent')
+        }
+      }
+    }
+
+    // Update buying signals count
+    const signalsEl = document.getElementById('revpilot-signals-info')
+    if (signalsEl) {
+      const valueEl = signalsEl.querySelector('.revpilot-insight-value')
+      if (valueEl) {
+        const signalCount = (keyInfo.buyingSignals?.length || 0)
+        const objectionCount = (keyInfo.objections?.length || 0)
+        if (signalCount > 0 || objectionCount > 0) {
+          valueEl.textContent = `${signalCount} / ${objectionCount} obj`
+          valueEl.title = `${signalCount} buying signals, ${objectionCount} objections`
+          if (signalCount > objectionCount) {
+            valueEl.classList.add('revpilot-insight-positive')
+          } else if (objectionCount > signalCount) {
+            valueEl.classList.add('revpilot-insight-warning')
+          }
+        }
       }
     }
   }

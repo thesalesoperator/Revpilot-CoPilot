@@ -581,8 +581,8 @@ ${detectedBuyingSignals.length > 0 ? `Buying signal: ${detectedBuyingSignals[0].
         }),
       })
 
-    // Generate conversation summary periodically (every 5 minutes)
-    if (!state.summary || (now - state.summary.lastUpdated) > 5 * 60 * 1000) {
+    // Generate conversation summary periodically (every 2 minutes)
+    if (!state.summary || (now - state.summary.lastUpdated) > 2 * 60 * 1000) {
       state.summary = await generateConversationSummary(state.fullTranscript, state.keyInfo)
     }
 

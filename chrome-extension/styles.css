@@ -718,6 +718,98 @@
 }
 
 /* ============================================
+   KEY INSIGHTS PANEL
+   ============================================ */
+.revpilot-insights-panel {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.revpilot-insights-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  user-select: none;
+}
+
+.revpilot-insights-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.revpilot-insights-icon {
+  font-size: 12px;
+}
+
+.revpilot-insights-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  flex: 1;
+}
+
+.revpilot-toggle-arrow {
+  font-size: 8px;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+
+.revpilot-insights-content {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.revpilot-insight-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.revpilot-insight-label {
+  font-size: 9px;
+  color: #64748b;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.revpilot-insight-value {
+  font-size: 9px;
+  color: #94a3b8;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.revpilot-insight-value.revpilot-insight-found {
+  color: #00ffc1;
+  font-weight: 500;
+}
+
+.revpilot-insight-value.revpilot-insight-confirmed {
+  color: #22c55e;
+}
+
+.revpilot-insight-value.revpilot-insight-urgent {
+  color: #f97316;
+}
+
+.revpilot-insight-value.revpilot-insight-positive {
+  color: #22c55e;
+}
+
+.revpilot-insight-value.revpilot-insight-warning {
+  color: #fbbf24;
+}
+
+/* ============================================
    BUTTONS
    ============================================ */
 .revpilot-btn-primary {
