@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RevPilot Extension Test Page</title>
+  <title>RevPilot Extension Test - Simulate Prospect</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -14,6 +14,7 @@
       color: #fff;
     }
     h1 { color: #00ffc1; }
+    h2 { color: #ff9855; }
     .test-section {
       background: rgba(255,255,255,0.05);
       border-radius: 12px;
@@ -31,159 +32,214 @@
       margin: 5px;
     }
     button:hover { opacity: 0.9; }
-    .script-line {
-      padding: 10px;
-      margin: 5px 0;
-      background: rgba(0,255,193,0.1);
+    button.objection { background: #ff6b6b; color: white; }
+    button.positive { background: #51cf66; color: white; }
+    button.neutral { background: #ffd43b; color: #333; }
+    .prospect-line {
+      padding: 15px;
+      margin: 10px 0;
+      background: rgba(255,152,85,0.2);
+      border-left: 4px solid #ff9855;
       border-radius: 6px;
       cursor: pointer;
     }
-    .script-line:hover { background: rgba(0,255,193,0.2); }
-    #status { color: #00ffc1; margin-top: 10px; }
+    .prospect-line:hover { background: rgba(255,152,85,0.3); }
+    .category {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .category h3 { color: #00ffc1; margin-bottom: 15px; }
+    #status {
+      color: #00ffc1;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0,255,193,0.1);
+      border-radius: 6px;
+    }
+    .instructions {
+      background: rgba(0,255,193,0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <h1>🎯 RevPilot Extension Test Page</h1>
+  <h1>🎯 RevPilot Extension Test</h1>
+  <h2>Simulate What Your PROSPECT Says</h2>
 
-  <div class="test-section">
-    <h2>Option 1: Text-to-Speech Simulation</h2>
-    <p>Click these script lines to hear them spoken (simulates a sales call):</p>
-
-    <div class="script-line" onclick="speak('Hi, thanks for taking my call today. I really appreciate your time.')">
-      <strong>Rep:</strong> "Hi, thanks for taking my call today. I really appreciate your time."
-    </div>
-
-    <div class="script-line" onclick="speak('Sure, what is this about?')">
-      <strong>Prospect:</strong> "Sure, what is this about?"
-    </div>
-
-    <div class="script-line" onclick="speak('I help sales teams close more deals with AI coaching. Before I dive in, can I ask what challenges you are facing with your sales process?')">
-      <strong>Rep:</strong> "I help sales teams close more deals with AI coaching. Before I dive in, can I ask what challenges you're facing with your sales process?"
-    </div>
-
-    <div class="script-line" onclick="speak('Well, our reps are inconsistent. Some are great, others struggle with objections.')">
-      <strong>Prospect:</strong> "Well, our reps are inconsistent. Some are great, others struggle with objections."
-    </div>
-
-    <div class="script-line" onclick="speak('That is a common challenge. What would it mean for your business if all your reps performed like your top performers?')">
-      <strong>Rep:</strong> "That's a common challenge. What would it mean for your business if all your reps performed like your top performers?"
-    </div>
-
-    <div class="script-line" onclick="speak('Honestly, it would probably double our revenue. We have been trying to solve this for months.')">
-      <strong>Prospect:</strong> "Honestly, it would probably double our revenue. We've been trying to solve this for months."
-    </div>
-
-    <div id="status"></div>
+  <div class="instructions">
+    <strong>How this works:</strong> Click buttons below to simulate your prospect/client speaking.
+    The extension should listen and coach YOU on how to respond.
   </div>
 
   <div class="test-section">
-    <h2>Option 2: Auto-Play Full Script</h2>
-    <p>Plays through a sample sales conversation automatically:</p>
-    <button onclick="playFullScript()">▶️ Play Full Script</button>
+    <h2>🎭 Simulate Prospect Responses</h2>
+    <p>Click to hear what the prospect says → Watch the extension suggest your response</p>
+
+    <div class="category">
+      <h3>Opening / Discovery</h3>
+      <div class="prospect-line" onclick="speak('Hi, yeah I have a few minutes. What is this about?')">
+        "Hi, yeah I have a few minutes. What is this about?"
+      </div>
+      <div class="prospect-line" onclick="speak('We are a software company with about 50 sales reps. We sell B2B SaaS products.')">
+        "We're a software company with about 50 sales reps. We sell B2B SaaS products."
+      </div>
+      <div class="prospect-line" onclick="speak('Our main challenge is consistency. Some reps hit quota every month, others struggle to close anything.')">
+        "Our main challenge is consistency. Some reps hit quota every month, others struggle to close anything."
+      </div>
+    </div>
+
+    <div class="category">
+      <h3>Pain Points / Problems</h3>
+      <div class="prospect-line" onclick="speak('We have tried training before but it never sticks. Reps forget everything after a week.')">
+        "We've tried training before but it never sticks. Reps forget everything after a week."
+      </div>
+      <div class="prospect-line" onclick="speak('Our biggest issue is handling objections. When prospects push back, our reps just freeze up.')">
+        "Our biggest issue is handling objections. When prospects push back, our reps just freeze up."
+      </div>
+      <div class="prospect-line" onclick="speak('We are losing deals to competitors because our reps cannot articulate our value properly.')">
+        "We're losing deals to competitors because our reps can't articulate our value properly."
+      </div>
+    </div>
+
+    <div class="category">
+      <h3>Common Objections</h3>
+      <div class="prospect-line objection" onclick="speak('That sounds expensive. What does something like this cost?')">
+        💰 "That sounds expensive. What does something like this cost?"
+      </div>
+      <div class="prospect-line objection" onclick="speak('We already have a sales training program. Why would we need this?')">
+        🤔 "We already have a sales training program. Why would we need this?"
+      </div>
+      <div class="prospect-line objection" onclick="speak('I need to think about it. Can you send me some information?')">
+        ⏰ "I need to think about it. Can you send me some information?"
+      </div>
+      <div class="prospect-line objection" onclick="speak('I am not the decision maker. You would need to talk to my boss.')">
+        👤 "I'm not the decision maker. You'd need to talk to my boss."
+      </div>
+      <div class="prospect-line objection" onclick="speak('We do not have budget for this right now.')">
+        💸 "We don't have budget for this right now."
+      </div>
+    </div>
+
+    <div class="category">
+      <h3>Buying Signals (Positive)</h3>
+      <div class="prospect-line positive" onclick="speak('That is really interesting. How quickly could we get started?')">
+        ✅ "That's really interesting. How quickly could we get started?"
+      </div>
+      <div class="prospect-line positive" onclick="speak('This sounds like exactly what we need. What are the next steps?')">
+        ✅ "This sounds like exactly what we need. What are the next steps?"
+      </div>
+      <div class="prospect-line positive" onclick="speak('Can you do a demo for my team next week?')">
+        ✅ "Can you do a demo for my team next week?"
+      </div>
+    </div>
+
+    <div id="status">Ready - Click a prospect response above</div>
+  </div>
+
+  <div class="test-section">
+    <h2>🎬 Auto-Play: Full Prospect Conversation</h2>
+    <p>Simulates a prospect throughout a sales call (only their side):</p>
+    <button onclick="playProspectScript()">▶️ Play Prospect Responses</button>
     <button onclick="stopScript()">⏹️ Stop</button>
   </div>
 
   <div class="test-section">
-    <h2>Option 3: Custom Text</h2>
-    <p>Type anything to have it spoken:</p>
-    <textarea id="customText" rows="3" style="width:100%; padding:10px; border-radius:6px; background:#1a1f2e; color:#fff; border:1px solid #333;" placeholder="Type your test dialogue here..."></textarea>
+    <h2>💬 Custom Prospect Response</h2>
+    <p>Type what the prospect says:</p>
+    <textarea id="customText" rows="3" style="width:100%; padding:10px; border-radius:6px; background:#1a1f2e; color:#fff; border:1px solid #333;" placeholder="Type what the prospect would say..."></textarea>
     <br><br>
-    <button onclick="speak(document.getElementById('customText').value)">🔊 Speak Text</button>
+    <button onclick="speak(document.getElementById('customText').value)">🔊 Prospect Says This</button>
   </div>
 
   <div class="test-section">
-    <h2>📋 How to Test</h2>
+    <h2>📋 What to Watch For</h2>
+    <p>When the extension is working correctly, it should:</p>
     <ol>
-      <li>Start a coaching session from the RevPilot extension</li>
-      <li>Click script lines above or play the full script</li>
-      <li>Watch the coaching panel respond to the conversation</li>
-      <li>The extension should track script progress and provide suggestions</li>
+      <li><strong>Track script progress</strong> - Move through sections as conversation progresses</li>
+      <li><strong>Suggest responses</strong> - Tell you what to say based on what prospect said</li>
+      <li><strong>Detect objections</strong> - Recognize when prospect pushes back</li>
+      <li><strong>Identify buying signals</strong> - Alert you when prospect shows interest</li>
     </ol>
   </div>
 
   <script>
     let isPlaying = false;
-    let currentUtterance = null;
 
     function speak(text) {
       if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
         window.speechSynthesis.cancel();
 
-        currentUtterance = new SpeechSynthesisUtterance(text);
-        currentUtterance.rate = 0.9;
-        currentUtterance.pitch = 1;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
 
-        document.getElementById('status').textContent = '🔊 Speaking: "' + text.substring(0, 50) + '..."';
+        // Try to use a different voice to simulate prospect
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          // Pick a voice that sounds different
+          const prospectVoice = voices.find(v => v.name.includes('Daniel') || v.name.includes('Google')) || voices[0];
+          utterance.voice = prospectVoice;
+        }
 
-        currentUtterance.onend = () => {
-          document.getElementById('status').textContent = '✅ Ready for next line';
+        document.getElementById('status').innerHTML = '🔊 <strong>Prospect:</strong> "' + text + '"<br><br>👀 Watch the coaching panel for your suggested response...';
+
+        utterance.onend = () => {
+          document.getElementById('status').innerHTML = '✅ Prospect finished speaking<br>💡 Check the extension for coaching on how to respond';
         };
 
-        window.speechSynthesis.speak(currentUtterance);
-      } else {
-        alert('Text-to-speech not supported in this browser');
+        window.speechSynthesis.speak(utterance);
       }
     }
 
-    const fullScript = [
-      { speaker: 'Rep', text: 'Hi, thanks for taking my call today. I really appreciate your time.' },
-      { speaker: 'Prospect', text: 'Sure, what is this about?' },
-      { speaker: 'Rep', text: 'I help sales teams close more deals with AI-powered real-time coaching. Before I dive in, can I ask what your current sales process looks like?' },
-      { speaker: 'Prospect', text: 'We have about 20 reps. They do cold calls and demos mostly.' },
-      { speaker: 'Rep', text: 'Got it. And what challenges are you facing with the team right now?' },
-      { speaker: 'Prospect', text: 'Honestly, consistency is the big one. Our top reps crush it, but others struggle.' },
-      { speaker: 'Rep', text: 'That makes sense. What would it mean for your business if all your reps performed like your top performers?' },
-      { speaker: 'Prospect', text: 'It would be huge. Probably a 40 percent increase in closed deals.' },
-      { speaker: 'Rep', text: 'Wow, 40 percent would be significant. Have you tried anything to solve this before?' },
-      { speaker: 'Prospect', text: 'Yeah, we did some training programs but the results did not stick.' },
-      { speaker: 'Rep', text: 'That is a common problem with traditional training. What if your reps had an AI coach giving them real-time suggestions during every call?' },
-      { speaker: 'Prospect', text: 'That sounds interesting. How does that work exactly?' },
+    // Only prospect lines - what the client would say
+    const prospectScript = [
+      'Hi, yeah I have a few minutes. What is this about?',
+      'We are a software company, about 50 reps on the sales team.',
+      'Honestly, our main challenge is consistency. Half the team crushes it, the other half struggles.',
+      'We have tried training programs but they do not stick. People forget after a week.',
+      'What does something like this cost? We have a tight budget this quarter.',
+      'I would need to talk to my VP of Sales about this. He makes these decisions.',
+      'Actually that sounds interesting. Could you show me how it works?',
+      'What kind of results have other companies seen with this?',
+      'Ok I am interested. What would next steps look like?',
     ];
 
     let scriptIndex = 0;
 
-    async function playFullScript() {
+    function playProspectScript() {
       isPlaying = true;
       scriptIndex = 0;
-      playNextLine();
+      playNextProspectLine();
     }
 
-    function playNextLine() {
-      if (!isPlaying || scriptIndex >= fullScript.length) {
+    function playNextProspectLine() {
+      if (!isPlaying || scriptIndex >= prospectScript.length) {
         isPlaying = false;
-        document.getElementById('status').textContent = '✅ Script complete!';
+        document.getElementById('status').innerHTML = '✅ Prospect conversation complete!';
         return;
       }
 
-      const line = fullScript[scriptIndex];
-      document.getElementById('status').textContent = `🔊 ${line.speaker}: "${line.text.substring(0, 40)}..."`;
+      const text = prospectScript[scriptIndex];
+      speak(text);
 
-      currentUtterance = new SpeechSynthesisUtterance(line.text);
-      currentUtterance.rate = 0.9;
-
-      // Different voice for prospect vs rep
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 1 && line.speaker === 'Prospect') {
-        currentUtterance.voice = voices[1];
-      }
-
-      currentUtterance.onend = () => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onend = () => {
         scriptIndex++;
-        // Pause between lines
-        setTimeout(playNextLine, 1500);
+        // Wait 4 seconds between prospect responses (simulates you talking)
+        setTimeout(playNextProspectLine, 4000);
       };
-
-      window.speechSynthesis.speak(currentUtterance);
     }
 
     function stopScript() {
       isPlaying = false;
       window.speechSynthesis.cancel();
-      document.getElementById('status').textContent = '⏹️ Stopped';
+      document.getElementById('status').innerHTML = '⏹️ Stopped';
     }
 
-    // Load voices
+    // Load voices on page load
     window.speechSynthesis.onvoiceschanged = () => {
       window.speechSynthesis.getVoices();
     };
