@@ -647,11 +647,17 @@
         showCoachingUI()
         subscribeToSuggestions()
 
-        // Show appropriate banner
-        if (session.botId) {
+        // Show appropriate banner based on capture method
+        if (session.captureMethod === 'tab_audio' || session.botFree) {
+          // Tab capture mode - live transcription via Deepgram
+          console.log('[RevPilot] Restored tab capture session')
+          showLiveCaptureBanner()
+        } else if (session.botId) {
+          // Old Recall.ai bot method
           showLiveTranscriptionBanner()
         } else {
-          startDemoMode(session.botError)
+          // No capture method - demo mode
+          startDemoMode(session.botError || 'Session restored without capture')
         }
         return
       }
@@ -672,10 +678,17 @@
         showCoachingUI()
         subscribeToSuggestions()
 
-        if (storedSession.botId) {
+        // Show appropriate banner based on capture method
+        if (storedSession.captureMethod === 'tab_audio' || storedSession.botFree) {
+          // Tab capture mode - live transcription via Deepgram
+          console.log('[RevPilot] Restored tab capture session from background')
+          showLiveCaptureBanner()
+        } else if (storedSession.botId) {
+          // Old Recall.ai bot method
           showLiveTranscriptionBanner()
         } else {
-          startDemoMode(storedSession.botError)
+          // No capture method - demo mode
+          startDemoMode(storedSession.botError || 'Session restored without capture')
         }
       } else {
         console.log('[RevPilot] No stored session found')
