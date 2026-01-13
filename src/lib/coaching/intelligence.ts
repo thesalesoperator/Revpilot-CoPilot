@@ -1042,17 +1042,38 @@ Action: ${signal.recommendedAction}
 `
   }
 
-  // Build key info summary
-  let keyInfoSummary = ''
-  if (scriptContext.keyInfo.painPoints.length > 0 || scriptContext.keyInfo.budget || scriptContext.keyInfo.decisionMakers.length > 0) {
-    keyInfoSummary = `
-📋 KEY INFO GATHERED:
-${scriptContext.keyInfo.painPoints.length > 0 ? `• Pain Points: ${scriptContext.keyInfo.painPoints.slice(0, 2).join('; ')}` : '• Pain Points: Not yet identified'}
-${scriptContext.keyInfo.budget ? `• Budget: ${scriptContext.keyInfo.budget}` : '• Budget: Not discussed'}
-${scriptContext.keyInfo.timeline ? `• Timeline: ${scriptContext.keyInfo.timeline}` : '• Timeline: Not discussed'}
-${scriptContext.keyInfo.decisionMakers.length > 0 ? `• Decision Makers: ${scriptContext.keyInfo.decisionMakers.join(', ')}` : '• Decision Makers: Unknown'}
+  // Build comprehensive key info summary - this is CRITICAL for context
+  const keyInfoSummary = `
+═══════════════════════════════════════════════════════════════════════════════
+🎯 KEY DISCOVERIES FROM THIS CALL (use these to personalize suggestions):
+═══════════════════════════════════════════════════════════════════════════════
+
+🔥 PAIN POINTS IDENTIFIED (${scriptContext.keyInfo.painPoints.length}):
+${scriptContext.keyInfo.painPoints.length > 0
+  ? scriptContext.keyInfo.painPoints.map((p, i) => `   ${i+1}. "${p}"`).join('\n')
+  : '   ❌ No pain points identified yet - PRIORITY: dig deeper!'}
+
+📊 COMPANY CONTEXT:
+   • Team Size: ${scriptContext.keyInfo.teamSize || 'Unknown'}
+   • Deal Size: ${scriptContext.keyInfo.dealSize || 'Unknown'}
+   • Sales Cycle: ${scriptContext.keyInfo.salesCycle || 'Unknown'}
+   • Current CRM: ${scriptContext.keyInfo.currentCRM || 'Unknown'}
+
+💰 QUALIFICATION STATUS:
+   • Budget: ${scriptContext.keyInfo.budget || 'Not discussed'}${scriptContext.keyInfo.budgetConfirmed ? ' ✅ CONFIRMED' : ''}
+   • Timeline: ${scriptContext.keyInfo.timeline || 'Not discussed'}${scriptContext.keyInfo.timelineUrgency ? ` (${scriptContext.keyInfo.timelineUrgency} urgency)` : ''}
+   • Decision Makers: ${scriptContext.keyInfo.decisionMakers.length > 0 ? scriptContext.keyInfo.decisionMakers.join(', ') : 'Unknown'}
+
+✅ BUYING SIGNALS DETECTED (${scriptContext.keyInfo.buyingSignals.length}):
+${scriptContext.keyInfo.buyingSignals.length > 0
+  ? scriptContext.keyInfo.buyingSignals.map(s => `   • "${s}"`).join('\n')
+  : '   None yet'}
+
+⚠️ OBJECTIONS RAISED (${scriptContext.keyInfo.objections.length}):
+${scriptContext.keyInfo.objections.length > 0
+  ? scriptContext.keyInfo.objections.map(o => `   • ${o}`).join('\n')
+  : '   None yet'}
 `
-  }
 
   return `You are an elite B2B sales coach providing REAL-TIME coaching during a live sales call.
 The rep is using the RevPilot Consultative Sales Script for Close CRM optimization services.
@@ -1082,41 +1103,48 @@ ${nextSection ? `➡️ NEXT SECTION: ${nextSection.name} - ${nextSection.descri
 ${keyInfoSummary}
 
 ═══════════════════════════════════════════════════════════════════════════════
-RECENT CONVERSATION:
+CONVERSATION CONTEXT (Full Call Summary):
+═══════════════════════════════════════════════════════════════════════════════
+${context.fullTranscript ? `FULL TRANSCRIPT SO FAR (${context.fullTranscript.split(' ').length} words):\n${context.fullTranscript.length > 3000 ? context.fullTranscript.slice(-3000) + '\n[...earlier conversation truncated...]' : context.fullTranscript}` : 'No transcript yet'}
+
+═══════════════════════════════════════════════════════════════════════════════
+MOST RECENT EXCHANGE (what just happened):
 ═══════════════════════════════════════════════════════════════════════════════
 ${context.recentTranscript}
 
 CALL DURATION: ${context.callDurationMinutes} minutes
 TALK RATIO: ${context.talkRatio.repPercent}% rep / ${context.talkRatio.prospectPercent}% prospect
 
-PREVIOUS SUGGESTIONS (avoid repeating):
-${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-3).join('\n') : 'None yet'}
+PREVIOUS SUGGESTIONS GIVEN (DO NOT REPEAT THESE - suggest something NEW):
+${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-10).map((s, i) => `${i+1}. ${s}`).join('\n') : 'None yet'}
 
 ═══════════════════════════════════════════════════════════════════════════════
 YOUR TASK:
 ═══════════════════════════════════════════════════════════════════════════════
 
-Analyze what was just said and decide IF coaching is needed right now.
+Analyze the FULL CONVERSATION CONTEXT above and decide what coaching is needed.
 
-WHEN TO GIVE A SUGGESTION (only if one of these applies):
-1. The PROSPECT just finished speaking and the rep needs to respond
-2. An objection was raised that needs addressing
-3. A buying signal was detected that should be capitalized on
-4. The rep is going off-script or making a mistake
+CRITICAL: Your suggestions MUST reference the specific pain points, company details, and
+information discovered in this call. DO NOT give generic advice - use their words back to them!
+
+WHEN TO GIVE A SUGGESTION:
+1. The PROSPECT just revealed something important - help the rep dig deeper
+2. An objection was raised that needs addressing (use their specific concern)
+3. A buying signal was detected - help capitalize on it
+4. The rep missed an opportunity to explore a pain point
 5. It's time to transition to the next section
 
 WHEN TO RETURN NULL (no suggestion):
-1. The rep is in the middle of asking a good question - let them finish
-2. The prospect is still talking - don't interrupt their thought
-3. The conversation is flowing well and on-script
-4. You already suggested something similar recently
-5. There's not enough context yet to give meaningful advice
+1. The conversation is flowing naturally toward the section objective
+2. You already suggested something very similar (check PREVIOUS SUGGESTIONS above!)
+3. The rep is doing great - don't over-coach
 
-If you DO give a suggestion, make it:
-• SPECIFIC to what was just said - not generic advice
-• A direct response to the prospect's last statement
-• Brief (1-2 sentences) but highly actionable
-• The EXACT WORDING from the script when suggesting questions
+SUGGESTION QUALITY REQUIREMENTS:
+• MUST reference specific details from the conversation (names, numbers, pain points they mentioned)
+• MUST NOT be generic advice like "dig deeper" or "ask about their challenges"
+• MUST be actionable and specific to THIS prospect
+• Example BAD: "Ask about their pain points"
+• Example GOOD: "They mentioned struggling with lead routing for their 12-person team - ask: 'You said leads are falling through the cracks. Can you walk me through what happens when a new lead comes in?'"
 
 ═══════════════════════════════════════════════════════════════════════════════
 🚫 ABSOLUTE RESTRICTIONS - VIOLATING THESE IS A CRITICAL ERROR 🚫
