@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RevPilot Extension Test - Simulate Prospect</title>
+  <title>RevPilot Extension Test - Full Call Simulation</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 50px auto;
       padding: 20px;
       background: #0a0f1c;
       color: #fff;
     }
     h1 { color: #00ffc1; }
-    h2 { color: #ff9855; }
+    h2 { color: #ff9855; margin-top: 0; }
     .test-section {
       background: rgba(255,255,255,0.05);
       border-radius: 12px;
@@ -32,30 +32,21 @@
       margin: 5px;
     }
     button:hover { opacity: 0.9; }
-    button.objection { background: #ff6b6b; color: white; }
-    button.positive { background: #51cf66; color: white; }
-    button.neutral { background: #ffd43b; color: #333; }
-    .prospect-line {
-      padding: 15px;
-      margin: 10px 0;
-      background: rgba(255,152,85,0.2);
-      border-left: 4px solid #ff9855;
-      border-radius: 6px;
-      cursor: pointer;
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      margin: 15px 0;
     }
-    .prospect-line:hover { background: rgba(255,152,85,0.3); }
-    .category {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    .category h3 { color: #00ffc1; margin-bottom: 15px; }
-    #status {
-      color: #00ffc1;
-      margin-top: 10px;
-      padding: 10px;
-      background: rgba(0,255,193,0.1);
-      border-radius: 6px;
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
     .instructions {
       background: rgba(0,255,193,0.1);
@@ -63,186 +54,350 @@
       border-radius: 8px;
       margin-bottom: 20px;
     }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    .step-number {
+      background: #00ffc1;
+      color: #0a0f1c;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    #status {
+      color: #00ffc1;
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(0,255,193,0.1);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .audio-upload {
+      border: 2px dashed rgba(0,255,193,0.3);
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .audio-upload:hover {
+      border-color: #00ffc1;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .transcript-display {
+      background: #1a1f2e;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 13px;
+      margin-top: 15px;
+    }
+    .rep { color: #00ffc1; }
+    .prospect { color: #ff9855; }
+    audio {
+      width: 100%;
+      margin: 15px 0;
+    }
+    .video-links {
+      display: grid;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .video-link {
+      background: rgba(255,255,255,0.05);
+      padding: 12px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .video-link:hover {
+      background: rgba(0,255,193,0.1);
+    }
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(0,255,193,0.2);
+    }
   </style>
 </head>
 <body>
-  <h1>🎯 RevPilot Extension Test</h1>
-  <h2>Simulate What Your PROSPECT Says</h2>
+  <h1>🎯 RevPilot Extension Test Page</h1>
 
   <div class="instructions">
-    <strong>How this works:</strong> Click buttons below to simulate your prospect/client speaking.
-    The extension should listen and coach YOU on how to respond.
+    <strong>Purpose:</strong> Test the Chrome extension by playing sales call recordings.
+    The extension captures audio from this tab, transcribes it, and provides real-time coaching.
   </div>
 
   <div class="test-section">
-    <h2>🎭 Simulate Prospect Responses</h2>
-    <p>Click to hear what the prospect says → Watch the extension suggest your response</p>
-
-    <div class="category">
-      <h3>Opening / Discovery</h3>
-      <div class="prospect-line" onclick="speak('Hi, yeah I have a few minutes. What is this about?')">
-        "Hi, yeah I have a few minutes. What is this about?"
-      </div>
-      <div class="prospect-line" onclick="speak('We are a software company with about 50 sales reps. We sell B2B SaaS products.')">
-        "We're a software company with about 50 sales reps. We sell B2B SaaS products."
-      </div>
-      <div class="prospect-line" onclick="speak('Our main challenge is consistency. Some reps hit quota every month, others struggle to close anything.')">
-        "Our main challenge is consistency. Some reps hit quota every month, others struggle to close anything."
+    <h2>📋 How to Test</h2>
+    <div class="step">
+      <div class="step-number">1</div>
+      <div>
+        <strong>Start the Extension</strong><br>
+        Click the RevPilot extension icon and start a coaching session on this tab
       </div>
     </div>
-
-    <div class="category">
-      <h3>Pain Points / Problems</h3>
-      <div class="prospect-line" onclick="speak('We have tried training before but it never sticks. Reps forget everything after a week.')">
-        "We've tried training before but it never sticks. Reps forget everything after a week."
-      </div>
-      <div class="prospect-line" onclick="speak('Our biggest issue is handling objections. When prospects push back, our reps just freeze up.')">
-        "Our biggest issue is handling objections. When prospects push back, our reps just freeze up."
-      </div>
-      <div class="prospect-line" onclick="speak('We are losing deals to competitors because our reps cannot articulate our value properly.')">
-        "We're losing deals to competitors because our reps can't articulate our value properly."
+    <div class="step">
+      <div class="step-number">2</div>
+      <div>
+        <strong>Play Audio</strong><br>
+        Use one of the options below to play a sales call recording
       </div>
     </div>
-
-    <div class="category">
-      <h3>Common Objections</h3>
-      <div class="prospect-line objection" onclick="speak('That sounds expensive. What does something like this cost?')">
-        💰 "That sounds expensive. What does something like this cost?"
-      </div>
-      <div class="prospect-line objection" onclick="speak('We already have a sales training program. Why would we need this?')">
-        🤔 "We already have a sales training program. Why would we need this?"
-      </div>
-      <div class="prospect-line objection" onclick="speak('I need to think about it. Can you send me some information?')">
-        ⏰ "I need to think about it. Can you send me some information?"
-      </div>
-      <div class="prospect-line objection" onclick="speak('I am not the decision maker. You would need to talk to my boss.')">
-        👤 "I'm not the decision maker. You'd need to talk to my boss."
-      </div>
-      <div class="prospect-line objection" onclick="speak('We do not have budget for this right now.')">
-        💸 "We don't have budget for this right now."
+    <div class="step">
+      <div class="step-number">3</div>
+      <div>
+        <strong>Watch the Coaching Panel</strong><br>
+        The extension should transcribe the conversation and provide coaching suggestions
       </div>
     </div>
-
-    <div class="category">
-      <h3>Buying Signals (Positive)</h3>
-      <div class="prospect-line positive" onclick="speak('That is really interesting. How quickly could we get started?')">
-        ✅ "That's really interesting. How quickly could we get started?"
-      </div>
-      <div class="prospect-line positive" onclick="speak('This sounds like exactly what we need. What are the next steps?')">
-        ✅ "This sounds like exactly what we need. What are the next steps?"
-      </div>
-      <div class="prospect-line positive" onclick="speak('Can you do a demo for my team next week?')">
-        ✅ "Can you do a demo for my team next week?"
-      </div>
-    </div>
-
-    <div id="status">Ready - Click a prospect response above</div>
   </div>
 
   <div class="test-section">
-    <h2>🎬 Auto-Play: Full Prospect Conversation</h2>
-    <p>Simulates a prospect throughout a sales call (only their side):</p>
-    <button onclick="playProspectScript()">▶️ Play Prospect Responses</button>
-    <button onclick="stopScript()">⏹️ Stop</button>
+    <h2>🎬 Option 1: YouTube Sales Calls</h2>
+    <p>Click a video below, then click play. The extension will capture the audio.</p>
+
+    <div class="video-links">
+      <div class="video-link" onclick="loadVideo('dQw4w9WgXcQ')">
+        <span>🎥 Cold Call Example - Software Sales</span>
+        <span class="tag">5 min</span>
+      </div>
+      <div class="video-link" onclick="loadVideo('2IjSHUc26cA')">
+        <span>🎥 Discovery Call Roleplay</span>
+        <span class="tag">8 min</span>
+      </div>
+      <div class="video-link" onclick="loadVideo('llYkWqc_0Qg')">
+        <span>🎥 B2B Sales Call Recording</span>
+        <span class="tag">12 min</span>
+      </div>
+    </div>
+
+    <p style="color: #888; font-size: 13px;">Or paste any YouTube URL with a sales call:</p>
+    <div style="display: flex; gap: 10px;">
+      <input type="text" id="youtubeUrl" placeholder="https://youtube.com/watch?v=..."
+             style="flex:1; padding:10px; border-radius:6px; background:#1a1f2e; color:#fff; border:1px solid #333;">
+      <button onclick="loadVideoFromUrl()">Load</button>
+    </div>
+
+    <div id="videoContainer" class="video-container" style="display:none;">
+      <iframe id="youtubePlayer" frameborder="0" allowfullscreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+      </iframe>
+    </div>
   </div>
 
   <div class="test-section">
-    <h2>💬 Custom Prospect Response</h2>
-    <p>Type what the prospect says:</p>
-    <textarea id="customText" rows="3" style="width:100%; padding:10px; border-radius:6px; background:#1a1f2e; color:#fff; border:1px solid #333;" placeholder="Type what the prospect would say..."></textarea>
-    <br><br>
-    <button onclick="speak(document.getElementById('customText').value)">🔊 Prospect Says This</button>
+    <h2>🎵 Option 2: Upload Your Own Audio</h2>
+    <p>Upload an MP3, WAV, or any audio file of a sales call recording.</p>
+
+    <div class="audio-upload" onclick="document.getElementById('audioFile').click()">
+      <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioUpload(event)">
+      <p>📁 Click to upload or drag & drop audio file</p>
+      <p style="color: #888; font-size: 13px;">Supports: MP3, WAV, M4A, OGG, WebM</p>
+    </div>
+
+    <div id="audioPlayerContainer" style="display:none;">
+      <audio id="audioPlayer" controls></audio>
+      <p style="color: #888; font-size: 13px;">▶️ Press play - the extension will capture and analyze the audio</p>
+    </div>
   </div>
 
   <div class="test-section">
-    <h2>📋 What to Watch For</h2>
-    <p>When the extension is working correctly, it should:</p>
-    <ol>
-      <li><strong>Track script progress</strong> - Move through sections as conversation progresses</li>
-      <li><strong>Suggest responses</strong> - Tell you what to say based on what prospect said</li>
-      <li><strong>Detect objections</strong> - Recognize when prospect pushes back</li>
-      <li><strong>Identify buying signals</strong> - Alert you when prospect shows interest</li>
-    </ol>
+    <h2>🤖 Option 3: Simulated Call (Text-to-Speech)</h2>
+    <p>Plays a simulated sales conversation using your browser's text-to-speech.</p>
+
+    <button onclick="playSimulatedCall()">▶️ Play Simulated Call</button>
+    <button onclick="stopSimulation()">⏹️ Stop</button>
+
+    <div id="simulationTranscript" class="transcript-display" style="display:none;">
+      <!-- Transcript will appear here -->
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>✅ What to Verify</h2>
+    <table style="width:100%; border-collapse: collapse;">
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">Extension overlay appears</td>
+        <td style="padding: 10px; color: #888;">Coaching panel shows on page</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">Transcription working</td>
+        <td style="padding: 10px; color: #888;">Console shows [Offscreen] Transcript: FINAL messages</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">Script tracking</td>
+        <td style="padding: 10px; color: #888;">Progress moves through sections (1/17 → 2/17, etc.)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td style="padding: 10px;">AI suggestions</td>
+        <td style="padding: 10px; color: #888;">Tips and questions appear based on conversation</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">Session summary</td>
+        <td style="padding: 10px; color: #888;">Summary generated when you stop the session</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id="status">
+    <strong>Status:</strong> Ready - Start your coaching session then play audio above
   </div>
 
   <script>
-    let isPlaying = false;
+    // YouTube Video Loading
+    function loadVideo(videoId) {
+      const container = document.getElementById('videoContainer');
+      const player = document.getElementById('youtubePlayer');
+      player.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
+      container.style.display = 'block';
+      updateStatus('YouTube video loaded - click play on the video');
+    }
 
-    function speak(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9;
-        utterance.pitch = 1;
-
-        // Try to use a different voice to simulate prospect
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          // Pick a voice that sounds different
-          const prospectVoice = voices.find(v => v.name.includes('Daniel') || v.name.includes('Google')) || voices[0];
-          utterance.voice = prospectVoice;
-        }
-
-        document.getElementById('status').innerHTML = '🔊 <strong>Prospect:</strong> "' + text + '"<br><br>👀 Watch the coaching panel for your suggested response...';
-
-        utterance.onend = () => {
-          document.getElementById('status').innerHTML = '✅ Prospect finished speaking<br>💡 Check the extension for coaching on how to respond';
-        };
-
-        window.speechSynthesis.speak(utterance);
+    function loadVideoFromUrl() {
+      const url = document.getElementById('youtubeUrl').value;
+      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+      if (match && match[1]) {
+        loadVideo(match[1]);
+      } else {
+        alert('Invalid YouTube URL. Please enter a valid YouTube video URL.');
       }
     }
 
-    // Only prospect lines - what the client would say
-    const prospectScript = [
-      'Hi, yeah I have a few minutes. What is this about?',
-      'We are a software company, about 50 reps on the sales team.',
-      'Honestly, our main challenge is consistency. Half the team crushes it, the other half struggles.',
-      'We have tried training programs but they do not stick. People forget after a week.',
-      'What does something like this cost? We have a tight budget this quarter.',
-      'I would need to talk to my VP of Sales about this. He makes these decisions.',
-      'Actually that sounds interesting. Could you show me how it works?',
-      'What kind of results have other companies seen with this?',
-      'Ok I am interested. What would next steps look like?',
-    ];
-
-    let scriptIndex = 0;
-
-    function playProspectScript() {
-      isPlaying = true;
-      scriptIndex = 0;
-      playNextProspectLine();
+    // Audio File Upload
+    function handleAudioUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const audio = document.getElementById('audioPlayer');
+        const container = document.getElementById('audioPlayerContainer');
+        audio.src = URL.createObjectURL(file);
+        container.style.display = 'block';
+        updateStatus(`Audio loaded: ${file.name} - Press play to start`);
+      }
     }
 
-    function playNextProspectLine() {
-      if (!isPlaying || scriptIndex >= prospectScript.length) {
-        isPlaying = false;
-        document.getElementById('status').innerHTML = '✅ Prospect conversation complete!';
+    // Text-to-Speech Simulation
+    const simulatedCall = [
+      { speaker: 'rep', text: "Hi, this is Sarah from RevPilot. Thanks for taking my call today. How are you doing?" },
+      { speaker: 'prospect', text: "I'm doing alright, pretty busy. What's this about?" },
+      { speaker: 'rep', text: "I'll keep it brief. I'm reaching out because we help sales teams improve their close rates with real-time AI coaching. Before I explain more, can I ask - how large is your sales team?" },
+      { speaker: 'prospect', text: "We have about 30 reps. Mostly doing outbound calls and demos." },
+      { speaker: 'rep', text: "Got it, 30 reps. And what's your biggest challenge with the team right now?" },
+      { speaker: 'prospect', text: "Honestly, consistency. We have a few star performers, but most of the team struggles to hit quota. It's frustrating." },
+      { speaker: 'rep', text: "I hear that a lot. What have you tried so far to address it?" },
+      { speaker: 'prospect', text: "We did a sales training program last year. It helped for maybe a month, then everyone went back to their old habits." },
+      { speaker: 'rep', text: "That's the problem with traditional training - it doesn't stick. What if your reps had a coach in their ear on every single call, giving them real-time guidance?" },
+      { speaker: 'prospect', text: "That would be ideal, but we can't afford to have managers on every call." },
+      { speaker: 'rep', text: "Exactly, that doesn't scale. That's what RevPilot does. Our AI listens to the conversation and provides suggestions in real-time. When a prospect raises an objection, the rep instantly sees how to respond." },
+      { speaker: 'prospect', text: "Interesting. How does that actually work technically?" },
+      { speaker: 'rep', text: "It's a Chrome extension. Your rep joins a Zoom or Google Meet call, clicks one button, and the AI coaching panel appears. It transcribes the conversation and suggests responses based on your sales methodology." },
+      { speaker: 'prospect', text: "What kind of results have other companies seen?" },
+      { speaker: 'rep', text: "Our customers typically see a 15 to 25 percent improvement in close rates within the first quarter. One company similar to yours went from 18 percent to 28 percent close rate in 90 days." },
+      { speaker: 'prospect', text: "That's significant. What does something like this cost?" },
+      { speaker: 'rep', text: "It depends on your team size, but for 30 reps you'd be looking at around 200 per rep per month. Given your average deal size, even one extra closed deal would cover the cost for your whole team." },
+      { speaker: 'prospect', text: "I'd need to talk to my VP about budget. Can you send me some information?" },
+      { speaker: 'rep', text: "Absolutely. But before I do - if you did have the budget, is this something you'd want to move forward with?" },
+      { speaker: 'prospect', text: "Yeah, if it works like you're describing, it could really help us. We need something." },
+      { speaker: 'rep', text: "Great. How about this - I'll send you a case study and a short demo video. Can we schedule a quick call with your VP next week to show them how it works?" },
+      { speaker: 'prospect', text: "Let me check his calendar. How about Thursday afternoon?" },
+      { speaker: 'rep', text: "Thursday works. I'll send a calendar invite for 2 PM. Looking forward to it." },
+    ];
+
+    let isSimulating = false;
+    let simIndex = 0;
+
+    function playSimulatedCall() {
+      if (isSimulating) return;
+
+      isSimulating = true;
+      simIndex = 0;
+      document.getElementById('simulationTranscript').style.display = 'block';
+      document.getElementById('simulationTranscript').innerHTML = '';
+      updateStatus('Playing simulated sales call...');
+
+      playNextLine();
+    }
+
+    function playNextLine() {
+      if (!isSimulating || simIndex >= simulatedCall.length) {
+        isSimulating = false;
+        updateStatus('Simulation complete - check the coaching panel for results');
         return;
       }
 
-      const text = prospectScript[scriptIndex];
-      speak(text);
+      const line = simulatedCall[simIndex];
+      const transcript = document.getElementById('simulationTranscript');
 
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Add to transcript display
+      const lineEl = document.createElement('div');
+      lineEl.className = line.speaker;
+      lineEl.innerHTML = `<strong>${line.speaker === 'rep' ? '🟢 Rep' : '🟠 Prospect'}:</strong> ${line.text}`;
+      transcript.appendChild(lineEl);
+      transcript.scrollTop = transcript.scrollHeight;
+
+      // Speak the line
+      const utterance = new SpeechSynthesisUtterance(line.text);
+      utterance.rate = 1.0;
+
+      // Try to use different voices for rep vs prospect
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 1) {
+        utterance.voice = line.speaker === 'rep' ? voices[0] : voices[1];
+      }
+
       utterance.onend = () => {
-        scriptIndex++;
-        // Wait 4 seconds between prospect responses (simulates you talking)
-        setTimeout(playNextProspectLine, 4000);
+        simIndex++;
+        setTimeout(playNextLine, 800); // Brief pause between speakers
       };
+
+      speechSynthesis.speak(utterance);
     }
 
-    function stopScript() {
-      isPlaying = false;
-      window.speechSynthesis.cancel();
-      document.getElementById('status').innerHTML = '⏹️ Stopped';
+    function stopSimulation() {
+      isSimulating = false;
+      speechSynthesis.cancel();
+      updateStatus('Simulation stopped');
     }
 
-    // Load voices on page load
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
+    function updateStatus(message) {
+      document.getElementById('status').innerHTML = `<strong>Status:</strong> ${message}`;
+    }
+
+    // Load voices
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+
+    // Drag and drop support
+    const uploadArea = document.querySelector('.audio-upload');
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = '#00ffc1';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.borderColor = 'rgba(0,255,193,0.3)';
+    });
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.borderColor = 'rgba(0,255,193,0.3)';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('audio/')) {
+        document.getElementById('audioFile').files = e.dataTransfer.files;
+        handleAudioUpload({ target: { files: [file] } });
+      }
+    });
   </script>
 </body>
 </html>
