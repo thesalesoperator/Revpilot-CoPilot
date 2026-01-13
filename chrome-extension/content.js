@@ -740,16 +740,23 @@
           console.log('[RevPilot] Subscribing to realtime...')
           subscribeToSuggestions()
 
-          // Start demo mode if no bot (Recall.ai not configured or failed)
-          if (!response.botId) {
-            console.log('[RevPilot] No bot ID - starting demo mode for live suggestions')
-            if (response.botError) {
-              console.warn('[RevPilot] Bot error:', response.botError)
-            }
-            startDemoMode(response.botError)
-          } else {
+          // Check which capture method is active
+          if (response.botFree && response.captureActive) {
+            // New tab capture method - live transcription via Deepgram
+            console.log('[RevPilot] Tab capture active - live transcription enabled')
+            showLiveCaptureBanner()
+          } else if (response.botId) {
+            // Old Recall.ai bot method
             console.log('[RevPilot] Bot ID present:', response.botId, '- waiting for real transcription')
             showLiveTranscriptionBanner()
+          } else if (response.captureError) {
+            // Tab capture failed
+            console.warn('[RevPilot] Capture error:', response.captureError)
+            startDemoMode(response.captureError)
+          } else {
+            // No capture method available - demo mode
+            console.log('[RevPilot] No capture method - starting demo mode')
+            startDemoMode('No transcription method available')
           }
         } else {
           console.error('[RevPilot] Empty response received')

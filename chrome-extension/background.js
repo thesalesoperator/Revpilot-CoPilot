@@ -58,6 +58,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })
       return false
 
+    case 'COACHING_INSIGHT':
+      // Forward coaching insights from offscreen to content script
+      console.log('[RevPilot BG] Forwarding coaching insight:', {
+        hasStage: !!message.stage,
+        hasScript: !!message.script,
+        hasSuggestion: !!message.suggestion
+      })
+      notifyContentScript('COACHING_INSIGHT', {
+        stage: message.stage,
+        insight: message.insight,
+        prediction: message.prediction,
+        keyInfo: message.keyInfo,
+        talkRatio: message.talkRatio,
+        script: message.script,
+        suggestion: message.suggestion
+      })
+      return false
+
+    case 'TRANSCRIPTION_ERROR':
+      // Forward transcription errors to content script
+      console.warn('[RevPilot BG] Transcription error:', message.error, message.message)
+      notifyContentScript('TRANSCRIPTION_ERROR', {
+        error: message.error,
+        message: message.message
+      })
+      return false
+
     default:
       return false
   }
