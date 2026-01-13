@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RevPilot Sales Coach",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Real-time AI sales coaching during your video calls - no bot required",
   "permissions": [
     "storage",
@@ -18,7 +18,9 @@
     "https://*.google.com/*",
     "https://meet.google.com/*",
     "https://*.microsoft.com/*",
-    "https://teams.microsoft.com/*"
+    "https://teams.microsoft.com/*",
+    "https://revpilot-copilot.netlify.app/*",
+    "http://localhost:3000/*"
   ],
   "oauth2": {
     "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
@@ -39,7 +41,9 @@
         "https://meet.google.com/*",
         "https://teams.microsoft.com/*",
         "https://teams.live.com/*",
-        "https://*.teams.live.com/*"
+        "https://*.teams.live.com/*",
+        "https://revpilot-copilot.netlify.app/test-extension*",
+        "http://localhost:3000/test-extension*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"],

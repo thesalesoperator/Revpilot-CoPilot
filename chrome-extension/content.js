@@ -137,6 +137,14 @@
     const url = window.location.href
     const hostname = window.location.hostname
 
+    // Check for RevPilot test page (for development/testing)
+    if (hostname === 'revpilot-copilot.netlify.app' || hostname === 'localhost') {
+      if (url.includes('test-extension')) {
+        console.log('[RevPilot] Test page detected')
+        return true
+      }
+    }
+
     // Check for Zoom
     if (hostname.includes('zoom.us')) {
       const isMeetingUrl = url.includes('zoom.us/wc/') ||
@@ -193,9 +201,11 @@
 
   function getMeetingPlatform() {
     const hostname = window.location.hostname
+    const url = window.location.href
     if (hostname.includes('zoom.us')) return 'Zoom'
     if (hostname === 'meet.google.com') return 'Google Meet'
     if (hostname.includes('teams.microsoft.com') || hostname.includes('teams.live.com')) return 'Microsoft Teams'
+    if (url.includes('test-extension')) return 'Test Page'
     return 'Meeting'
   }
 
