@@ -26,6 +26,99 @@ A comprehensive AI-powered sales enablement platform for sales representatives f
   - Save products for quick sale entry
   - Manage your profile
 
+## Future Vision: True Real-Time AI Co-Pilot
+
+The current coaching system provides valuable real-time suggestions with ~10-15 second latency. The future vision is to transform this into a true AI co-pilot that is **smarter than a human sales coach, faster, and effortless to use**.
+
+### Current State vs. Future State
+
+| Metric | Current | Future Goal |
+|--------|---------|-------------|
+| **Latency** | 11-16 seconds | <1 second |
+| **Context** | Last 3000 chars + patterns | Full semantic memory |
+| **Intelligence** | Reactive (post-hoc) | Predictive (anticipate) |
+| **Effort** | Read suggestions | Zero cognitive load |
+
+### Architecture: Four Pillars
+
+#### 1. Streaming Intelligence Pipeline
+- **Current:** 8-second transcript batching → GPT-4o (3-5s) → Display
+- **Future:** Word-by-word processing → Streaming LLM → Token-by-token rendering
+- **Impact:** 11-16s → 2-4s latency
+
+#### 2. Multi-Tier Intelligence
+```
+┌─────────────────────────────────────────────────────────┐
+│  TIER 1: Edge Detection (0-50ms)                        │
+│  • Pattern matching in browser                          │
+│  • Instant objection/buying signal alerts               │
+│  • Real-time talk ratio, silence detection              │
+├─────────────────────────────────────────────────────────┤
+│  TIER 2: Fast Inference (200-500ms)                     │
+│  • Claude Haiku / GPT-4o-mini                           │
+│  • Quick contextual suggestions                         │
+│  • Section transition guidance                          │
+├─────────────────────────────────────────────────────────┤
+│  TIER 3: Deep Reasoning (1-3s)                          │
+│  • Claude Opus / GPT-4o                                 │
+│  • Complex objection strategies                         │
+│  • Deal qualification assessment                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### 3. Semantic Memory System
+- **Working Memory:** Last 60 seconds of raw transcript
+- **Episode Memory:** Key moments (pain reveals, objections, buying signals)
+- **Semantic Memory:** Full call vectorized for retrieval
+- **Cross-Call Learning:** What worked for this rep historically
+
+**Key capability:** "They mentioned hating complexity earlier. Ask: 'Was it the complexity that frustrated your team with Salesforce?'"
+
+#### 4. Predictive Guidance Engine
+- **Conversation state machine** tracking discovery → qualification → presentation → close
+- **Anticipation model** predicting what prospect will say next (with confidence scores)
+- **Proactive nudges** preventing problems before they happen:
+  - Rep talking 30+ seconds → "Pause and ask a question"
+  - 5 minutes without budget discussion → "Good time to explore investment"
+  - Approaching call end → "Secure commitment before they hang up"
+
+### Ambient UI (Zero Cognitive Load)
+
+Instead of a panel requiring attention, the future UI provides ambient awareness:
+
+- **Glow Ring:** Subtle color around video (green=good, yellow=opportunity, red=objection)
+- **Whisper Suggestions:** Small text near video that fades after 5 seconds
+- **Heads-Up Display:** `[Pain: Data quality] [Budget: $50k] [Timeline: Q2]`
+- **Audio Feedback:** Optional subtle chimes through separate device
+
+### Why This Is Smarter Than a Human Coach
+
+| Human Sales Coach | AI Real-Time System |
+|-------------------|---------------------|
+| Joins some calls | Every call, all the time |
+| Remembers general patterns | Perfect recall of every word |
+| Gives feedback after call | Guides during the call |
+| One coaching style | Adapts to each rep |
+| Processes one signal at a time | Monitors 20+ signals simultaneously |
+| Limited to their experience | Learns from thousands of calls |
+
+### Implementation Phases
+
+1. **Streaming Foundation** - Remove batching, add streaming responses
+2. **Edge Detection Layer** - Move pattern matching to browser for <100ms alerts
+3. **Fast Inference Tier** - Add Haiku for quick suggestions (<500ms)
+4. **Semantic Memory** - Vector embeddings + retrieval for perfect context
+5. **Predictive Engine** - Anticipation model + proactive nudges
+
+### Technical Requirements
+
+- Edge compute (Cloudflare Workers) for <50ms pattern matching
+- Vector database (Pinecone/pgvector) for semantic memory
+- WebSocket infrastructure for streaming responses
+- Multi-model orchestration (edge → fast → deep)
+
+**Estimated cost:** $0.50-0.85 per call hour
+
 ## Tech Stack
 
 - **Frontend**: Next.js 14+ with App Router
