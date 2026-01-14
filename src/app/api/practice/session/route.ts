@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4-turbo', // Proven to work with Vapi
+          model: 'gpt-4o', // Faster, cheaper, same quality as gpt-4-turbo
           messages: [
             {
               role: 'system' as const,
