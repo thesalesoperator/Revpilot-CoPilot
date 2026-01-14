@@ -10,7 +10,18 @@
  * @module tests/unified-copilot
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+
+// ============================================================
+// TYPE DEFINITIONS
+// ============================================================
+
+interface Suggestion {
+  id: string
+  type: string
+  content: string
+  priority: string
+}
 
 // ============================================================
 // TEST CONFIGURATION
@@ -398,7 +409,7 @@ describe('Unified Co-Pilot', () => {
 
       if (response1.ok) {
         const data1 = await response1.json()
-        const firstSuggestions = data1.suggestions?.map((s: any) => s.content) || []
+        const firstSuggestions = data1.suggestions?.map((s: Suggestion) => s.content) || []
 
         // Trigger more analysis
         await apiRequest(`/api/co-pilot/session/${coachingSessionId}/analyze`, {
@@ -420,7 +431,7 @@ describe('Unified Co-Pilot', () => {
         if (response2.ok) {
           const data2 = await response2.json()
           const newSuggestions = data2.suggestions?.filter(
-            (s: any) => !firstSuggestions.includes(s.content)
+            (s: Suggestion) => !firstSuggestions.includes(s.content)
           ) || []
 
           // New suggestions should not duplicate old ones
@@ -450,7 +461,7 @@ describe('Unified Co-Pilot', () => {
         if (data.suggestions && data.suggestions.length > 0) {
           // Should have objection handling suggestion with high priority
           const objectionSuggestion = data.suggestions.find(
-            (s: any) => s.type === 'objection' || s.priority === 'high'
+            (s: Suggestion) => s.type === 'objection' || s.priority === 'high'
           )
           if (objectionSuggestion) {
             expect(objectionSuggestion.priority).toBe('high')
@@ -907,112 +918,30 @@ describe('Unified Co-Pilot', () => {
 
 // ============================================================
 // UNIT TESTS FOR INTELLIGENCE MODULE
+// These tests are placeholders that will be enabled once the
+// intelligence module is created in src/lib/unified/intelligence.ts
 // ============================================================
 
 describe('Intelligence Module', () => {
   describe('Stage Detection', () => {
-    it('detects opening stage', () => {
-      const transcript = 'Hi, thanks for taking my call today. How are you doing?'
-      // Would import detectStage from intelligence module
-      // expect(detectStage(transcript)).toBe('opening')
-    })
-
-    it('detects discovery stage', () => {
-      const transcript = `
-        Rep: What are your biggest challenges right now?
-        Prospect: We struggle with lead management and tracking.
-        Rep: Tell me more about that. How does it affect your team?
-      `
-      // expect(detectStage(transcript)).toBe('discovery')
-    })
-
-    it('detects qualification stage', () => {
-      const transcript = `
-        Rep: Who else would be involved in making this decision?
-        Prospect: I would need to bring in our CFO and VP of Sales.
-        Rep: What is your timeline for implementing a solution?
-      `
-      // expect(detectStage(transcript)).toBe('qualification')
-    })
-
-    it('detects closing stage', () => {
-      const transcript = `
-        Rep: Based on everything we discussed, it sounds like we could be a good fit.
-        Prospect: I agree. What are the next steps?
-        Rep: Let us schedule a follow-up with your team next week.
-      `
-      // expect(detectStage(transcript)).toBe('closing')
-    })
+    it.todo('detects opening stage')
+    it.todo('detects discovery stage')
+    it.todo('detects qualification stage')
+    it.todo('detects closing stage')
   })
 
   describe('Key Info Extraction', () => {
-    it('extracts company name', () => {
-      const transcript = 'We are Acme Corporation, a manufacturing company.'
-      // const keyInfo = extractKeyInfo(transcript, {})
-      // expect(keyInfo.companyName).toBe('Acme Corporation')
-    })
-
-    it('extracts budget information', () => {
-      const transcript = 'Our budget for this project is around $50,000.'
-      // const keyInfo = extractKeyInfo(transcript, {})
-      // expect(keyInfo.budget).toBe('$50,000')
-    })
-
-    it('extracts decision makers', () => {
-      const transcript = 'I will need to involve Sarah from finance and Mike, our CTO.'
-      // const keyInfo = extractKeyInfo(transcript, {})
-      // expect(keyInfo.decisionMakers).toContain('Sarah')
-      // expect(keyInfo.decisionMakers).toContain('Mike')
-    })
-
-    it('preserves existing key info', () => {
-      const transcript = 'Our timeline is Q2.'
-      const existingInfo = { companyName: 'TestCo', painPoints: ['slow process'] }
-      // const keyInfo = extractKeyInfo(transcript, existingInfo)
-      // expect(keyInfo.companyName).toBe('TestCo')
-      // expect(keyInfo.painPoints).toContain('slow process')
-    })
+    it.todo('extracts company name')
+    it.todo('extracts budget information')
+    it.todo('extracts decision makers')
+    it.todo('preserves existing key info')
   })
 
   describe('XP Calculation', () => {
-    it('calculates base XP from score', () => {
-      const analysis = { overallScore: 80, objectivesCompleted: [], bonusObjectivesCompleted: [] }
-      // const xp = calculateXP(analysis, 300, 'practice')
-      // expect(xp).toBeGreaterThanOrEqual(32) // 80 * 0.5 * 0.8 = 32
-    })
-
-    it('adds objective completion XP', () => {
-      const analysis = {
-        overallScore: 50,
-        objectivesCompleted: ['obj1', 'obj2'],
-        bonusObjectivesCompleted: []
-      }
-      // const xp = calculateXP(analysis, 300, 'practice')
-      // Should include 25 XP per objective
-    })
-
-    it('adds bonus objective XP', () => {
-      const analysis = {
-        overallScore: 50,
-        objectivesCompleted: [],
-        bonusObjectivesCompleted: ['bonus1']
-      }
-      // const xp = calculateXP(analysis, 300, 'practice')
-      // Should include 50 XP for bonus
-    })
-
-    it('adds duration bonus for long calls', () => {
-      const analysis = { overallScore: 50, objectivesCompleted: [], bonusObjectivesCompleted: [] }
-      // const shortXp = calculateXP(analysis, 60, 'practice')
-      // const longXp = calculateXP(analysis, 360, 'practice')
-      // expect(longXp).toBeGreaterThan(shortXp)
-    })
-
-    it('applies practice multiplier', () => {
-      const analysis = { overallScore: 100, objectivesCompleted: [], bonusObjectivesCompleted: [] }
-      // const coachingXp = calculateXP(analysis, 300, 'live_coaching')
-      // const practiceXp = calculateXP(analysis, 300, 'practice')
-      // expect(practiceXp).toBe(Math.round(coachingXp * 0.8))
-    })
+    it.todo('calculates base XP from score')
+    it.todo('adds objective completion XP')
+    it.todo('adds bonus objective XP')
+    it.todo('adds duration bonus for long calls')
+    it.todo('applies practice multiplier')
   })
 })
