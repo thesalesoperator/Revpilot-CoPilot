@@ -446,6 +446,7 @@ export default function PracticePage() {
       let data: {
         session?: PracticeSession
         attempt?: unknown
+        adaptiveDifficulty?: 'easy' | 'medium' | 'hard' | 'expert'
         vapi_config?: {
           assistant: Omit<VapiAssistantConfig, 'metadata'>
           metadata?: Record<string, string>
