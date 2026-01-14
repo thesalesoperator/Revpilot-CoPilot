@@ -3,6 +3,36 @@ import { createClient } from '@/lib/supabase/server'
 import { getChallengeById, getPersonaById } from '@/lib/practice/challenges'
 import { StartPracticeSessionRequest, PracticeSession, Difficulty } from '@/types/practice'
 
+// Adaptive difficulty configuration
+type AdaptiveDifficulty = 'easy' | 'medium' | 'hard' | 'expert'
+
+const DIFFICULTY_MODIFIERS: Record<AdaptiveDifficulty, string> = {
+  easy: `
+DIFFICULTY ADJUSTMENT (Easy Mode):
+- Be slightly easier to convince. Give more buying signals early.
+- Don't raise too many objections in succession.
+- Show genuine interest when they make decent points.
+- Be more forgiving of minor stumbles in their pitch.`,
+  medium: `
+DIFFICULTY ADJUSTMENT (Medium Mode):
+- Follow your normal personality and behavior.
+- Raise realistic objections but be open to good responses.
+- Standard level of skepticism for your persona.`,
+  hard: `
+DIFFICULTY ADJUSTMENT (Hard Mode):
+- Be more skeptical than usual. Require stronger evidence.
+- Raise more objections and push back harder on weak points.
+- Don't give buying signals unless truly impressed.
+- Challenge their claims more aggressively.`,
+  expert: `
+DIFFICULTY ADJUSTMENT (Expert Mode):
+- Be extremely challenging. Require exceptional technique to win over.
+- Actively look for weaknesses in their arguments.
+- Raise multiple objections, including curveball scenarios.
+- Only show interest if they demonstrate mastery.
+- Make them earn every inch of progress.`,
+}
+
 // POST /api/practice/session - Start a new practice session
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -41,6 +71,40 @@ export async function POST(request: NextRequest) {
       valueProposition: profile?.practice_value_proposition || null,
       targetCustomers: profile?.practice_target_customers || null,
     }
+
+    // Query user's last 5 sessions with this persona for adaptive difficulty
+    const { data: recentSessions } = await supabase
+      .from('practice_sessions')
+      .select('overall_score')
+      .eq('user_id', user.id)
+      .eq('persona_id', body.persona_id)
+      .eq('status', 'analyzed')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    // Calculate adaptive difficulty based on average score
+    let adaptiveDifficulty: AdaptiveDifficulty = 'medium'
+    if (recentSessions && recentSessions.length > 0) {
+      const validScores = recentSessions
+        .map(s => s.overall_score)
+        .filter((score): score is number => typeof score === 'number' && score > 0)
+
+      if (validScores.length > 0) {
+        const avgScore = validScores.reduce((sum, s) => sum + s, 0) / validScores.length
+
+        if (avgScore < 40) {
+          adaptiveDifficulty = 'easy'
+        } else if (avgScore >= 40 && avgScore < 80) {
+          adaptiveDifficulty = 'medium'
+        } else if (avgScore >= 80 && avgScore < 90) {
+          adaptiveDifficulty = 'hard'
+        } else if (avgScore >= 90) {
+          adaptiveDifficulty = 'expert'
+        }
+      }
+    }
+
+    console.log(`[Practice] Adaptive difficulty for ${body.persona_id}: ${adaptiveDifficulty}`)
 
     // Check for existing active session
     const { data: existingSession } = await supabase
@@ -101,7 +165,7 @@ export async function POST(request: NextRequest) {
           messages: [
             {
               role: 'system' as const,
-              content: buildSystemPrompt(challenge, persona, practiceContext),
+              content: buildSystemPrompt(challenge, persona, practiceContext, adaptiveDifficulty),
             },
           ],
           temperature: 0.7, // Natural variation without being erratic
@@ -129,6 +193,7 @@ export async function POST(request: NextRequest) {
       vapi_config: vapiConfig,
       challenge,
       persona,
+      adaptiveDifficulty,
     })
   } catch (error) {
     console.error('Error in practice session POST:', error)
@@ -291,16 +356,20 @@ ${challenges.map((c, i) => `${i + 1}. ${c}`).join('\n')}
 `
 }
 
-// Build system prompt combining challenge, persona, and user's product context
+// Build system prompt combining challenge, persona, user's product context, and adaptive difficulty
 function buildSystemPrompt(
   challenge: ReturnType<typeof getChallengeById>,
   persona: ReturnType<typeof getPersonaById>,
-  practiceContext: PracticeContext
+  practiceContext: PracticeContext,
+  adaptiveDifficulty: AdaptiveDifficulty = 'medium'
 ): string {
   if (!challenge || !persona) return ''
 
   // Generate dynamic product intelligence
   const productIntelligence = generateProductIntelligence(practiceContext, persona.id)
+
+  // Get difficulty modifier
+  const difficultyModifier = DIFFICULTY_MODIFIERS[adaptiveDifficulty]
 
   return `## CRITICAL SPEECH RULE - READ THIS FIRST
 You are in a VOICE conversation. NEVER output any bracketed stage directions, annotations, or actions like [sighs], [pauses], [typing sounds], [checks phone], [laughs], etc. These will be read aloud and sound robotic. Instead, express emotions through your WORDS and natural speech patterns. Use ellipses (...) for pauses. Use punctuation and word choice to convey tone.
@@ -340,7 +409,9 @@ ${challenge.bonusObjectives.map(b => `- ${b.name}: ${b.description}`).join('\n')
 
 DO NOT help them achieve these. Make them EARN every objective through skill.
 DO NOT break character. DO NOT be helpful just because they're practicing.
-BE the hardest buyer they'll ever face—if they can handle you, they can handle anyone.`
+BE the hardest buyer they'll ever face—if they can handle you, they can handle anyone.
+
+${difficultyModifier}`
 }
 
 // Get first message based on persona - more natural, less polished

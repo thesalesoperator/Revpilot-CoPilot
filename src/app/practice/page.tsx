@@ -35,6 +35,8 @@ import {
 import Vapi from '@vapi-ai/web'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import ActiveCallOverlay from '@/components/practice/ActiveCallOverlay'
+import ScriptProgress from '@/components/practice/ScriptProgress'
+import CoachingTips, { useCoachingTips, CoachingTipType } from '@/components/practice/CoachingTips'
 import { useToast } from '@/components/ui/Toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { createClient } from '@/lib/supabase/client'
@@ -60,12 +62,27 @@ interface VapiAssistantConfig {
   metadata?: Record<string, string>
 }
 
+// Key info extracted from call
+interface KeyInfo {
+  companyName?: string
+  painPoints?: string[]
+  budget?: string
+  timeline?: string
+  decisionMakers?: string[]
+  objections?: string[]
+  buyingSignals?: string[]
+}
+
 interface CallState {
   status: 'idle' | 'connecting' | 'active' | 'ended' | 'analyzing'
   duration: number
   isMuted: boolean
   transcript: Array<{ role: 'user' | 'assistant'; text: string }>
   liveObjectivesCompleted: string[] // Real-time objective tracking
+  scriptSection?: string // Current script section
+  scriptProgress?: number // 0-100 progress through script
+  keyInfo?: KeyInfo // Extracted key information
+  adaptiveDifficulty?: 'easy' | 'medium' | 'hard' | 'expert' // Current difficulty level
 }
 
 interface CallResults {
@@ -103,6 +120,10 @@ export default function PracticePage() {
     isMuted: false,
     transcript: [],
     liveObjectivesCompleted: [],
+    scriptSection: undefined,
+    scriptProgress: 0,
+    keyInfo: undefined,
+    adaptiveDifficulty: undefined,
   })
   const [userStats, setUserStats] = useState<UserPracticeStats | null>(null)
   const [xpToNextLevel, setXpToNextLevel] = useState(0)
@@ -126,6 +147,7 @@ export default function PracticePage() {
 
   const { user } = useAuth()
   const { showToast } = useToast()
+  const { currentTip, showTip, dismissTip, clearAllTips } = useCoachingTips()
   const supabase = createClient()
 
   // Create ringing sound using Web Audio API
@@ -338,7 +360,17 @@ export default function PracticePage() {
           setCallState(prev => ({
             ...prev,
             liveObjectivesCompleted: data.completed,
+            // Update script progress if provided
+            scriptSection: data.scriptSection || prev.scriptSection,
+            scriptProgress: data.scriptProgress ?? prev.scriptProgress,
+            keyInfo: data.keyInfo || prev.keyInfo,
           }))
+        }
+
+        // Show coaching tip if provided
+        if (data.coachingTip) {
+          const tipType: CoachingTipType = data.tipType || 'tip'
+          showTip(data.coachingTip, tipType)
         }
       }
     } catch (error) {
@@ -387,9 +419,14 @@ export default function PracticePage() {
       isMuted: false,
       transcript: [],
       liveObjectivesCompleted: [],
+      scriptSection: 'set_expectations',
+      scriptProgress: 0,
+      keyInfo: undefined,
+      adaptiveDifficulty: undefined,
     })
     lastObjectiveCheckRef.current = 0
     setCallNotes('')
+    clearAllTips() // Clear any existing tips
 
     try {
       // Request microphone permission first
@@ -457,6 +494,14 @@ export default function PracticePage() {
 
         data = await response.json()
         setCurrentSession(data.session || null)
+
+        // Store adaptive difficulty from API response
+        if (data.adaptiveDifficulty) {
+          setCallState(prev => ({
+            ...prev,
+            adaptiveDifficulty: data.adaptiveDifficulty,
+          }))
+        }
       } else {
         return
       }
@@ -677,11 +722,16 @@ export default function PracticePage() {
       isMuted: false,
       transcript: [],
       liveObjectivesCompleted: [],
+      scriptSection: undefined,
+      scriptProgress: 0,
+      keyInfo: undefined,
+      adaptiveDifficulty: undefined,
     })
     lastObjectiveCheckRef.current = 0
     setShowResults(false)
     setCallResults(null)
     setCurrentSession(null)
+    clearAllTips() // Clear coaching tips
     // Refresh scenarios list if we were in scenario mode
     if (activeTab === 'my-scenarios') {
       fetchScenarios()
@@ -742,6 +792,14 @@ export default function PracticePage() {
 
   return (
     <DashboardLayout>
+      {/* Coaching Tips Toast */}
+      <CoachingTips
+        tip={currentTip}
+        onDismiss={dismissTip}
+        autoDismissMs={5000}
+        position="bottom-right"
+      />
+
       {/* Full-screen call overlay */}
       {showCallOverlay && (
         <ActiveCallOverlay
@@ -1273,6 +1331,62 @@ export default function PracticePage() {
                   <p className="text-xs text-gray-500 mb-1">You&apos;re calling:</p>
                   <p className="text-white font-medium">{selectedChallenge.persona}</p>
                 </div>
+
+                {/* Adaptive Difficulty Indicator */}
+                {callState.adaptiveDifficulty && callState.status === 'active' && (
+                  <div className={`rounded-xl p-3 border ${
+                    callState.adaptiveDifficulty === 'easy' ? 'bg-green-500/10 border-green-500/30' :
+                    callState.adaptiveDifficulty === 'medium' ? 'bg-[#5eead4]/10 border-[#5eead4]/30' :
+                    callState.adaptiveDifficulty === 'hard' ? 'bg-orange-500/10 border-orange-500/30' :
+                    'bg-red-500/10 border-red-500/30'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Adaptive Difficulty</span>
+                      <span className={`text-xs font-semibold uppercase ${
+                        callState.adaptiveDifficulty === 'easy' ? 'text-green-400' :
+                        callState.adaptiveDifficulty === 'medium' ? 'text-[#5eead4]' :
+                        callState.adaptiveDifficulty === 'hard' ? 'text-orange-400' :
+                        'text-red-400'
+                      }`}>
+                        {callState.adaptiveDifficulty}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Script Progress - Show during active call */}
+                {callState.status === 'active' && (
+                  <div className="bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
+                    <ScriptProgress
+                      currentSection={callState.scriptSection || 'set_expectations'}
+                      progress={callState.scriptProgress || 0}
+                      compact={true}
+                    />
+                  </div>
+                )}
+
+                {/* Key Info Extracted - Show during active call if available */}
+                {callState.status === 'active' && callState.keyInfo && (
+                  Object.values(callState.keyInfo).some(v => v && (Array.isArray(v) ? v.length > 0 : true)) && (
+                    <div className="bg-[rgba(255,255,255,0.02)] rounded-xl p-3">
+                      <h4 className="text-xs font-medium text-gray-400 mb-2">Key Info Extracted</h4>
+                      <div className="space-y-1 text-xs">
+                        {callState.keyInfo.companyName && (
+                          <p className="text-white"><span className="text-gray-500">Company:</span> {callState.keyInfo.companyName}</p>
+                        )}
+                        {callState.keyInfo.budget && (
+                          <p className="text-white"><span className="text-gray-500">Budget:</span> {callState.keyInfo.budget}</p>
+                        )}
+                        {callState.keyInfo.timeline && (
+                          <p className="text-white"><span className="text-gray-500">Timeline:</span> {callState.keyInfo.timeline}</p>
+                        )}
+                        {callState.keyInfo.painPoints && callState.keyInfo.painPoints.length > 0 && (
+                          <p className="text-white"><span className="text-gray-500">Pain Points:</span> {callState.keyInfo.painPoints.slice(0, 2).join(', ')}</p>
+                        )}
+                      </div>
+                    </div>
+                  )
+                )}
 
                 {/* Objectives */}
                 <div>
