@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef, useState } from 'react'
 import {
   Phone,
   PhoneOff,
@@ -12,8 +12,15 @@ import {
   Volume2,
   Loader2,
   FileText,
-  MessageSquare,
   X,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  User,
+  DollarSign,
+  Clock,
+  Users,
+  AlertCircle,
 } from 'lucide-react'
 import type { Challenge } from '@/types/practice'
 
@@ -30,6 +37,67 @@ interface ActiveCallOverlayProps {
   onEndCall: () => void
 }
 
+// Script sections for RevPilot methodology
+const SCRIPT_SECTIONS = [
+  { id: 'opening', name: 'Opening', order: 1 },
+  { id: 'problem', name: 'Problem Isolation', order: 2 },
+  { id: 'background', name: 'Background', order: 3 },
+  { id: 'discovery', name: 'Deep Discovery', order: 4 },
+  { id: 'financial', name: 'Financial Qualifier', order: 5 },
+  { id: 'urgency', name: 'Urgency Building', order: 6 },
+  { id: 'close', name: 'Close', order: 7 },
+]
+
+// Extract key info from transcript
+function extractKeyInfo(transcript: Array<{ role: 'user' | 'assistant'; text: string }>) {
+  const fullText = transcript.map(t => t.text.toLowerCase()).join(' ')
+
+  const painPoints: string[] = []
+  const budget: string | null = null
+  const timeline: string | null = null
+  const decisionMakers: string[] = []
+
+  // Simple extraction patterns
+  const painPatterns = [
+    /struggling with ([^.]+)/gi,
+    /problem with ([^.]+)/gi,
+    /challenge[s]? (?:is|are|with) ([^.]+)/gi,
+    /pain point[s]? ([^.]+)/gi,
+    /frustrated (?:by|with) ([^.]+)/gi,
+  ]
+
+  painPatterns.forEach(pattern => {
+    const matches = fullText.match(pattern)
+    if (matches) {
+      matches.forEach(m => {
+        const cleaned = m.replace(pattern, '$1').trim()
+        if (cleaned.length > 5 && cleaned.length < 100 && !painPoints.includes(cleaned)) {
+          painPoints.push(cleaned)
+        }
+      })
+    }
+  })
+
+  return { painPoints: painPoints.slice(0, 3), budget, timeline, decisionMakers }
+}
+
+// Detect current script section based on transcript
+function detectScriptSection(transcript: Array<{ role: 'user' | 'assistant'; text: string }>): number {
+  if (transcript.length === 0) return 1
+
+  const fullText = transcript.map(t => t.text.toLowerCase()).join(' ')
+  const wordCount = fullText.split(' ').length
+
+  // Simple heuristic based on conversation progression
+  if (wordCount < 50) return 1 // Opening
+  if (wordCount < 150) return 2 // Problem Isolation
+  if (wordCount < 300) return 3 // Background
+  if (wordCount < 500) return 4 // Deep Discovery
+  if (wordCount < 700) return 5 // Financial
+  if (wordCount < 900) return 6 // Urgency
+  return 7 // Close
+}
+
 export default function ActiveCallOverlay({
   challenge,
   callStatus,
@@ -42,14 +110,14 @@ export default function ActiveCallOverlay({
   onToggleMute,
   onEndCall,
 }: ActiveCallOverlayProps) {
-  const transcriptEndRef = useRef<HTMLDivElement>(null)
+  const notesRef = useRef<HTMLTextAreaElement>(null)
+  const [showTranscript, setShowTranscript] = useState(false)
 
-  // Auto-scroll transcript to bottom
-  useEffect(() => {
-    if (transcriptEndRef.current) {
-      transcriptEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [transcript])
+  // Extract key info from transcript
+  const keyInfo = extractKeyInfo(transcript)
+  const currentSectionOrder = detectScriptSection(transcript)
+  const currentSection = SCRIPT_SECTIONS.find(s => s.order === currentSectionOrder) || SCRIPT_SECTIONS[0]
+  const progressPercent = Math.round((currentSectionOrder / SCRIPT_SECTIONS.length) * 100)
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -61,105 +129,103 @@ export default function ActiveCallOverlay({
   const isConnecting = callStatus === 'connecting'
   const isAnalyzing = callStatus === 'analyzing' || callStatus === 'ended'
 
+  // Get last few messages for context
+  const recentMessages = transcript.slice(-3)
+
   return (
     <div className="fixed inset-0 z-50 bg-[#0a0a0f] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.1)]">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/5 flex items-center justify-center">
-            <Phone className={`w-6 h-6 ${isActive ? 'text-[#5eead4]' : 'text-gray-400'}`} />
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#5eead4]/20 to-[#5eead4]/5 flex items-center justify-center">
+            <Phone className={`w-7 h-7 ${isActive ? 'text-[#5eead4]' : 'text-gray-400'}`} />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">{challenge.persona}</h2>
+            <h2 className="text-2xl font-bold text-white">{challenge.persona}</h2>
             <p className="text-sm text-gray-400">{challenge.name}</p>
           </div>
         </div>
 
         {/* Timer & Status */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           {isConnecting && (
-            <div className="flex items-center gap-2 text-[#5eead4]">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="font-medium">Connecting...</span>
+            <div className="flex items-center gap-3 text-[#5eead4]">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="font-medium text-lg">Connecting...</span>
             </div>
           )}
           {isActive && (
             <>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-500 animate-pulse" />
-                <span className="text-gray-400 text-sm font-medium">LIVE</span>
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-red-400 text-sm font-semibold uppercase tracking-wide">Live</span>
               </div>
-              <div className="text-4xl font-mono font-bold text-white">
+              <div className="text-5xl font-mono font-bold text-white tabular-nums">
                 {formatTime(duration)}
               </div>
             </>
           )}
           {isAnalyzing && (
-            <div className="flex items-center gap-2 text-[#5eead4]">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="font-medium">Analyzing call...</span>
+            <div className="flex items-center gap-3 text-[#5eead4]">
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span className="font-medium text-lg">Analyzing your performance...</span>
             </div>
           )}
         </div>
 
-        {/* Close button (only when not in active call) */}
+        {/* Close button */}
         {!isActive && !isConnecting && (
           <button
             onClick={onEndCall}
-            className="p-2 rounded-lg hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white transition-colors"
+            className="p-3 rounded-xl hover:bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         )}
-        {(isActive || isConnecting) && <div className="w-10" />}
+        {(isActive || isConnecting) && <div className="w-12" />}
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - 3 Column Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Objectives */}
+        {/* Left Column - Objectives */}
         <div className="w-80 border-r border-[rgba(255,255,255,0.1)] p-6 overflow-y-auto">
-          {/* Objectives */}
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Target className="w-4 h-4 text-[#5eead4]" />
-              Objectives
-              {liveObjectivesCompleted.length > 0 && (
-                <span className="text-xs text-[#5eead4] ml-auto bg-[#5eead4]/10 px-2 py-0.5 rounded-full">
-                  {liveObjectivesCompleted.length}/{challenge.objectives.length}
-                </span>
-              )}
-            </h3>
-            <ul className="space-y-3">
-              {challenge.objectives.map((obj, i) => {
-                const isCompleted = liveObjectivesCompleted.includes(obj)
-                return (
-                  <li
-                    key={i}
-                    className={`flex items-start gap-3 transition-all duration-300 ${
-                      isCompleted ? 'text-[#5eead4]' : 'text-gray-400'
-                    }`}
-                  >
-                    {isCompleted ? (
-                      <div className="w-6 h-6 rounded-full bg-[#5eead4]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <CheckCircle className="w-4 h-4 text-[#5eead4]" />
-                      </div>
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center text-xs text-gray-500 flex-shrink-0 mt-0.5">
-                        {i + 1}
-                      </div>
-                    )}
-                    <span className={`text-sm ${isCompleted ? 'font-medium' : ''}`}>{obj}</span>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
+          <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <Target className="w-4 h-4 text-[#5eead4]" />
+            Objectives
+            <span className="text-xs text-[#5eead4] ml-auto bg-[#5eead4]/10 px-2 py-0.5 rounded-full">
+              {liveObjectivesCompleted.length}/{challenge.objectives.length}
+            </span>
+          </h3>
+          <ul className="space-y-3 mb-8">
+            {challenge.objectives.map((obj, i) => {
+              const isCompleted = liveObjectivesCompleted.includes(obj)
+              return (
+                <li
+                  key={i}
+                  className={`flex items-start gap-3 transition-all duration-300 ${
+                    isCompleted ? 'text-[#5eead4]' : 'text-gray-400'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <div className="w-6 h-6 rounded-full bg-[#5eead4]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-[#5eead4]" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center text-xs text-gray-500 flex-shrink-0 mt-0.5">
+                      {i + 1}
+                    </div>
+                  )}
+                  <span className={`text-sm leading-relaxed ${isCompleted ? 'font-medium' : ''}`}>{obj}</span>
+                </li>
+              )
+            })}
+          </ul>
 
           {/* Bonus Objectives */}
           {challenge.bonusObjectives.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <Star className="w-4 h-4 text-[#5eead4]" />
+                <Star className="w-4 h-4 text-yellow-500" />
                 Bonus
               </h3>
               <ul className="space-y-3">
@@ -168,7 +234,7 @@ export default function ActiveCallOverlay({
                     <span className="text-lg flex-shrink-0">{bonus.icon}</span>
                     <div>
                       <span className="text-sm text-white">{bonus.name}</span>
-                      <span className="text-xs text-[#5eead4] ml-2">+{bonus.xpBonus} XP</span>
+                      <span className="text-xs text-yellow-500 ml-2">+{bonus.xpBonus} XP</span>
                       <p className="text-xs text-gray-500 mt-0.5">{bonus.description}</p>
                     </div>
                   </li>
@@ -178,125 +244,225 @@ export default function ActiveCallOverlay({
           )}
         </div>
 
-        {/* Center - Transcript */}
-        <div className="flex-1 flex flex-col border-r border-[rgba(255,255,255,0.1)]">
-          <div className="px-6 py-4 border-b border-[rgba(255,255,255,0.1)]">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#5eead4]" />
-              Live Transcript
+        {/* Center Column - Script Progress & Key Info */}
+        <div className="flex-1 flex flex-col p-6 overflow-y-auto">
+          {/* Script Progress */}
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#5eead4]" />
+              Call Progress
             </h3>
-          </div>
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {isConnecting && (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="w-20 h-20 rounded-full bg-[rgba(94,234,212,0.1)] flex items-center justify-center mb-4 animate-pulse">
-                  <Phone className="w-10 h-10 text-[#5eead4]" />
-                </div>
-                <p className="text-white font-medium text-lg">Connecting to {challenge.persona}...</p>
-                <p className="text-gray-400 text-sm mt-2">Preparing your AI prospect</p>
+
+            {/* Progress Bar */}
+            <div className="mb-4">
+              <div className="flex justify-between text-xs text-gray-400 mb-2">
+                <span>Section {currentSectionOrder} of {SCRIPT_SECTIONS.length}</span>
+                <span>{progressPercent}%</span>
               </div>
-            )}
-            {!isConnecting && transcript.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-                <MessageSquare className="w-12 h-12 mb-3 opacity-50" />
-                <p>Waiting for conversation to start...</p>
-              </div>
-            )}
-            {transcript.map((message, i) => (
-              <div
-                key={i}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+              <div className="h-2 bg-[rgba(255,255,255,0.05)] rounded-full overflow-hidden">
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                    message.role === 'user'
-                      ? 'bg-[#5eead4] text-[#0a0a0f]'
-                      : 'bg-[rgba(255,255,255,0.05)] text-white'
-                  }`}
-                >
-                  <p className="text-sm leading-relaxed">{message.text}</p>
-                </div>
+                  className="h-full bg-gradient-to-r from-[#5eead4] to-[#5eead4]/60 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
-            ))}
-            <div ref={transcriptEndRef} />
+            </div>
+
+            {/* Section Pills */}
+            <div className="flex flex-wrap gap-2">
+              {SCRIPT_SECTIONS.map((section) => {
+                const isPast = section.order < currentSectionOrder
+                const isCurrent = section.order === currentSectionOrder
+                return (
+                  <div
+                    key={section.id}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      isCurrent
+                        ? 'bg-[#5eead4] text-[#0a0a0f]'
+                        : isPast
+                        ? 'bg-[#5eead4]/20 text-[#5eead4]'
+                        : 'bg-[rgba(255,255,255,0.05)] text-gray-500'
+                    }`}
+                  >
+                    {section.name}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Key Info Captured */}
+          <div className="mb-8">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-[#5eead4]" />
+              Key Info Captured
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Pain Points */}
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-4 h-4 text-red-400" />
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Pain Points</span>
+                </div>
+                {keyInfo.painPoints.length > 0 ? (
+                  <ul className="space-y-2">
+                    {keyInfo.painPoints.map((pain, i) => (
+                      <li key={i} className="text-sm text-white flex items-start gap-2">
+                        <span className="text-red-400 mt-1">•</span>
+                        <span className="capitalize">{pain}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Not yet identified</p>
+                )}
+              </div>
+
+              {/* Budget */}
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <DollarSign className="w-4 h-4 text-green-400" />
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Budget</span>
+                </div>
+                <p className="text-sm text-gray-500 italic">Not discussed</p>
+              </div>
+
+              {/* Timeline */}
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Timeline</span>
+                </div>
+                <p className="text-sm text-gray-500 italic">Not discussed</p>
+              </div>
+
+              {/* Decision Makers */}
+              <div className="bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-4 h-4 text-purple-400" />
+                  <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Decision Makers</span>
+                </div>
+                <p className="text-sm text-gray-500 italic">Unknown</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Last Exchange (minimal transcript view) */}
+          <div className="flex-1">
+            <button
+              onClick={() => setShowTranscript(!showTranscript)}
+              className="flex items-center gap-2 text-sm font-semibold text-white mb-4 hover:text-[#5eead4] transition-colors"
+            >
+              <User className="w-4 h-4 text-[#5eead4]" />
+              Recent Exchange
+              {showTranscript ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {showTranscript && (
+              <div className="space-y-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4 max-h-64 overflow-y-auto">
+                {recentMessages.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic text-center py-4">Waiting for conversation to start...</p>
+                ) : (
+                  recentMessages.map((message, i) => (
+                    <div
+                      key={i}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-xl px-4 py-2 ${
+                          message.role === 'user'
+                            ? 'bg-[#5eead4]/20 text-[#5eead4]'
+                            : 'bg-[rgba(255,255,255,0.05)] text-gray-300'
+                        }`}
+                      >
+                        <p className="text-sm">{message.text}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Panel - Notes */}
-        <div className="w-96 flex flex-col">
+        {/* Right Column - Notes */}
+        <div className="w-96 border-l border-[rgba(255,255,255,0.1)] flex flex-col">
           <div className="px-6 py-4 border-b border-[rgba(255,255,255,0.1)]">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               <FileText className="w-4 h-4 text-[#5eead4]" />
-              Call Notes
+              Your Notes
             </h3>
           </div>
           <div className="flex-1 p-4">
             <textarea
+              ref={notesRef}
               value={notes}
               onChange={(e) => onNotesChange(e.target.value)}
               placeholder="Take notes during the call...
 
 • Key objections raised
 • Pain points mentioned
-• Next steps discussed
-• Questions to follow up on"
+• Questions to follow up on
+• Commitment level"
               className="w-full h-full bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-xl p-4 text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#5eead4]/50 focus:ring-1 focus:ring-[#5eead4]/20"
+              disabled={isAnalyzing}
             />
           </div>
         </div>
       </div>
 
       {/* Bottom Controls */}
-      <div className="border-t border-[rgba(255,255,255,0.1)] px-6 py-4">
-        <div className="flex items-center justify-center gap-6">
+      <div className="border-t border-[rgba(255,255,255,0.1)] px-6 py-6">
+        <div className="flex items-center justify-center gap-8">
           {isActive && (
             <>
               <button
                 onClick={onToggleMute}
-                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+                className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
                   isMuted
-                    ? 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/30'
+                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                     : 'bg-[rgba(255,255,255,0.05)] text-white hover:bg-[rgba(255,255,255,0.1)]'
                 }`}
               >
-                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                {isMuted ? <MicOff className="w-7 h-7" /> : <Mic className="w-7 h-7" />}
               </button>
               <button
                 onClick={onEndCall}
-                className="w-20 h-20 rounded-full bg-gray-500 text-white flex items-center justify-center hover:bg-gray-600 transition-all shadow-lg shadow-gray-500/20"
+                className="w-24 h-24 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all shadow-lg shadow-red-500/30"
               >
-                <PhoneOff className="w-8 h-8" />
+                <PhoneOff className="w-10 h-10" />
               </button>
-              <button className="w-14 h-14 rounded-full bg-[rgba(255,255,255,0.05)] text-white flex items-center justify-center hover:bg-[rgba(255,255,255,0.1)]">
-                <Volume2 className="w-6 h-6" />
+              <button className="w-16 h-16 rounded-full bg-[rgba(255,255,255,0.05)] text-white flex items-center justify-center hover:bg-[rgba(255,255,255,0.1)]">
+                <Volume2 className="w-7 h-7" />
               </button>
             </>
           )}
           {isConnecting && (
             <button
               onClick={onEndCall}
-              className="px-6 py-3 rounded-xl bg-gray-500/20 text-gray-400 hover:bg-gray-500/30 transition-all flex items-center gap-2"
+              className="px-8 py-4 rounded-xl bg-[rgba(255,255,255,0.05)] text-gray-400 hover:bg-[rgba(255,255,255,0.1)] transition-all flex items-center gap-3 text-lg"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
               Cancel
             </button>
           )}
           {isAnalyzing && (
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <CheckCircle className="w-4 h-4 text-[#5eead4]" />
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 text-sm text-[#5eead4]">
+                  <CheckCircle className="w-5 h-5" />
                   Call recorded ({formatTime(duration)})
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Loader2 className="w-4 h-4 text-[#5eead4] animate-spin" />
+                <div className="flex items-center gap-2 text-sm text-[#5eead4]">
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Processing transcript...
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Generating feedback...
                 </div>
               </div>
+              <p className="text-xs text-gray-500">This usually takes 10-15 seconds</p>
             </div>
           )}
         </div>

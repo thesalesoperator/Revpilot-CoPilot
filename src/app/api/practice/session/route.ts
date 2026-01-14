@@ -97,24 +97,24 @@ export async function POST(request: NextRequest) {
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4-turbo', // Faster, more natural responses
+          model: 'gpt-4o', // GPT-4o for faster, more coherent responses
           messages: [
             {
               role: 'system' as const,
               content: buildSystemPrompt(challenge, persona, practiceContext),
             },
           ],
-          temperature: 0.7, // Natural variation without being erratic
-          maxTokens: 200, // Shorter responses feel more conversational
+          temperature: 0.8, // Slightly higher for more natural variation
+          maxTokens: 500, // Allow longer, more complete thoughts
         },
         firstMessage: getFirstMessage(persona),
         // Conversation settings for realism
-        silenceTimeoutSeconds: 12, // Wait longer before assuming they're done
+        silenceTimeoutSeconds: 8, // Reduced - don't wait too long
         maxDurationSeconds: 2700, // 45 min max
         backgroundSound: 'off', // No background noise
-        backchannelingEnabled: true, // Natural "mm-hmm" responses
+        backchannelingEnabled: false, // Disable "mm-hmm" to reduce choppiness
         interruptionsEnabled: true, // Allow persona to interrupt
-        responseDelaySeconds: 0.8, // Pause before responding (feels like thinking)
+        responseDelaySeconds: 0.4, // Shorter delay for snappier responses
       },
       // Metadata at call level (not inside assistant) to identify session in webhooks
       metadata: {
@@ -360,7 +360,7 @@ function getFirstMessage(persona: ReturnType<typeof getPersonaById>): string {
 
     'procurement-buyer': "Hello. Jennifer Walsh, procurement. I understand you've been speaking with our IT team and you're on our shortlist. I'm here to discuss terms. Walk me through your pricing.",
 
-    'mad-scientist': "...Hello? How did you get zis number?! Are you vith ze GOVERNMENT?! ...Speak quickly, before I release ze hounds! MWAHAHAHA! ...vell? I am vaiting.",
+    'mad-scientist': "Hello? Yes, this is Viktor. Who is calling please? I am in the middle of something quite important here...",
   }
 
   return firstMessages[persona.id] || "Hello?"
