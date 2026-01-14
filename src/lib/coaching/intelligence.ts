@@ -958,10 +958,16 @@ export interface ScriptContext {
   keyInfo: {
     painPoints: string[]
     budget: string | null
+    budgetConfirmed?: boolean
     timeline: string | null
+    timelineUrgency?: 'low' | 'medium' | 'high' | null
     decisionMakers: string[]
     objections: string[]
     buyingSignals: string[]
+    teamSize?: string | null
+    dealSize?: string | null
+    salesCycle?: string | null
+    currentCRM?: string | null
   }
 }
 
