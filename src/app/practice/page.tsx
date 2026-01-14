@@ -96,10 +96,10 @@ interface CallResults {
 }
 
 const DIFFICULTY_CONFIG = {
-  easy: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Easy' },
-  medium: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Medium' },
-  hard: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Hard' },
-  expert: { color: 'text-gray-400', bg: 'bg-gray-500/20', border: 'border-gray-500/30', label: 'Expert' },
+  easy: { color: 'text-[var(--accent)]', bg: 'bg-[var(--accent-light-bg)]', border: 'border-[var(--accent-border)]', label: 'Easy' },
+  medium: { color: 'text-[var(--accent)]', bg: 'bg-[var(--accent-light-bg)]', border: 'border-[var(--accent-border)]', label: 'Medium' },
+  hard: { color: 'text-[var(--accent)]', bg: 'bg-[var(--accent-light-bg)]', border: 'border-[var(--accent-border)]', label: 'Hard' },
+  expert: { color: 'text-[var(--foreground-muted)]', bg: 'bg-[var(--glass-bg)]', border: 'border-[var(--glass-border)]', label: 'Expert' },
 }
 
 const PERSONA_ICONS: Record<string, typeof Users> = {
@@ -332,11 +332,12 @@ export default function PracticePage() {
 
   // Real-time objective checking
   const checkObjectivesRealTime = useCallback(async () => {
-    if (!selectedChallenge || callState.transcript.length < 2) return
+    // Check as soon as we have any transcript
+    if (!selectedChallenge || callState.transcript.length < 1) return
 
-    // Debounce: only check every 8 seconds minimum
+    // Debounce: only check every 5 seconds minimum
     const now = Date.now()
-    if (now - lastObjectiveCheckRef.current < 8000) return
+    if (now - lastObjectiveCheckRef.current < 5000) return
     lastObjectiveCheckRef.current = now
 
     const transcriptText = callState.transcript
@@ -381,13 +382,13 @@ export default function PracticePage() {
   // Run objective checking during active calls
   useEffect(() => {
     if (callState.status === 'active' && selectedChallenge) {
-      // Check objectives every 10 seconds during active call
+      // Check objectives every 7 seconds during active call
       objectiveCheckIntervalRef.current = setInterval(() => {
         checkObjectivesRealTime()
-      }, 10000)
+      }, 7000)
 
-      // Also check when transcript changes significantly
-      if (callState.transcript.length >= 4) {
+      // Also check when transcript has any content
+      if (callState.transcript.length >= 1) {
         checkObjectivesRealTime()
       }
     } else {

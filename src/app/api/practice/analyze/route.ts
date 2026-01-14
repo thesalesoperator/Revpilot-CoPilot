@@ -72,11 +72,13 @@ export async function POST(request: NextRequest) {
           role: 'system',
           content: `You are an expert sales coach analyzing a practice call. Provide structured, actionable feedback.
 
+CRITICAL: For "objectives_completed", you MUST return the EXACT objective strings from the provided list - copy them character-for-character. Do not paraphrase or reword them.
+
 You must respond with valid JSON matching this exact structure:
 {
   "overall_score": <number 0-100>,
-  "objectives_completed": [<array of objective strings that were completed>],
-  "bonus_objectives_completed": [<array of bonus objective IDs that were achieved>],
+  "objectives_completed": [<EXACT strings from the objectives list that were achieved - copy verbatim>],
+  "bonus_objectives_completed": [<array of bonus objective IDs (like "pain-excavator", "long-game") that were achieved>],
   "analysis": {
     "opening_rapport": { "score": <0-100>, "feedback": "<string>", "highlights": [<strings>] },
     "discovery_questions": { "score": <0-100>, "feedback": "<string>", "highlights": [<strings>] },
@@ -188,11 +190,11 @@ PERSONA PLAYED BY AI: ${persona.name} - ${persona.title} at ${persona.company}
 PERSONA DESCRIPTION: ${persona.description}
 PERSONA TRAITS: ${persona.personality.join(', ')}
 
-OBJECTIVES TO EVALUATE:
-${challenge.objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}
+OBJECTIVES TO EVALUATE (copy these EXACTLY if completed):
+${challenge.objectives.map((o, i) => `${i + 1}. "${o}"`).join('\n')}
 
-BONUS OBJECTIVES:
-${challenge.bonusObjectives.map(b => `- ${b.id}: ${b.name} - ${b.description}`).join('\n')}
+BONUS OBJECTIVES (return the ID if achieved):
+${challenge.bonusObjectives.map(b => `- ID: "${b.id}" | ${b.name} - ${b.description}`).join('\n')}
 
 CALL DURATION: ${durationSeconds} seconds
 TRANSCRIPT WORD COUNT: ${wordCount} words
@@ -205,12 +207,22 @@ ${transcript}
 CRITICAL SCORING RULES:
 1. If the call was under 60 seconds, the overall_score should be MAX 30.
 2. If the call was under 30 seconds, the overall_score should be MAX 15.
-3. Only mark an objective as completed if there is CLEAR EVIDENCE in the transcript that it was achieved.
-4. Do NOT give credit for objectives that were not explicitly demonstrated.
-5. An empty or near-empty transcript means score of 0-10.
-6. If the rep hung up early or the call ended abruptly, penalize heavily.
+3. Only mark an objective as completed if there is CLEAR EVIDENCE in the transcript.
+4. An empty or near-empty transcript means score of 0-10.
 
-Analyze the sales rep's performance on this practice call. For each objective, determine if it was ACTUALLY completed based on the transcript evidence. Score each category 0-100 and provide specific, actionable feedback.
+OBJECTIVE COMPLETION GUIDELINES (be fair but thorough):
+- "Establish value" = Rep explained how their solution helps THIS prospect specifically
+- "Address objection" = Rep responded to a concern with substance (not just deflecting)
+- "Build rapport" = Genuine connection - asked personal questions, showed empathy
+- "Create urgency" = Made a time-based argument or highlighted cost of delay
+- "Get commitment" = Prospect agreed to a next step (meeting, call, trial, etc.)
+- "Define next steps" = Both parties clear on what happens next with timeline
+- "Identify pain points" = Uncovered specific problems the prospect is facing
 
-Be STRICT and HONEST. This is practice - giving inflated scores doesn't help the user improve. If they didn't do something well, say so. Only mark objectives_completed if there's clear transcript evidence.`
+IMPORTANT: If the rep made a genuine attempt at an objective, give them credit if they executed reasonably well. Don't require perfection - this is practice.
+
+For objectives_completed: Return the EXACT strings from the list above, copied character-for-character.
+For bonus_objectives_completed: Return the ID strings (like "long-game", "pain-excavator").
+
+Analyze the sales rep's performance. Be encouraging but honest - highlight what they did well AND what needs work.`
 }

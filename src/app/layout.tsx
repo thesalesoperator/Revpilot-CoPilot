@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OrganizationProvider } from "@/contexts/OrganizationContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
@@ -28,15 +29,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} dark`} suppressHydrationWarning>
       <body className="antialiased font-sans">
-        <AuthProvider>
-          <OrganizationProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </OrganizationProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <OrganizationProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </OrganizationProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
