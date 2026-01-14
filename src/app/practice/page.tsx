@@ -541,15 +541,39 @@ export default function PracticePage() {
       })
 
       vapiRef.current.on('message', (msg) => {
-        const message = msg as { type: string; role?: string; transcript?: string }
-        if (message.type === 'transcript' && message.transcript) {
-          setCallState((prev) => ({
-            ...prev,
-            transcript: [
-              ...prev.transcript,
-              { role: message.role as 'user' | 'assistant', text: message.transcript || '' },
-            ],
-          }))
+        const message = msg as { type: string; role?: string; transcript?: string; transcriptType?: string }
+        // Only process FINAL transcripts (not partial streaming updates)
+        // Vapi sends both 'partial' and 'final' transcript types
+        if (message.type === 'transcript' && message.transcript && message.transcriptType === 'final') {
+          setCallState((prev) => {
+            const role = message.role as 'user' | 'assistant'
+            const newText = message.transcript || ''
+
+            // Don't add empty or very short messages
+            if (newText.trim().length < 2) return prev
+
+            // Check if last message was from same speaker - if so, this might be a continuation
+            // But for final transcripts, we should add as new message
+            const lastMsg = prev.transcript[prev.transcript.length - 1]
+
+            // If last message from same role and very recent (within 2 seconds), update it
+            // Otherwise add new message
+            if (lastMsg && lastMsg.role === role && newText.startsWith(lastMsg.text.substring(0, 20))) {
+              // This is an update to the existing message - replace it
+              return {
+                ...prev,
+                transcript: [
+                  ...prev.transcript.slice(0, -1),
+                  { role, text: newText },
+                ],
+              }
+            }
+
+            return {
+              ...prev,
+              transcript: [...prev.transcript, { role, text: newText }],
+            }
+          })
         }
       })
 

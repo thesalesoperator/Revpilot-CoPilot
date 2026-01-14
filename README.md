@@ -312,6 +312,154 @@ Persona Adaptation:
 - Practice Session: $0.15-0.25 per 10-minute session
 - Shared infrastructure: Amortized across both features
 
+---
+
+## Future Vision: Universal Real-Time Meeting Intelligence
+
+Beyond sales coaching, the core architecture can power a **universal meeting companion** - essentially Fathom/Otter but with real-time intelligence instead of post-call summaries.
+
+### The Problem with Current Note-Takers
+
+| Tool | When You Get Value | The Problem |
+|------|-------------------|-------------|
+| Fathom | After the call | You've already forgotten what you meant to follow up on |
+| Otter | After the call | 30-minute meeting = 15 minutes reading transcript |
+| Fireflies | After the call | Key decisions buried in walls of text |
+| Manual notes | During call | You're distracted, miss context, notes are messy |
+
+**The gap:** You need intelligence DURING the call, not after.
+
+### RevPilot Meeting Intelligence (Future)
+
+Real-time companion for ANY meeting type - not just sales.
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  MEETING COMPANION (non-intrusive sidebar or overlay)              │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  📋 LIVE RECAP (updates as people talk)                     │   │
+│  │                                                              │   │
+│  │  • Marketing wants to push launch to Q2 (Sarah, 3:42)       │   │
+│  │  • Budget approved for $50K pilot (Mike confirmed)          │   │
+│  │  • Blocker: Legal review needed before signing              │   │
+│  │  • You agreed to send the proposal by Friday                │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  ⚡ ACTION ITEMS (auto-detected)                            │   │
+│  │                                                              │   │
+│  │  ☐ You: Send proposal by Friday                             │   │
+│  │  ☐ Sarah: Schedule legal review                             │   │
+│  │  ☐ Mike: Confirm budget allocation with finance             │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  💡 CONTEXT PROMPTS                                         │   │
+│  │                                                              │   │
+│  │  "Mike mentioned 'the same issue as last quarter' -         │   │
+│  │   worth asking what happened then?"                         │   │
+│  │                                                              │   │
+│  │  "Sarah seems hesitant about timeline. Might be worth       │   │
+│  │   understanding what's driving the delay."                  │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  🎯 MEETING HEALTH                                          │   │
+│  │                                                              │   │
+│  │  Talk distribution: You 23% | Sarah 35% | Mike 42%          │   │
+│  │  Decisions made: 2 of 4 agenda items                        │   │
+│  │  Time remaining: 8 min | Unaddressed: Budget timeline       │   │
+│  └─────────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+### Use Cases Beyond Sales
+
+| Meeting Type | Real-Time Intelligence |
+|--------------|----------------------|
+| **1:1s with Manager** | "You mentioned wanting to discuss promotion 10 min ago - meeting ending soon" |
+| **Client Calls** | Live recap of requirements, auto-detect scope creep |
+| **Team Standups** | Track blockers mentioned, flag recurring issues |
+| **Interviews** | Candidate response tracking, suggested follow-up questions |
+| **Board Meetings** | Decision tracking, action item assignment |
+| **Customer Support** | Issue categorization, solution suggestions |
+| **Project Kickoffs** | Requirement capture, stakeholder concern tracking |
+
+### Key Features
+
+#### 1. Live Recap (Not Transcript)
+```
+Traditional:    Full transcript → Read after → Extract meaning
+RevPilot:       Conversation → Real-time summarization → Key points only
+
+"We discussed the Q2 timeline and Sarah mentioned concerns about
+the marketing team's bandwidth given the product launch..."
+
+        ↓ Becomes ↓
+
+"• Q2 timeline discussed
+ • Sarah: Marketing bandwidth is a concern (product launch conflict)"
+```
+
+#### 2. Commitment Detection
+Automatically surfaces when someone commits to something:
+- "I'll send that over by Friday" → ☐ You: Send [that] by Friday
+- "Let me check with legal" → ☐ Speaker: Check with legal
+- "We can do $50K" → 💰 Budget: $50K confirmed
+
+#### 3. Context Continuity
+References earlier parts of the conversation:
+- "Earlier, Mike said 'same issue as last quarter' - never explained"
+- "You agreed to 3 things but only 2 have been addressed"
+- "This contradicts what Sarah said at 4:23"
+
+#### 4. Meeting Health Monitoring
+- **Talk ratio:** "You've spoken 60% - might want to ask more questions"
+- **Agenda tracking:** "2 of 5 items covered, 10 minutes left"
+- **Energy detection:** "Conversation energy dropped - might need a break"
+- **Decision density:** "45 minutes in, no decisions made yet"
+
+#### 5. Smart Nudges
+Context-aware prompts that help you be more effective:
+- "Good moment to summarize and confirm alignment"
+- "Sarah mentioned a concern but moved on quickly - worth revisiting?"
+- "You've been talking for 3 minutes - pause for questions?"
+
+### Implementation Approach
+
+The sales coaching infrastructure directly transfers:
+
+| Sales Feature | Meeting Intelligence Equivalent |
+|--------------|--------------------------------|
+| Script section tracking | Agenda item tracking |
+| Key info extraction | Decision/action item extraction |
+| Objection detection | Concern/blocker detection |
+| Buying signal alerts | Agreement/commitment detection |
+| Talk ratio | Participation balance |
+| Coaching suggestions | Context prompts |
+
+### Differentiation from Fathom/Otter
+
+| Feature | Fathom/Otter | RevPilot Meeting Intelligence |
+|---------|--------------|------------------------------|
+| When you get value | After call | During call |
+| Output format | Full transcript + summary | Live key points only |
+| Action items | Extracted post-call | Detected real-time |
+| Context prompts | None | Live suggestions |
+| Meeting health | None | Real-time monitoring |
+| Commitment tracking | Basic post-call | Live with attribution |
+
+### Phase 7: Meeting Intelligence (Future)
+- [ ] Generic meeting mode (non-sales)
+- [ ] Live summarization (not transcription)
+- [ ] Action item auto-detection
+- [ ] Meeting health monitoring
+- [ ] Agenda tracking
+- [ ] Cross-meeting context (remember past discussions)
+- [ ] Integration with calendar (pre-populate context)
+- [ ] Post-meeting auto-summary email
+
 ## Tech Stack
 
 - **Frontend**: Next.js 14+ with App Router
