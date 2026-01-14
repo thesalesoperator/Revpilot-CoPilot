@@ -310,11 +310,12 @@ export default function PracticePage() {
 
   // Real-time objective checking
   const checkObjectivesRealTime = useCallback(async () => {
-    if (!selectedChallenge || callState.transcript.length < 2) return
+    // Check as soon as we have any transcript
+    if (!selectedChallenge || callState.transcript.length < 1) return
 
-    // Debounce: only check every 8 seconds minimum
+    // Debounce: only check every 5 seconds minimum
     const now = Date.now()
-    if (now - lastObjectiveCheckRef.current < 8000) return
+    if (now - lastObjectiveCheckRef.current < 5000) return
     lastObjectiveCheckRef.current = now
 
     const transcriptText = callState.transcript
@@ -349,13 +350,13 @@ export default function PracticePage() {
   // Run objective checking during active calls
   useEffect(() => {
     if (callState.status === 'active' && selectedChallenge) {
-      // Check objectives every 10 seconds during active call
+      // Check objectives every 7 seconds during active call
       objectiveCheckIntervalRef.current = setInterval(() => {
         checkObjectivesRealTime()
-      }, 10000)
+      }, 7000)
 
-      // Also check when transcript changes significantly
-      if (callState.transcript.length >= 4) {
+      // Also check when transcript has any content
+      if (callState.transcript.length >= 1) {
         checkObjectivesRealTime()
       }
     } else {
