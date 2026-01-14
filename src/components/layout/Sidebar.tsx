@@ -74,7 +74,7 @@ export default function Sidebar() {
   const xpProgress = (userGameStats.xp / userGameStats.xpToNext) * 100
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 glass-card rounded-none border-l-0 border-t-0 border-b-0 flex flex-col z-50">
+    <aside className="fixed left-0 top-0 h-screen w-64 glass-card sidebar-container rounded-none border-l-0 border-t-0 border-b-0 flex flex-col z-50">
       {/* Logo */}
       <div className="p-6 border-b border-[var(--glass-border)]">
         <div className="flex items-center justify-between">

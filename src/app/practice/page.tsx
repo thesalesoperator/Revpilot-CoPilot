@@ -801,24 +801,24 @@ export default function PracticePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-              <Flame className="w-8 h-8 text-[#5eead4]" />
+            <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2 flex items-center gap-3">
+              <Flame className="w-8 h-8 text-[var(--accent)]" />
               Sales Sparring Arena
             </h1>
-            <p className="text-gray-400">Practice your skills against AI prospects. Level up. Dominate.</p>
+            <p className="text-[var(--foreground-muted)]">Practice your skills against AI prospects. Level up. Dominate.</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-[#5eead4]" />
-              <span className="text-white font-bold">{(userStats?.total_xp || 0).toLocaleString()} XP</span>
+              <Trophy className="w-5 h-5 text-[var(--accent)]" />
+              <span className="text-[var(--foreground)] font-bold">{(userStats?.total_xp || 0).toLocaleString()} XP</span>
             </div>
             <div className="glass-card px-4 py-2 flex items-center gap-2">
-              <Flame className="w-5 h-5 text-[#5eead4]" />
-              <span className="text-white font-bold">{userStats?.current_streak || 0} day streak</span>
+              <Flame className="w-5 h-5 text-[var(--accent)]" />
+              <span className="text-[var(--foreground)] font-bold">{userStats?.current_streak || 0} day streak</span>
             </div>
             {userStats?.current_rank && (
               <div className="glass-card px-4 py-2">
-                <span className="text-white font-bold">{userStats.current_rank}</span>
+                <span className="text-[var(--foreground)] font-bold">{userStats.current_rank}</span>
               </div>
             )}
           </div>
@@ -828,7 +828,7 @@ export default function PracticePage() {
           {/* Challenge Selection */}
           <div className="lg:col-span-2 space-y-4">
             {/* Tab Navigation */}
-            <div className="flex items-center gap-4 border-b border-[rgba(255,255,255,0.1)] pb-3">
+            <div className="flex items-center gap-4 border-b border-[var(--glass-border)] pb-3">
               <button
                 onClick={() => {
                   setActiveTab('challenges')
@@ -836,8 +836,8 @@ export default function PracticePage() {
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   activeTab === 'challenges'
-                    ? 'bg-[#5eead4] text-[#0a0a0f] font-semibold'
-                    : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
+                    ? 'bg-[var(--accent)] text-white dark:text-[#0a0a0f] font-semibold'
+                    : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--glass-bg)]'
                 }`}
               >
                 <Target className="w-4 h-4" />
@@ -850,14 +850,14 @@ export default function PracticePage() {
                 }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   activeTab === 'my-scenarios'
-                    ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
-                    : 'text-gray-400 hover:text-white hover:bg-[rgba(255,255,255,0.05)]'
+                    ? 'bg-[var(--accent)] text-white dark:text-[#0a0a0f] font-semibold'
+                    : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--glass-bg)]'
                 }`}
               >
                 <Sparkles className="w-4 h-4" />
                 My Scenarios
                 {myScenarios.filter(s => s.status === 'active').length > 0 && (
-                  <span className="bg-[rgba(139,92,246,0.3)] text-purple-300 text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-purple-500/20 text-purple-600 dark:text-purple-300 text-xs px-2 py-0.5 rounded-full">
                     {myScenarios.filter(s => s.status === 'active').length}
                   </span>
                 )}
@@ -867,13 +867,13 @@ export default function PracticePage() {
             {/* Difficulty Filter - Only show for challenges tab */}
             {activeTab === 'challenges' && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-400 text-sm">Filter:</span>
+                <span className="text-[var(--foreground-muted)] text-sm">Filter:</span>
                 <button
                   onClick={() => setDifficultyFilter(null)}
                   className={`px-3 py-1 rounded-lg text-sm transition-all ${
                     difficultyFilter === null
-                      ? 'bg-[#00ffc1] text-[#00102e] font-semibold'
-                      : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
+                      ? 'bg-[var(--accent)] text-white dark:text-[#0a0a0f] font-semibold'
+                      : 'bg-[var(--glass-bg)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--glass-border)]'
                   }`}
                 >
                   All
@@ -885,7 +885,7 @@ export default function PracticePage() {
                     className={`px-3 py-1 rounded-lg text-sm transition-all ${
                       difficultyFilter === key
                         ? `${config.bg} ${config.color} font-semibold`
-                        : 'bg-[rgba(255,255,255,0.05)] text-gray-400 hover:text-white'
+                        : 'bg-[var(--glass-bg)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] border border-[var(--glass-border)]'
                     }`}
                   >
                     {config.label}
@@ -914,26 +914,26 @@ export default function PracticePage() {
                         : callState.status !== 'idle'
                         ? 'opacity-50 cursor-not-allowed'
                         : isSelected
-                        ? 'border-[#5eead4] ring-2 ring-[#5eead4]/20'
-                        : 'hover:border-[rgba(94,234,212,0.3)]'
+                        ? 'border-[var(--accent)] ring-2 ring-[var(--accent-focus)]'
+                        : 'hover:border-[var(--accent-border)]'
                     }`}
                   >
                     {/* Best Score Badge */}
                     {bestScore && (
                       <div className="absolute top-2 right-2">
-                        <div className="flex items-center gap-1 bg-[rgba(94,234,212,0.1)] px-2 py-1 rounded-full">
-                          <Trophy className="w-3 h-3 text-[#5eead4]" />
-                          <span className="text-xs text-[#5eead4]">{bestScore}</span>
+                        <div className="flex items-center gap-1 bg-[var(--accent-light-bg)] px-2 py-1 rounded-full">
+                          <Trophy className="w-3 h-3 text-[var(--accent)]" />
+                          <span className="text-xs text-[var(--accent)]">{bestScore}</span>
                         </div>
                       </div>
                     )}
 
                     {/* Locked Overlay */}
                     {challenge.isLocked && (
-                      <div className="absolute inset-0 bg-[#0a0a0f]/80 flex items-center justify-center z-10">
+                      <div className="absolute inset-0 bg-[var(--background)]/80 flex items-center justify-center z-10">
                         <div className="text-center">
-                          <Lock className="w-8 h-8 text-gray-500 mx-auto mb-2" />
-                          <p className="text-sm text-gray-400">{challenge.unlockRequirement}</p>
+                          <Lock className="w-8 h-8 text-[var(--foreground-dim)] mx-auto mb-2" />
+                          <p className="text-sm text-[var(--foreground-muted)]">{challenge.unlockRequirement}</p>
                         </div>
                       </div>
                     )}
@@ -944,13 +944,13 @@ export default function PracticePage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-white truncate">{challenge.name}</h3>
+                          <h3 className="font-semibold text-[var(--foreground)] truncate">{challenge.name}</h3>
                           <span className={`text-xs px-2 py-0.5 rounded ${diffConfig.bg} ${diffConfig.color}`}>
                             {diffConfig.label}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-400 line-clamp-2 mb-2">{challenge.description}</p>
-                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <p className="text-sm text-[var(--foreground-muted)] line-clamp-2 mb-2">{challenge.description}</p>
+                        <div className="flex items-center gap-3 text-xs text-[var(--foreground-dim)]">
                           <span className="flex items-center gap-1">
                             <PersonaIcon className="w-3 h-3" />
                             {challenge.persona}
@@ -962,27 +962,27 @@ export default function PracticePage() {
                             </span>
                           )}
                           <span className="flex items-center gap-1">
-                            <Star className="w-3 h-3 text-[#5eead4]" />
+                            <Star className="w-3 h-3 text-[var(--accent)]" />
                             {challenge.xpReward} XP
                           </span>
                         </div>
                       </div>
-                      <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-[#5eead4]' : 'text-gray-600'}`} />
+                      <ChevronRight className={`w-5 h-5 ${isSelected ? 'text-[var(--accent)]' : 'text-[var(--foreground-dim)]'}`} />
                     </div>
 
                     {/* Bonus Objectives Preview */}
                     {challenge.bonusObjectives.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.05)]">
+                      <div className="mt-3 pt-3 border-t border-[var(--glass-border)]">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-gray-500">Bonus:</span>
+                          <span className="text-xs text-[var(--foreground-dim)]">Bonus:</span>
                           {challenge.bonusObjectives.map((bonus) => (
                             <span
                               key={bonus.id}
-                              className="text-xs bg-[rgba(255,255,255,0.05)] px-2 py-1 rounded flex items-center gap-1"
+                              className="text-xs bg-[var(--glass-bg)] border border-[var(--glass-border)] px-2 py-1 rounded flex items-center gap-1"
                               title={bonus.description}
                             >
                               <span>{bonus.icon}</span>
-                              <span className="text-gray-400">{bonus.name}</span>
+                              <span className="text-[var(--foreground-muted)]">{bonus.name}</span>
                             </span>
                           ))}
                         </div>
