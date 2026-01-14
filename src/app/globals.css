@@ -56,24 +56,24 @@ html:not(.dark) {
   /* Brand Accent (Darker Teal for contrast) */
   --accent: #0d9488;
   --accent-hover: #0f766e;
-  --accent-light-bg: rgba(13, 148, 136, 0.08);
-  --accent-border: rgba(13, 148, 136, 0.25);
-  --accent-focus: rgba(13, 148, 136, 0.4);
+  --accent-light-bg: rgba(13, 148, 136, 0.12);
+  --accent-border: rgba(13, 148, 136, 0.35);
+  --accent-focus: rgba(13, 148, 136, 0.5);
 
   /* Backgrounds (Light) */
-  --background: #f8fafc;
+  --background: #f1f5f9;
   --background-secondary: #ffffff;
-  --background-tertiary: #f1f5f9;
+  --background-tertiary: #e2e8f0;
 
-  /* Text */
+  /* Text - Higher contrast */
   --foreground: #0f172a;
-  --foreground-muted: #475569;
-  --foreground-dim: #94a3b8;
+  --foreground-muted: #334155;
+  --foreground-dim: #64748b;
 
-  /* Glassmorphism (Light) */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  /* Glassmorphism (Light) - More visible borders */
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.12);
+  --glass-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
 
   /* Semantic */
   --error: #dc2626;
@@ -81,17 +81,17 @@ html:not(.dark) {
   --warning: #d97706;
   --warning-bg: rgba(217, 119, 6, 0.1);
   --success: #0d9488;
-  --success-bg: rgba(13, 148, 136, 0.1);
+  --success-bg: rgba(13, 148, 136, 0.12);
 
   /* Gradients (Light) */
   --gradient-text: linear-gradient(135deg, #0d9488 0%, #059669 50%, #0f766e 100%);
   --gradient-button: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-  --gradient-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(13, 148, 136, 0.08), transparent);
+  --gradient-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(13, 148, 136, 0.05), transparent);
 
   /* Shadows (Light) */
   --shadow-button: 0 4px 24px rgba(13, 148, 136, 0.25);
   --shadow-button-hover: 0 8px 32px rgba(13, 148, 136, 0.35);
-  --shadow-glow: 0 0 40px rgba(13, 148, 136, 0.08), 0 0 80px rgba(13, 148, 136, 0.04);
+  --shadow-glow: 0 0 40px rgba(13, 148, 136, 0.06), 0 0 80px rgba(13, 148, 136, 0.03);
 }
 
 /* Light mode specific overrides */
@@ -104,7 +104,7 @@ html:not(.dark) .step-number {
 }
 
 html:not(.dark) .gradient-orb {
-  opacity: 0.15;
+  opacity: 0.08;
 }
 
 html:not(.dark) ::-webkit-scrollbar-track {
@@ -117,6 +117,114 @@ html:not(.dark) ::-webkit-scrollbar-thumb {
 
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Light mode glass cards - better visibility */
+html:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .glass-card:hover {
+  border-color: rgba(13, 148, 136, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode sidebar */
+html:not(.dark) .sidebar-container {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode page headers */
+html:not(.dark) .gradient-text {
+  background: linear-gradient(135deg, #0d9488 0%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Light mode filter buttons */
+html:not(.dark) [class*="bg-[rgba(94,234,212"] {
+  background: rgba(13, 148, 136, 0.15) !important;
+}
+
+/* Light mode text overrides for specific colors */
+html:not(.dark) [class*="text-slate-200"],
+html:not(.dark) [class*="text-slate-300"] {
+  color: #1e293b !important;
+}
+
+html:not(.dark) [class*="text-slate-400"],
+html:not(.dark) [class*="text-slate-500"] {
+  color: #475569 !important;
+}
+
+html:not(.dark) [class*="text-gray-400"],
+html:not(.dark) [class*="text-gray-500"],
+html:not(.dark) [class*="text-gray-600"] {
+  color: #4b5563 !important;
+}
+
+/* Light mode backgrounds */
+html:not(.dark) [class*="bg-slate-800"],
+html:not(.dark) [class*="bg-slate-900"],
+html:not(.dark) [class*="bg-[#0a0a0f]"],
+html:not(.dark) [class*="bg-[#111118]"] {
+  background: #f8fafc !important;
+}
+
+/* Light mode borders */
+html:not(.dark) [class*="border-slate-700"],
+html:not(.dark) [class*="border-slate-800"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* Light mode specific accent color overrides */
+html:not(.dark) [class*="text-[#5eead4]"],
+html:not(.dark) [class*="text-[#00ffc1]"],
+html:not(.dark) [class*="text-[#2dd4bf]"] {
+  color: #0d9488 !important;
+}
+
+html:not(.dark) [class*="bg-[#5eead4]"],
+html:not(.dark) [class*="bg-[#00ffc1]"] {
+  background-color: #0d9488 !important;
+}
+
+html:not(.dark) [class*="border-[#5eead4]"],
+html:not(.dark) [class*="border-[#00ffc1]"] {
+  border-color: #0d9488 !important;
+}
+
+/* Light mode white text to dark */
+html:not(.dark) .text-white {
+  color: #0f172a !important;
+}
+
+/* Light mode subtle backgrounds */
+html:not(.dark) [class*="bg-[rgba(255,255,255,0.0"] {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+html:not(.dark) [class*="border-[rgba(255,255,255,0."] {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Light mode hover states */
+html:not(.dark) [class*="hover:bg-[rgba(255,255,255,"] {
+  --tw-bg-opacity: 1;
+}
+
+html:not(.dark) [class*="hover:bg-[rgba(255,255,255,"]:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Light mode ring colors */
+html:not(.dark) [class*="ring-[#5eead4]"],
+html:not(.dark) [class*="ring-[#00ffc1]"] {
+  --tw-ring-color: rgba(13, 148, 136, 0.3) !important;
 }
 
 @theme inline {
