@@ -4,6 +4,9 @@
    REVPILOT DESIGN SYSTEM
    ============================================ */
 
+/* ============================================
+   DARK THEME (default)
+   ============================================ */
 :root {
   /* Brand Accent (Teal) */
   --accent: #5eead4;
@@ -44,6 +47,76 @@
   --shadow-button: 0 4px 24px rgba(94, 234, 212, 0.3);
   --shadow-button-hover: 0 8px 32px rgba(94, 234, 212, 0.4);
   --shadow-glow: 0 0 40px rgba(94, 234, 212, 0.1), 0 0 80px rgba(94, 234, 212, 0.05);
+}
+
+/* ============================================
+   LIGHT THEME
+   ============================================ */
+html:not(.dark) {
+  /* Brand Accent (Darker Teal for contrast) */
+  --accent: #0d9488;
+  --accent-hover: #0f766e;
+  --accent-light-bg: rgba(13, 148, 136, 0.08);
+  --accent-border: rgba(13, 148, 136, 0.25);
+  --accent-focus: rgba(13, 148, 136, 0.4);
+
+  /* Backgrounds (Light) */
+  --background: #f8fafc;
+  --background-secondary: #ffffff;
+  --background-tertiary: #f1f5f9;
+
+  /* Text */
+  --foreground: #0f172a;
+  --foreground-muted: #475569;
+  --foreground-dim: #94a3b8;
+
+  /* Glassmorphism (Light) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+
+  /* Semantic */
+  --error: #dc2626;
+  --error-bg: rgba(220, 38, 38, 0.1);
+  --warning: #d97706;
+  --warning-bg: rgba(217, 119, 6, 0.1);
+  --success: #0d9488;
+  --success-bg: rgba(13, 148, 136, 0.1);
+
+  /* Gradients (Light) */
+  --gradient-text: linear-gradient(135deg, #0d9488 0%, #059669 50%, #0f766e 100%);
+  --gradient-button: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  --gradient-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(13, 148, 136, 0.08), transparent);
+
+  /* Shadows (Light) */
+  --shadow-button: 0 4px 24px rgba(13, 148, 136, 0.25);
+  --shadow-button-hover: 0 8px 32px rgba(13, 148, 136, 0.35);
+  --shadow-glow: 0 0 40px rgba(13, 148, 136, 0.08), 0 0 80px rgba(13, 148, 136, 0.04);
+}
+
+/* Light mode specific overrides */
+html:not(.dark) .btn-primary {
+  color: white;
+}
+
+html:not(.dark) .step-number {
+  color: white;
+}
+
+html:not(.dark) .gradient-orb {
+  opacity: 0.15;
+}
+
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 @theme inline {

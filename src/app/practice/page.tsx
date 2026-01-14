@@ -79,10 +79,10 @@ interface CallResults {
 }
 
 const DIFFICULTY_CONFIG = {
-  easy: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Easy' },
-  medium: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Medium' },
-  hard: { color: 'text-[#5eead4]', bg: 'bg-[#5eead4]/20', border: 'border-[#5eead4]/30', label: 'Hard' },
-  expert: { color: 'text-gray-400', bg: 'bg-gray-500/20', border: 'border-gray-500/30', label: 'Expert' },
+  easy: { color: 'text-[var(--accent)]', bg: 'bg-[var(--accent-light-bg)]', border: 'border-[var(--accent-border)]', label: 'Easy' },
+  medium: { color: 'text-[var(--accent)]', bg: 'bg-[var(--accent-light-bg)]', border: 'border-[var(--accent-border)]', label: 'Medium' },
+  hard: { color: 'text-[var(--accent)]', bg: 'bg-[var(--accent-light-bg)]', border: 'border-[var(--accent-border)]', label: 'Hard' },
+  expert: { color: 'text-[var(--foreground-muted)]', bg: 'bg-[var(--glass-bg)]', border: 'border-[var(--glass-border)]', label: 'Expert' },
 }
 
 const PERSONA_ICONS: Record<string, typeof Users> = {
