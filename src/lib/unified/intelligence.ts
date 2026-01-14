@@ -105,13 +105,21 @@ export function extractKeyInfo(
     dealSize: existingInfo.dealSize || null,
     salesCycle: existingInfo.salesCycle || null,
     currentCRM: existingInfo.currentCRM || null,
-    anchorProblem: existingInfo.anchorProblem || {
-      identified: false,
-      problem: null,
-      category: null,
-      severity: null,
-      quotes: [],
-    },
+    anchorProblem: existingInfo.anchorProblem
+      ? {
+          identified: existingInfo.anchorProblem.identified,
+          problem: existingInfo.anchorProblem.problem ?? null,
+          category: existingInfo.anchorProblem.category ?? null,
+          severity: existingInfo.anchorProblem.severity ?? null,
+          quotes: existingInfo.anchorProblem.quotes ?? [],
+        }
+      : {
+          identified: false,
+          problem: null,
+          category: null,
+          severity: null,
+          quotes: [],
+        },
     painPoints: existingInfo.painPoints || [],
     painSeverity: existingInfo.painSeverity || null,
     budget: existingInfo.budget || null,
@@ -132,7 +140,13 @@ export function extractKeyInfo(
 
   // Convert back to unified KeyInfo format
   return {
-    anchorProblem: extracted.anchorProblem,
+    anchorProblem: {
+      identified: extracted.anchorProblem.identified,
+      category: extracted.anchorProblem.category ?? undefined,
+      problem: extracted.anchorProblem.problem ?? undefined,
+      quotes: extracted.anchorProblem.quotes,
+      severity: extracted.anchorProblem.severity ?? undefined,
+    },
     painPoints: extracted.painPoints,
     painSeverity: extracted.painSeverity || undefined,
     budget: extracted.budget || undefined,
