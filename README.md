@@ -28,96 +28,289 @@ A comprehensive AI-powered sales enablement platform for sales representatives f
 
 ## Future Vision: True Real-Time AI Co-Pilot
 
-The current coaching system provides valuable real-time suggestions with ~10-15 second latency. The future vision is to transform this into a true AI co-pilot that is **smarter than a human sales coach, faster, and effortless to use**.
+The current platform has two AI-powered features that will share the same architectural evolution:
+1. **Live Coaching** (Chrome Extension) - Real-time guidance during actual sales calls
+2. **AI Roleplay Practice** (Vapi-powered) - Practice with AI prospects before real calls
 
-### Current State vs. Future State
+Both features will be transformed into a true AI co-pilot that is **smarter than a human sales coach, faster, and effortless to use**.
 
-| Metric | Current | Future Goal |
-|--------|---------|-------------|
-| **Latency** | 11-16 seconds | <1 second |
-| **Context** | Last 3000 chars + patterns | Full semantic memory |
-| **Intelligence** | Reactive (post-hoc) | Predictive (anticipate) |
-| **Effort** | Read suggestions | Zero cognitive load |
+---
 
-### Architecture: Four Pillars
+### Current State Analysis
+
+#### Live Coaching (Chrome Extension)
+
+| Component | Current Implementation | Bottleneck |
+|-----------|----------------------|------------|
+| Audio Capture | Tab capture → Deepgram | 8-second batching delay |
+| Transcription | Deepgram WebSocket (nova-2) | Near real-time ✓ |
+| Analysis | GPT-4o inference | 2-5 second response time |
+| Context | Last 3000 chars + regex patterns | Limited semantic understanding |
+| Suggestions | Reactive (post-hoc) | 11-16 second total latency |
+
+#### AI Roleplay Practice
+
+| Component | Current Implementation | Bottleneck |
+|-----------|----------------------|------------|
+| Voice | Vapi (STT) → OpenAI → 11Labs (TTS) | 2-4 second round-trip |
+| Analysis | GPT-4o-mini every 10 seconds | Only objective checking |
+| Context | Per-turn transcript only | No semantic accumulation |
+| Feedback | Batch analysis after call ends | No real-time coaching |
+| Persona | Static personality | No adaptive difficulty |
+
+---
+
+### Unified Architecture: Four Pillars
+
+Both features will share the same core infrastructure:
 
 #### 1. Streaming Intelligence Pipeline
-- **Current:** 8-second transcript batching → GPT-4o (3-5s) → Display
-- **Future:** Word-by-word processing → Streaming LLM → Token-by-token rendering
-- **Impact:** 11-16s → 2-4s latency
+
+**Live Coaching:**
+```
+Current:  Audio → 8s buffer → GPT-4o (3-5s) → Display
+Future:   Audio → Utterance-based → Streaming LLM → Token-by-token
+Impact:   11-16s → 2-4s latency
+```
+
+**Practice:**
+```
+Current:  Speech → Vapi → OpenAI (batch) → TTS → Audio
+Future:   Speech → Streaming STT → Streaming LLM → Streaming TTS
+Impact:   2-4s → <1s perceived latency (first token)
+```
 
 #### 2. Multi-Tier Intelligence
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│  TIER 1: Edge Detection (0-50ms)                        │
-│  • Pattern matching in browser                          │
-│  • Instant objection/buying signal alerts               │
-│  • Real-time talk ratio, silence detection              │
-├─────────────────────────────────────────────────────────┤
-│  TIER 2: Fast Inference (200-500ms)                     │
-│  • Claude Haiku / GPT-4o-mini                           │
-│  • Quick contextual suggestions                         │
-│  • Section transition guidance                          │
-├─────────────────────────────────────────────────────────┤
-│  TIER 3: Deep Reasoning (1-3s)                          │
-│  • Claude Opus / GPT-4o                                 │
-│  • Complex objection strategies                         │
-│  • Deal qualification assessment                        │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  TIER 1: Edge Detection (0-50ms)                                │
+│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
+│  │     LIVE COACHING       │  │      PRACTICE               │  │
+│  │  • Objection detection  │  │  • Objective completion     │  │
+│  │  • Buying signal alerts │  │  • Rapport indicators       │  │
+│  │  • Talk ratio monitor   │  │  • Silence detection        │  │
+│  │  • Silence detection    │  │  • Persona mood tracking    │  │
+│  └─────────────────────────┘  └─────────────────────────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│  TIER 2: Fast Inference (200-500ms) - Claude Haiku/GPT-4o-mini  │
+│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
+│  │     LIVE COACHING       │  │      PRACTICE               │  │
+│  │  • Quick suggestions    │  │  • Real-time technique tips │  │
+│  │  • Section transitions  │  │  • "Try asking about..."    │  │
+│  │  • Follow-up questions  │  │  • Course corrections       │  │
+│  └─────────────────────────┘  └─────────────────────────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│  TIER 3: Deep Reasoning (1-3s) - Claude Opus/GPT-4o             │
+│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
+│  │     LIVE COACHING       │  │      PRACTICE               │  │
+│  │  • Complex objections   │  │  • Adaptive persona         │  │
+│  │  • Deal qualification   │  │  • Dynamic difficulty       │  │
+│  │  • Closing strategy     │  │  • Post-call deep analysis  │  │
+│  └─────────────────────────┘  └─────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 #### 3. Semantic Memory System
-- **Working Memory:** Last 60 seconds of raw transcript
-- **Episode Memory:** Key moments (pain reveals, objections, buying signals)
-- **Semantic Memory:** Full call vectorized for retrieval
-- **Cross-Call Learning:** What worked for this rep historically
 
-**Key capability:** "They mentioned hating complexity earlier. Ask: 'Was it the complexity that frustrated your team with Salesforce?'"
+**Shared Infrastructure:**
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    SEMANTIC MEMORY LAYER                        │
+│                                                                 │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐ │
+│  │  WORKING MEMORY  │  │  EPISODE MEMORY  │  │ SKILL MEMORY │ │
+│  │   (Last 60 sec)  │  │  (Key moments)   │  │ (Cross-call) │ │
+│  └──────────────────┘  └──────────────────┘  └──────────────┘ │
+│          ↓                      ↓                    ↓         │
+│  ┌─────────────────────────────────────────────────────────┐  │
+│  │              RETRIEVAL-AUGMENTED COACHING               │  │
+│  │                                                         │  │
+│  │  Live Coaching:                                         │  │
+│  │  "They mentioned hating complexity earlier. Ask:        │  │
+│  │   'Was complexity the main issue with Salesforce?'"     │  │
+│  │                                                         │  │
+│  │  Practice:                                              │  │
+│  │  "Last 3 calls, you struggled with price objections.    │  │
+│  │   This persona will test that - practice your reframe." │  │
+│  └─────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**Live Coaching Memory:**
+- Full call transcript (vectorized)
+- Key info extracted (pain, budget, timeline, decision makers)
+- Script progress and section coverage
+- Previous suggestions (avoid repetition)
+
+**Practice Memory:**
+- Skill progression per competency
+- Weakness identification (which objections they struggle with)
+- Persona performance history
+- Technique effectiveness (what worked before)
 
 #### 4. Predictive Guidance Engine
-- **Conversation state machine** tracking discovery → qualification → presentation → close
-- **Anticipation model** predicting what prospect will say next (with confidence scores)
-- **Proactive nudges** preventing problems before they happen:
-  - Rep talking 30+ seconds → "Pause and ask a question"
-  - 5 minutes without budget discussion → "Good time to explore investment"
-  - Approaching call end → "Secure commitment before they hang up"
 
-### Ambient UI (Zero Cognitive Load)
+**Live Coaching:**
+- Conversation state machine (discovery → qualification → presentation → close)
+- Anticipation of prospect responses
+- Proactive nudges (talk ratio, missing qualification, approaching close)
 
-Instead of a panel requiring attention, the future UI provides ambient awareness:
+**Practice:**
+- Adaptive persona difficulty (gets harder as you improve)
+- Dynamic objection injection (targets your weak spots)
+- Skill-based challenge selection
+- Real-time technique coaching (not just objective tracking)
 
-- **Glow Ring:** Subtle color around video (green=good, yellow=opportunity, red=objection)
-- **Whisper Suggestions:** Small text near video that fades after 5 seconds
-- **Heads-Up Display:** `[Pain: Data quality] [Budget: $50k] [Timeline: Q2]`
-- **Audio Feedback:** Optional subtle chimes through separate device
+---
 
-### Why This Is Smarter Than a Human Coach
+### Practice-Specific Enhancements
 
-| Human Sales Coach | AI Real-Time System |
-|-------------------|---------------------|
-| Joins some calls | Every call, all the time |
-| Remembers general patterns | Perfect recall of every word |
-| Gives feedback after call | Guides during the call |
-| One coaching style | Adapts to each rep |
-| Processes one signal at a time | Monitors 20+ signals simultaneously |
-| Limited to their experience | Learns from thousands of calls |
+#### Real-Time Coaching During Practice
 
-### Implementation Phases
+**Current:** Only tracks objective completion every 10 seconds
+**Future:** Full coaching experience during practice calls
 
-1. **Streaming Foundation** - Remove batching, add streaming responses
-2. **Edge Detection Layer** - Move pattern matching to browser for <100ms alerts
-3. **Fast Inference Tier** - Add Haiku for quick suggestions (<500ms)
-4. **Semantic Memory** - Vector embeddings + retrieval for perfect context
-5. **Predictive Engine** - Anticipation model + proactive nudges
+```
+┌────────────────────────────────────────────────────────────────┐
+│               PRACTICE CALL COACHING OVERLAY                    │
+│                                                                 │
+│  ┌─────────────┐  ┌─────────────────────────┐  ┌────────────┐ │
+│  │  TECHNIQUE  │  │      LIVE TRANSCRIPT     │  │  PERSONA   │ │
+│  │    TIPS     │  │                          │  │   STATE    │ │
+│  │             │  │  Rep: "What challenges   │  │            │ │
+│  │  💡 Good    │  │   are you facing?"       │  │  😐 Neutral│ │
+│  │  discovery  │  │                          │  │            │ │
+│  │  question!  │  │  AI: "Well, honestly     │  │  Interest: │ │
+│  │             │  │   things are fine..."    │  │  ████░░ 60%│ │
+│  │  Try:       │  │                          │  │            │ │
+│  │  "What would│  │                          │  │  Resistance│ │
+│  │  need to    │  │                          │  │  ██░░░░ 30%│ │
+│  │  change?"   │  │                          │  │            │ │
+│  └─────────────┘  └─────────────────────────┘  └────────────┘ │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  OBJECTIVES                    │  SKILLS BEING TESTED    │  │
+│  │  ☑ Build rapport              │  Discovery: ████████░░  │  │
+│  │  ☐ Establish value            │  Objection: ██████░░░░  │  │
+│  │  ☐ Handle objection           │  Closing:   ████░░░░░░  │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────┘
+```
 
-### Technical Requirements
+#### Adaptive AI Personas
 
-- Edge compute (Cloudflare Workers) for <50ms pattern matching
-- Vector database (Pinecone/pgvector) for semantic memory
-- WebSocket infrastructure for streaming responses
-- Multi-model orchestration (edge → fast → deep)
+**Current:** Static personality, same difficulty every time
+**Future:** Personas that learn and adapt
 
-**Estimated cost:** $0.50-0.85 per call hour
+```
+Persona Adaptation:
+
+1. DIFFICULTY SCALING
+   • Rep aced last 3 calls → Persona becomes more skeptical
+   • Rep struggling with objections → More objections thrown
+   • Rep strong on discovery → Skip to advanced challenges
+
+2. TARGETED WEAKNESS TRAINING
+   • System detects: "Rep struggles with price objections"
+   • Next persona emphasizes: Budget concerns, competitor comparisons
+   • Real-time: Harder objections when rep is doing well
+
+3. DYNAMIC PERSONALITY SHIFTS
+   • Persona starts neutral
+   • If rep builds rapport → Persona warms up (new win paths open)
+   • If rep pushes too hard → Persona gets defensive
+   • Creates realistic sales dynamics
+```
+
+#### Skill-Based Progression
+
+**Current:** Simple XP + level system
+**Future:** Competency-based mastery
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    SKILL PROGRESSION SYSTEM                     │
+│                                                                 │
+│  DISCOVERY                    OBJECTION HANDLING                │
+│  ████████████░░░░ 75%        ██████░░░░░░░░░░ 40%              │
+│  ✓ Pain identification       ✓ Price reframe                   │
+│  ✓ Quantifying impact        ✗ Competition handling            │
+│  ✓ Timeline exploration      ✗ Authority concerns              │
+│  ✗ Decision process          ✗ Status quo defense              │
+│                                                                 │
+│  VALUE ARTICULATION          CLOSING                           │
+│  ██████████░░░░░░ 65%        ████░░░░░░░░░░░░ 25%              │
+│  ✓ Feature → Benefit         ✗ Commitment securing             │
+│  ✓ ROI quantification        ✗ Next steps clarity              │
+│  ✗ Competitive positioning   ✗ Urgency creation                │
+│                                                                 │
+│  RECOMMENDED NEXT CHALLENGE:                                    │
+│  "Skeptical CFO" - Focuses on objection handling + closing     │
+└────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Unified Implementation Roadmap
+
+#### Phase 1: Shared Streaming Foundation (Week 1-2)
+- [ ] Remove 8-second batching in coaching
+- [ ] Add streaming OpenAI responses to both features
+- [ ] Implement utterance-based processing
+- **Impact:** 11-16s → 3-5s (coaching), 2-4s → <1s perceived (practice)
+
+#### Phase 2: Edge Detection Layer (Week 2-3)
+- [ ] Move pattern matching to browser (coaching)
+- [ ] Add real-time technique detection (practice)
+- [ ] Instant objective completion feedback
+- [ ] Persona mood/interest tracking
+- **Impact:** Critical events surface in <100ms
+
+#### Phase 3: Fast Inference Tier (Week 3-4)
+- [ ] Add Haiku/GPT-4o-mini for quick suggestions (both)
+- [ ] Real-time coaching tips during practice
+- [ ] Parallel processing: fast + deep tiers
+- **Impact:** Most suggestions in <500ms
+
+#### Phase 4: Semantic Memory (Week 4-6)
+- [ ] Shared vector embedding infrastructure
+- [ ] Cross-call learning for both features
+- [ ] Skill tracking and weakness identification (practice)
+- [ ] Key info persistence (coaching)
+- **Impact:** Never loses context, learns over time
+
+#### Phase 5: Adaptive Intelligence (Week 6-8)
+- [ ] Predictive guidance engine (coaching)
+- [ ] Adaptive persona difficulty (practice)
+- [ ] Skill-based challenge selection
+- [ ] Targeted weakness training
+- **Impact:** AI that's ahead of the conversation
+
+#### Phase 6: Ambient UI (Week 8-10)
+- [ ] Glow ring / color coding (both)
+- [ ] Whisper suggestions
+- [ ] Audio feedback option
+- [ ] Zero cognitive load interface
+- **Impact:** Effortless to use
+
+---
+
+### Technical Requirements (Shared)
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| Edge Compute | Cloudflare Workers | <50ms pattern matching |
+| Vector DB | Pinecone / pgvector | Semantic memory storage |
+| Streaming | WebSocket / SSE | Real-time responses |
+| Fast Model | Claude Haiku / GPT-4o-mini | Quick suggestions |
+| Deep Model | Claude Opus / GPT-4o | Complex reasoning |
+| Embeddings | text-embedding-3-small | Semantic search |
+
+**Estimated Costs:**
+- Live Coaching: $0.50-0.85 per call hour
+- Practice Session: $0.15-0.25 per 10-minute session
+- Shared infrastructure: Amortized across both features
 
 ## Tech Stack
 
