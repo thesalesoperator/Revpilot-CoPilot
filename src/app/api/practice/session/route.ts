@@ -3,6 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getChallengeById, getPersonaById } from '@/lib/practice/challenges'
 import { StartPracticeSessionRequest, PracticeSession, Difficulty } from '@/types/practice'
 
+// ============================================================
+// UNIFIED CO-PILOT INTEGRATION
+// Creates a parallel co_pilot_session for unified tracking
+// ============================================================
+const USE_UNIFIED_COPILOT = process.env.ENABLE_UNIFIED_COPILOT === 'true'
+
 // POST /api/practice/session - Start a new practice session
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -80,6 +86,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
     }
 
+    // =========================================================================
+    // UNIFIED CO-PILOT SESSION CREATION
+    // Creates a parallel session in co_pilot_sessions for unified tracking
+    // =========================================================================
+    let unifiedSessionId: string | null = null
+    if (USE_UNIFIED_COPILOT) {
+      try {
+        const { data: unifiedSession } = await supabase
+          .from('co_pilot_sessions')
+          .insert({
+            user_id: user.id,
+            context: 'practice',
+            capture_method: 'vapi',
+            challenge_id: body.challenge_id,
+            persona_id: body.persona_id,
+            status: 'starting',
+            started_at: new Date().toISOString(),
+            key_info: {},
+            transcript: '',
+            script_progress: 0,
+          })
+          .select('id')
+          .single()
+
+        unifiedSessionId = unifiedSession?.id || null
+        console.log(`[Practice] Unified session created: ${unifiedSessionId}`)
+      } catch (error) {
+        console.error('[Practice] Failed to create unified session:', error)
+        // Continue without unified session - not critical
+      }
+    }
+
     // Build Vapi configuration
     // The actual Vapi call will be initiated from the frontend
     // Note: serverUrl is configured in Vapi Dashboard, not here
@@ -121,6 +159,8 @@ export async function POST(request: NextRequest) {
         session_id: session.id,
         user_id: user.id,
         challenge_id: body.challenge_id,
+        // Unified session ID for co-pilot tracking
+        unified_session_id: unifiedSessionId,
       },
     }
 
@@ -129,6 +169,8 @@ export async function POST(request: NextRequest) {
       vapi_config: vapiConfig,
       challenge,
       persona,
+      // Unified session ID for coaching tips during practice
+      unifiedSessionId,
     })
   } catch (error) {
     console.error('Error in practice session POST:', error)
