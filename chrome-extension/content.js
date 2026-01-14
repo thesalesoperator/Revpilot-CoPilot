@@ -602,11 +602,11 @@
       const newWidth = startWidth + (e.clientX - startX)
       const newHeight = startHeight + (e.clientY - startY)
 
-      // Min/max constraints
-      const minWidth = 500
-      const maxWidth = window.innerWidth - 40
-      const minHeight = 80
-      const maxHeight = 300
+      // Min/max constraints - much more flexible now
+      const minWidth = 400
+      const maxWidth = window.innerWidth - 20
+      const minHeight = 120
+      const maxHeight = window.innerHeight - 40  // Allow nearly full screen height
 
       element.style.width = Math.max(minWidth, Math.min(newWidth, maxWidth)) + 'px'
       element.style.height = Math.max(minHeight, Math.min(newHeight, maxHeight)) + 'px'
