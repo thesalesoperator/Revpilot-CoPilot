@@ -154,31 +154,27 @@ export async function POST(request: NextRequest) {
         voice: {
           provider: '11labs' as const,
           voiceId: getVoiceIdForPersona(persona.id),
-          // ElevenLabs settings tuned for natural conversational speech
-          stability: 0.5, // Balanced for consistent but expressive speech
+          stability: 0.5,
           similarityBoost: 0.75,
-          speed: 0.85, // Slower for natural, conversational pacing
+          speed: 0.9, // Slightly faster for natural pacing
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4o', // GPT-4o for faster, more coherent responses
+          model: 'gpt-4-turbo', // Proven to work with Vapi
           messages: [
             {
               role: 'system' as const,
               content: buildSystemPrompt(challenge, persona, practiceContext, adaptiveDifficulty),
             },
           ],
-          temperature: 0.8, // Slightly higher for more natural variation
-          maxTokens: 500, // Allow longer, more complete thoughts
+          temperature: 0.8,
+          maxTokens: 350, // Balanced for complete thoughts
         },
         firstMessage: getFirstMessage(persona),
-        // Conversation settings for realism
-        silenceTimeoutSeconds: 8, // Reduced - don't wait too long
+        silenceTimeoutSeconds: 10,
         maxDurationSeconds: 2700, // 45 min max
-        backgroundSound: 'off', // No background noise
-        backchannelingEnabled: false, // Disable "mm-hmm" to reduce choppiness
-        interruptionsEnabled: true, // Allow persona to interrupt
-        responseDelaySeconds: 0.4, // Shorter delay for snappier responses
+        backchannelingEnabled: true, // Natural "mm-hmm" responses
+        backgroundSound: 'off',
       },
       // Metadata at call level (not inside assistant) to identify session in webhooks
       metadata: {
