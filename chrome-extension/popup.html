@@ -288,6 +288,98 @@
     .footer a:hover {
       text-decoration: underline;
     }
+
+    /* Session Type Selector */
+    .session-type-section {
+      margin-bottom: 16px;
+    }
+
+    .session-type-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .session-type-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .type-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .type-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .type-btn.active {
+      background: rgba(0, 255, 193, 0.1);
+      border-color: rgba(0, 255, 193, 0.3);
+    }
+
+    .type-btn .type-icon {
+      font-size: 20px;
+      width: 28px;
+      text-align: center;
+    }
+
+    .type-btn .type-content {
+      flex: 1;
+    }
+
+    .type-btn .type-label {
+      font-weight: 600;
+      font-size: 13px;
+      color: #fff;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .type-btn .type-desc {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .type-btn.active .type-label {
+      color: #00ffc1;
+    }
+
+    .type-btn .type-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .type-btn.active .type-check {
+      background: #00ffc1;
+      border-color: #00ffc1;
+    }
+
+    .type-btn.active .type-check::after {
+      content: '✓';
+      font-size: 10px;
+      color: #0a0f1c;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -351,9 +443,41 @@
         </div>
       </div>
 
+      <!-- Session Type Selector -->
+      <div class="session-type-section" id="sessionTypeSection">
+        <h3>Session Mode</h3>
+        <div class="session-type-buttons">
+          <button class="type-btn active" id="type-coaching" data-type="live_coaching">
+            <span class="type-icon">🎯</span>
+            <div class="type-content">
+              <span class="type-label">Live Coaching</span>
+              <span class="type-desc">Get real-time AI coaching on live calls</span>
+            </div>
+            <span class="type-check"></span>
+          </button>
+          <button class="type-btn" id="type-practice" data-type="practice">
+            <span class="type-icon">🎭</span>
+            <div class="type-content">
+              <span class="type-label">Practice</span>
+              <span class="type-desc">Practice with AI roleplay scenarios</span>
+            </div>
+            <span class="type-check"></span>
+          </button>
+          <button class="type-btn" id="type-analyze" data-type="real_call_analysis">
+            <span class="type-icon">📊</span>
+            <div class="type-content">
+              <span class="type-label">Analyze</span>
+              <span class="type-desc">Review and analyze past calls</span>
+            </div>
+            <span class="type-check"></span>
+          </button>
+        </div>
+      </div>
+
       <div class="instructions">
         <h3>How to use:</h3>
         <ol>
+          <li>Select your session mode above</li>
           <li>Join a video call (Zoom, Meet, or Teams)</li>
           <li>Click "Start Coaching" in the overlay</li>
           <li>Get real-time AI suggestions during your call</li>

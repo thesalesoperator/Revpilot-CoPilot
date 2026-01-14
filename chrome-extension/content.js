@@ -745,18 +745,27 @@
     })
   }
 
+  // ============================================================
+  // UNIFIED CO-PILOT API METHODS
+  // ============================================================
+
+  /**
+   * Start a coaching session using the unified co-pilot API
+   * POST /api/co-pilot/session/start with context: 'live_coaching'
+   */
   async function startCoaching() {
     const startBtn = document.getElementById('revpilot-start')
     startBtn.disabled = true
     startBtn.textContent = 'Connecting...'
 
     try {
-      // Get stored auth
-      const stored = await chrome.storage.local.get(['authToken', 'userId'])
+      // Get stored auth and session type preference
+      const stored = await chrome.storage.local.get(['authToken', 'userId', 'sessionType'])
       const authToken = stored.authToken
       const userId = stored.userId
+      const sessionType = stored.sessionType || 'live_coaching'
 
-      console.log('[RevPilot] Auth check - token exists:', !!authToken, 'userId:', userId)
+      console.log('[RevPilot] Auth check - token exists:', !!authToken, 'userId:', userId, 'sessionType:', sessionType)
 
       if (!authToken || !userId) {
         alert('Please log in to RevPilot first. Click the extension icon to sign in.')
@@ -767,72 +776,199 @@
 
       const meetingUrl = window.location.href
 
+      // Use the new unified co-pilot API
+      console.log('[RevPilot] Starting session via unified API...')
+      const response = await fetch(`${API_BASE}/api/co-pilot/session/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          context: sessionType,
+          captureMethod: 'tab_audio',
+          meetingUrl,
+          userId,
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Server error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log('[RevPilot] Unified API session created:', data)
+
+      // Store session info
+      session = {
+        id: data.sessionId,
+        ...data.session,
+        config: data.config
+      }
+
+      // Save session to storage for recovery
+      await chrome.storage.local.set({ coachingSession: session })
+
+      // Now start tab capture via background script
       chrome.runtime.sendMessage({
-        type: 'START_COACHING',
+        type: 'START_TAB_CAPTURE',
+        sessionId: session.id,
         meetingUrl,
         userId,
         authToken
-      }, (response) => {
-        // Check for extension context invalidation
+      }, (captureResponse) => {
         if (chrome.runtime.lastError) {
           const errorMsg = chrome.runtime.lastError.message || ''
-          console.error('[RevPilot] Runtime error:', errorMsg)
+          console.error('[RevPilot] Capture error:', errorMsg)
           if (errorMsg.includes('Extension context invalidated') || errorMsg.includes('message channel closed')) {
             alert('Extension was updated or reloaded. Please refresh this page (press F5 or Ctrl/Cmd+R) and try again.')
-          } else {
-            alert('Connection error: ' + errorMsg)
           }
-          startBtn.disabled = false
-          startBtn.textContent = 'Start Coaching'
+          startDemoMode(errorMsg)
           return
         }
 
-        if (response && response.error) {
-          alert('Failed to start: ' + response.error)
-          startBtn.disabled = false
-          startBtn.textContent = 'Start Coaching'
-          return
-        }
-
-        if (response) {
-          console.log('[RevPilot] Session started successfully:', response)
-          session = response
-          console.log('[RevPilot] Switching to coaching UI...')
-          showCoachingUI()
-          console.log('[RevPilot] Subscribing to realtime...')
-          subscribeToSuggestions()
-
-          // Check which capture method is active
-          if (response.botFree && response.captureActive) {
-            // New tab capture method - live transcription via Deepgram
-            console.log('[RevPilot] Tab capture active - live transcription enabled')
-            showLiveCaptureBanner()
-          } else if (response.botId) {
-            // Old Recall.ai bot method
-            console.log('[RevPilot] Bot ID present:', response.botId, '- waiting for real transcription')
-            showLiveTranscriptionBanner()
-          } else if (response.captureError) {
-            // Tab capture failed
-            console.warn('[RevPilot] Capture error:', response.captureError)
-            startDemoMode(response.captureError)
-          } else {
-            // No capture method available - demo mode
-            console.log('[RevPilot] No capture method - starting demo mode')
-            startDemoMode('No transcription method available')
-          }
+        if (captureResponse && captureResponse.captureActive) {
+          console.log('[RevPilot] Tab capture active')
+          showLiveCaptureBanner()
+        } else if (captureResponse && captureResponse.error) {
+          console.warn('[RevPilot] Capture error:', captureResponse.error)
+          startDemoMode(captureResponse.error)
         } else {
-          console.error('[RevPilot] Empty response received')
-          alert('Failed to start: No response from server')
-          startBtn.disabled = false
-          startBtn.textContent = 'Start Coaching'
+          console.log('[RevPilot] No capture - starting demo mode')
+          startDemoMode('No transcription method available')
         }
       })
+
+      console.log('[RevPilot] Switching to coaching UI...')
+      showCoachingUI()
+      console.log('[RevPilot] Subscribing to realtime...')
+      subscribeToSuggestions()
+
     } catch (error) {
       console.error('[RevPilot] Start error:', error)
       alert('Failed to start coaching: ' + error.message)
       startBtn.disabled = false
       startBtn.textContent = 'Start Coaching'
     }
+  }
+
+  /**
+   * Send transcript for analysis using the unified co-pilot API
+   * POST /api/co-pilot/session/[id]/analyze
+   */
+  async function sendTranscriptForAnalysis(transcripts) {
+    if (!session || !session.id) {
+      console.log('[RevPilot] No active session for analysis')
+      return null
+    }
+
+    try {
+      const stored = await chrome.storage.local.get(['authToken'])
+      const authToken = stored.authToken
+
+      if (!authToken) {
+        console.error('[RevPilot] No auth token for analysis')
+        return null
+      }
+
+      console.log('[RevPilot] Sending transcript for analysis:', transcripts.length, 'items')
+
+      const response = await fetch(`${API_BASE}/api/co-pilot/session/${session.id}/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ transcripts })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[RevPilot] Analysis error:', errorData)
+        return null
+      }
+
+      const data = await response.json()
+      console.log('[RevPilot] Analysis result:', {
+        stage: data.stage,
+        section: data.section,
+        progress: data.scriptProgress,
+        hasSuggestion: !!data.suggestion
+      })
+
+      // Update UI with analysis results
+      if (data.stage) {
+        updateConversationStage(data.stage)
+      }
+      if (data.keyInfo) {
+        updateKeyInfo(data.keyInfo)
+      }
+      if (data.scriptProgress !== undefined) {
+        updateScriptProgress({
+          sectionName: formatSectionName(data.section),
+          sectionOrder: getSectionOrder(data.section),
+          progress: data.scriptProgress
+        })
+      }
+      if (data.suggestion) {
+        addSuggestion({
+          id: data.suggestion.id || 'unified-' + Date.now(),
+          type: data.suggestion.type || 'tip',
+          content: data.suggestion.content,
+          priority: data.suggestion.priority || 'medium',
+          created_at: new Date().toISOString()
+        })
+      }
+
+      return data
+
+    } catch (error) {
+      console.error('[RevPilot] Analysis error:', error)
+      return null
+    }
+  }
+
+  /**
+   * Helper function to format section names for display
+   */
+  function formatSectionName(section) {
+    if (!section) return 'Unknown'
+    const names = {
+      'set_expectations': 'Set Expectations',
+      'isolate_problem': 'Isolate Problem',
+      'background_questions': 'Background Questions',
+      'current_situation': 'Current Situation',
+      'assess_efforts': 'Assess Efforts',
+      'chunking_down': 'Chunking Down',
+      'financial_qualifier': 'Financial Qualifier',
+      'doubt_questions': 'Doubt Questions',
+      'solution_questions': 'Solution Questions',
+      'why_now': 'Why Now',
+      'support_questions': 'Support Questions',
+      'desired_situation': 'Desired Situation',
+      'transition': 'Transition',
+      'pitch': 'Pitch',
+      'commitment': 'Commitment',
+      'onboarding': 'Onboarding',
+      'investment': 'Investment'
+    }
+    return names[section] || section.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  }
+
+  /**
+   * Helper function to get section order number
+   */
+  function getSectionOrder(section) {
+    const sections = [
+      'set_expectations', 'isolate_problem', 'background_questions',
+      'current_situation', 'assess_efforts', 'chunking_down',
+      'financial_qualifier', 'doubt_questions', 'solution_questions',
+      'why_now', 'support_questions', 'desired_situation',
+      'transition', 'pitch', 'commitment', 'onboarding', 'investment'
+    ]
+    const index = sections.indexOf(section)
+    return index >= 0 ? index + 1 : 1
   }
 
   // Flip speakers if talk ratio seems wrong
@@ -911,6 +1047,10 @@
     console.log('[RevPilot] Transcript cleared')
   }
 
+  /**
+   * Stop coaching session using the unified co-pilot API
+   * POST /api/co-pilot/session/[id]/end
+   */
   async function stopCoaching() {
     if (!session) {
       console.log('[RevPilot] stopCoaching called but no session')
@@ -930,22 +1070,46 @@
       // Show summary UI immediately
       showSummaryUI()
 
+      // End session via unified API
+      console.log('[RevPilot] Ending session via unified API...')
+      const response = await fetch(`${API_BASE}/api/co-pilot/session/${currentSessionId}/end`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({})
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[RevPilot] End session API error:', errorData)
+      } else {
+        const data = await response.json()
+        console.log('[RevPilot] Session ended:', data)
+      }
+
+      // Also tell background to stop capture
       chrome.runtime.sendMessage({
         type: 'STOP_COACHING',
         sessionId: currentSessionId,
         authToken
-      }, async (response) => {
+      }, async (bgResponse) => {
         // Check for errors
         if (chrome.runtime.lastError) {
-          console.error('[RevPilot] Stop error:', chrome.runtime.lastError.message)
+          console.error('[RevPilot] Stop capture error:', chrome.runtime.lastError.message)
         }
-
-        // Clean up session state (but keep summary UI visible)
-        cleanupSessionState()
-
-        // Fetch and display the summary
-        await fetchAndDisplaySummary(currentSessionId, authToken)
       })
+
+      // Clean up session state (but keep summary UI visible)
+      cleanupSessionState()
+
+      // Clear session from storage
+      await chrome.storage.local.remove(['coachingSession'])
+
+      // Fetch and display the summary
+      await fetchAndDisplaySummary(currentSessionId, authToken)
+
     } catch (error) {
       console.error('[RevPilot] Stop error:', error)
       cleanupSessionState()
