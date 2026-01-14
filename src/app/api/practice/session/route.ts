@@ -92,10 +92,11 @@ export async function POST(request: NextRequest) {
           voiceId: getVoiceIdForPersona(persona.id),
           stability: 0.5,
           similarityBoost: 0.75,
+          speed: 0.9, // Slightly faster for natural pacing
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4o-mini', // Fast model for conversational responses
+          model: 'gpt-4-turbo', // Proven to work with Vapi
           messages: [
             {
               role: 'system' as const,
@@ -103,11 +104,13 @@ export async function POST(request: NextRequest) {
             },
           ],
           temperature: 0.8,
-          maxTokens: 400,
+          maxTokens: 350, // Balanced for complete thoughts
         },
         firstMessage: getFirstMessage(persona),
         silenceTimeoutSeconds: 10,
         maxDurationSeconds: 2700, // 45 min max
+        backchannelingEnabled: true, // Natural "mm-hmm" responses
+        backgroundSound: 'off',
       },
       // Metadata at call level (not inside assistant) to identify session in webhooks
       metadata: {
