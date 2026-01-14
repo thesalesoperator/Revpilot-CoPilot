@@ -820,128 +820,55 @@ export interface ConversationContext {
 
 export function buildCoachingPrompt(context: ConversationContext): string {
   const methodology = METHODOLOGIES[context.methodology]
-  const stageGuidance = methodology.stageGuidance[context.stage]
 
-  // Build objection context if any detected
-  let objectionContext = ''
+  // Build objection note if detected
+  let objectionNote = ''
   if (context.detectedObjections.length > 0) {
-    const objection = context.detectedObjections[0]  // Focus on first/most recent
-    objectionContext = `
-OBJECTION DETECTED: ${objection.category.toUpperCase()}
-Suggested responses:
-${objection.suggestedResponses.map(r => `- ${r}`).join('\n')}
-Framework tip: ${objection.frameworkTip}
-`
+    objectionNote = `\n⚠️ OBJECTION: ${context.detectedObjections[0].category}`
   }
 
-  // Build buying signal context if any detected
-  let buyingSignalContext = ''
+  // Build buying signal note if detected
+  let signalNote = ''
   if (context.detectedBuyingSignals.length > 0) {
-    const signal = context.detectedBuyingSignals[0]
-    buyingSignalContext = `
-BUYING SIGNAL DETECTED: ${signal.signal.replace(/_/g, ' ').toUpperCase()}
-Recommended action: ${signal.recommendedAction}
-`
+    signalNote = `\n✅ BUYING SIGNAL: ${context.detectedBuyingSignals[0].signal.replace(/_/g, ' ')}`
   }
 
-  // Talk ratio warning if needed
-  let talkRatioWarning = ''
-  if (context.talkRatio.repPercent > 65) {
-    talkRatioWarning = `
-⚠️ TALK RATIO ALERT: Rep is at ${context.talkRatio.repPercent}% - way too much talking!
-The prospect should be talking more. Ask a question and LISTEN.
-`
-  } else if (context.talkRatio.repPercent > 55) {
-    talkRatioWarning = `
-Note: Talk ratio is ${context.talkRatio.repPercent}% rep / ${context.talkRatio.prospectPercent}% prospect.
-Aim for more prospect talk time.
-`
+  // Talk ratio alert only if critical
+  let talkAlert = ''
+  if (context.talkRatio.repPercent > 70) {
+    talkAlert = '\n🔴 Rep talking too much - ask a question!'
   }
 
-  // Get methodology-specific discovery questions for this stage
-  let methodologyQuestions = ''
-  if (methodology.components.length > 0) {
-    const relevantComponent = methodology.components.find(c => {
-      // Match component to stage
-      if (context.stage === 'discovery' || context.stage === 'qualification') {
-        return true  // All components relevant
-      }
-      return false
-    })
+  return `You are a sales coach whispering in a rep's ear during a live call. Give ONE brief, specific thing to say or ask.
 
-    if (relevantComponent) {
-      methodologyQuestions = `
-${methodology.name} Discovery Questions for this moment:
-${relevantComponent.discoveryQuestions.slice(0, 3).map(q => `- "${q}"`).join('\n')}
-`
-    }
-  }
+CALL STATE:
+Stage: ${context.stage.replace(/_/g, ' ')} | Method: ${methodology.name}
+Duration: ${context.callDurationMinutes}min | Talk ratio: ${context.talkRatio.repPercent}% rep${talkAlert}${objectionNote}${signalNote}
 
-  return `You are an elite sales coach providing REAL-TIME coaching during a live ${context.callDurationMinutes > 2 ? 'sales' : 'discovery'} call.
-
-CURRENT SITUATION:
-- Conversation Stage: ${context.stage.replace(/_/g, ' ').toUpperCase()}
-- Sales Methodology: ${methodology.name} (${methodology.fullName})
-- Call Duration: ${context.callDurationMinutes} minutes
-- Talk Ratio: ${context.talkRatio.repPercent}% rep / ${context.talkRatio.prospectPercent}% prospect
-${talkRatioWarning}
-${objectionContext}
-${buyingSignalContext}
-
-STAGE GUIDANCE (${context.stage}):
-${stageGuidance.map(g => `• ${g}`).join('\n')}
-
-${methodologyQuestions}
+PREVIOUS SUGGESTIONS (don't repeat):
+${context.previousSuggestions.slice(-5).join('\n') || 'None'}
 
 RECENT CONVERSATION:
 ${context.recentTranscript}
 
-${context.fullTranscript.length > 500 ? `CONVERSATION CONTEXT (summary of earlier discussion):
-${context.fullTranscript.slice(0, 500)}...` : ''}
+${context.fullTranscript && context.fullTranscript.length > 500 ? `EARLIER CONTEXT:\n${context.fullTranscript.slice(-1500)}` : ''}
 
-PREVIOUS SUGGESTIONS GIVEN (avoid repeating):
-${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-3).join('\n') : 'None yet'}
+---
 
-YOUR TASK:
-Analyze the conversation and provide ONE highly specific, actionable coaching suggestion.
+OUTPUT RULES:
+1. Give the EXACT words to say - a natural, conversational question or statement
+2. Start with a soft opener: "That makes sense...", "Interesting...", "So if I'm hearing you right...", "I'm curious..."
+3. Reference SPECIFIC details they mentioned (names, numbers, quotes)
+4. Keep it under 25 words
+5. If conversation is flowing well, return: {"q": null}
 
-CRITICAL RULES:
-1. Be SPECIFIC to what was just said - not generic advice
-2. If suggesting a question, provide the EXACT question to ask, tailored to their situation
-3. If an objection was raised, provide a specific response strategy
-4. If a buying signal was detected, guide them to capitalize on it
-5. Consider where the conversation should go NEXT
-6. Keep suggestions brief (1-2 sentences max) but highly actionable
+STAGE RULES:
+${context.stage === 'opening' || context.stage === 'discovery' ? '- Early stage: ONLY ask discovery questions. NO pitching, pricing, or solutions.' : ''}
+${context.stage === 'qualification' ? '- Qualification stage: Focus on budget, timeline, decision makers.' : ''}
+${context.stage === 'presentation' || context.stage === 'negotiation' || context.stage === 'closing' ? '- Late stage: Can discuss solutions and next steps.' : ''}
 
-STAGE-SPECIFIC CONSTRAINTS (MUST FOLLOW):
-• OPENING/DISCOVERY stages: NEVER suggest presenting solutions, pitching, or discussing pricing
-• DISCOVERY stage: Focus on understanding problems - do NOT jump to solutions
-• QUALIFICATION stage: Focus on budget/timeline/authority - not presentation
-• Only suggest "present solution" in PRESENTATION stage or later
-• Only suggest closing techniques in CLOSING stage
-
-TALK RATIO SANITY CHECK:
-• If talk ratio shows rep at <30% but transcript shows mostly rep talking, ignore the talk ratio data
-• If only one speaker appears in transcript, assume all speech is the rep
-• Never suggest "let prospect talk more" if they haven't spoken at all
-
-FORBIDDEN SUGGESTIONS:
-• Early stages: Do NOT suggest "present your solution", "show them the demo", "explain features", "discuss pricing"
-• Do NOT give conflicting advice in the same moment
-
-Response format (JSON):
-{
-  "suggestion": {
-    "type": "question" | "tip" | "objection" | "alert" | "positive" | "transition" | "methodology" | "buying_signal",
-    "content": "Your specific coaching suggestion",
-    "priority": "high" | "medium" | "low"
-  },
-  "conversationInsight": "Brief insight about where the conversation is heading",
-  "predictedNextMove": "What the prospect is likely to say/do next"
-}
-
-If the conversation is going well and no intervention is needed, respond with:
-{"suggestion": null, "conversationInsight": "...", "predictedNextMove": "..."}`
+Return JSON: {"q": "Your exact question to ask", "why": "2-3 word reason"}
+Or if no suggestion needed: {"q": null}`
 }
 
 // =============================================================================
@@ -976,229 +903,80 @@ export function buildScriptCoachingPrompt(
   scriptContext: ScriptContext
 ): string {
   const section = scriptContext.currentSection
-  const nextSection = getNextSection(section.id)
+  const keyInfo = scriptContext.keyInfo
 
-  // Build critical moment alerts
-  let criticalAlerts = ''
-  if (section.criticalMoments && section.criticalMoments.length > 0) {
-    criticalAlerts = `
-🚨 CRITICAL MOMENT FOR THIS SECTION:
-${section.criticalMoments.map(m => `⚠️ ${m}`).join('\n')}
-`
+  // Build compact key details - only what's been discovered
+  const discoveredDetails: string[] = []
+  if (keyInfo.painPoints.length > 0) {
+    discoveredDetails.push(`Pain: ${keyInfo.painPoints.slice(-2).join('; ')}`)
+  }
+  if (keyInfo.teamSize) discoveredDetails.push(`Team: ${keyInfo.teamSize}`)
+  if (keyInfo.dealSize) discoveredDetails.push(`Deal size: ${keyInfo.dealSize}`)
+  if (keyInfo.currentCRM) discoveredDetails.push(`CRM: ${keyInfo.currentCRM}`)
+  if (keyInfo.budget) discoveredDetails.push(`Budget: ${keyInfo.budget}`)
+  if (keyInfo.decisionMakers.length > 0) {
+    discoveredDetails.push(`Decision makers: ${keyInfo.decisionMakers.join(', ')}`)
   }
 
-  // Check for warning conditions
-  let warningSection = ''
-  if (scriptContext.warningMessage) {
-    warningSection = `
-⚠️ WARNING: ${scriptContext.warningMessage}
-`
-  }
-
-  // Special section-specific warnings
-  if (section.id === 'isolate_problem' && scriptContext.keyInfo.painPoints.length === 0) {
-    warningSection += `
-🔴 STAY HERE - No anchor problem identified yet!
-Keep probing: "What's going on in your sales operations that prompted this call?"
-`
-  }
-
-  if (section.id === 'why_now') {
-    warningSection += `
-⏸️ REMEMBER: PAUSE after asking "What's the cost of waiting?" - Let them feel the weight.
-`
-  }
-
-  if (section.id === 'investment') {
-    warningSection += `
-🤐 CRITICAL: After stating the investment amount, SHUT UP. Do not speak. Let them respond first.
-`
-  }
-
-  // Build talk ratio warning
-  let talkRatioWarning = ''
-  if (context.talkRatio.repPercent > 65) {
-    talkRatioWarning = `
-⚠️ TALK RATIO ALERT: You're at ${context.talkRatio.repPercent}% - WAY too much talking!
-The prospect should be talking 70%+. Ask a question and LISTEN.
-`
-  } else if (context.talkRatio.repPercent > 50) {
-    talkRatioWarning = `
-📊 Talk ratio: ${context.talkRatio.repPercent}% you / ${context.talkRatio.prospectPercent}% them. Aim for more prospect talk time.
-`
-  }
-
-  // Build objection/buying signal alerts
-  let signalAlerts = ''
+  // Build objection context if detected
+  let objectionNote = ''
   if (context.detectedObjections.length > 0) {
-    const obj = context.detectedObjections[0]
-    const handlers = REVPILOT_SCRIPT.objectionHandlers[obj.category] || obj.suggestedResponses
-    signalAlerts += `
-🚨 OBJECTION DETECTED: ${obj.category.toUpperCase()}
-Suggested responses:
-${handlers.slice(0, 2).map(r => `• "${r}"`).join('\n')}
-`
+    objectionNote = `\n⚠️ OBJECTION: ${context.detectedObjections[0].category}`
   }
 
+  // Build buying signal context if detected
+  let signalNote = ''
   if (context.detectedBuyingSignals.length > 0) {
-    const signal = context.detectedBuyingSignals[0]
-    signalAlerts += `
-✅ BUYING SIGNAL: ${signal.signal.replace(/_/g, ' ').toUpperCase()}
-Action: ${signal.recommendedAction}
-`
+    signalNote = `\n✅ BUYING SIGNAL: ${context.detectedBuyingSignals[0].signal.replace(/_/g, ' ')}`
   }
 
-  // Build comprehensive key info summary - this is CRITICAL for context
-  const keyInfoSummary = `
-═══════════════════════════════════════════════════════════════════════════════
-🎯 KEY DISCOVERIES FROM THIS CALL (use these to personalize suggestions):
-═══════════════════════════════════════════════════════════════════════════════
+  // Talk ratio alert only if critical
+  let talkAlert = ''
+  if (context.talkRatio.repPercent > 70) {
+    talkAlert = '\n🔴 Rep talking too much - ask a question!'
+  }
 
-🔥 PAIN POINTS IDENTIFIED (${scriptContext.keyInfo.painPoints.length}):
-${scriptContext.keyInfo.painPoints.length > 0
-  ? scriptContext.keyInfo.painPoints.map((p, i) => `   ${i+1}. "${p}"`).join('\n')
-  : '   ❌ No pain points identified yet - PRIORITY: dig deeper!'}
+  return `You are a sales coach whispering in a rep's ear during a live call. Give ONE brief, specific thing to say or ask.
 
-📊 COMPANY CONTEXT:
-   • Team Size: ${scriptContext.keyInfo.teamSize || 'Unknown'}
-   • Deal Size: ${scriptContext.keyInfo.dealSize || 'Unknown'}
-   • Sales Cycle: ${scriptContext.keyInfo.salesCycle || 'Unknown'}
-   • Current CRM: ${scriptContext.keyInfo.currentCRM || 'Unknown'}
+CALL STATE:
+Section: ${section.name} (${scriptContext.progressPercentage}% through script)
+Duration: ${context.callDurationMinutes}min | Talk ratio: ${context.talkRatio.repPercent}% rep${talkAlert}${objectionNote}${signalNote}
+${discoveredDetails.length > 0 ? `\nKEY DETAILS LEARNED:\n${discoveredDetails.join('\n')}` : ''}
 
-💰 QUALIFICATION STATUS:
-   • Budget: ${scriptContext.keyInfo.budget || 'Not discussed'}${scriptContext.keyInfo.budgetConfirmed ? ' ✅ CONFIRMED' : ''}
-   • Timeline: ${scriptContext.keyInfo.timeline || 'Not discussed'}${scriptContext.keyInfo.timelineUrgency ? ` (${scriptContext.keyInfo.timelineUrgency} urgency)` : ''}
-   • Decision Makers: ${scriptContext.keyInfo.decisionMakers.length > 0 ? scriptContext.keyInfo.decisionMakers.join(', ') : 'Unknown'}
+PREVIOUS SUGGESTIONS (don't repeat):
+${context.previousSuggestions.slice(-5).join('\n') || 'None'}
 
-✅ BUYING SIGNALS DETECTED (${scriptContext.keyInfo.buyingSignals.length}):
-${scriptContext.keyInfo.buyingSignals.length > 0
-  ? scriptContext.keyInfo.buyingSignals.map(s => `   • "${s}"`).join('\n')
-  : '   None yet'}
-
-⚠️ OBJECTIONS RAISED (${scriptContext.keyInfo.objections.length}):
-${scriptContext.keyInfo.objections.length > 0
-  ? scriptContext.keyInfo.objections.map(o => `   • ${o}`).join('\n')
-  : '   None yet'}
-`
-
-  return `You are an elite B2B sales coach providing REAL-TIME coaching during a live sales call.
-The rep is using the RevPilot Consultative Sales Script for Close CRM optimization services.
-
-═══════════════════════════════════════════════════════════════════════════════
-SCRIPT PROGRESS: ${scriptContext.progressPercentage}% │ Section ${section.order}/17: "${section.name}"
-═══════════════════════════════════════════════════════════════════════════════
-
-CURRENT SECTION: ${section.name.toUpperCase()}
-Objective: ${section.objective}
-
-${criticalAlerts}${warningSection}${talkRatioWarning}
-
-📝 SUGGESTED QUESTIONS FOR THIS SECTION:
-${scriptContext.suggestedQuestions.map((q, i) => `${i + 1}. "${q}"`).join('\n')}
-
-💡 COACHING TIP: ${scriptContext.coachingTip}
-
-${signalAlerts}
-
-📊 SECTION TRANSITION SIGNALS (when to move to next section):
-Ready to advance when you hear: ${section.transitionSignals.slice(0, 4).join(', ')}
-Stay in section if you hear: ${section.staySignals.slice(0, 3).join(', ')}
-
-${nextSection ? `➡️ NEXT SECTION: ${nextSection.name} - ${nextSection.description}` : '🎯 FINAL SECTION - Close the deal!'}
-
-${keyInfoSummary}
-
-═══════════════════════════════════════════════════════════════════════════════
-CONVERSATION CONTEXT (Full Call Summary):
-═══════════════════════════════════════════════════════════════════════════════
-${context.fullTranscript ? `FULL TRANSCRIPT SO FAR (${context.fullTranscript.split(' ').length} words):\n${context.fullTranscript.length > 3000 ? context.fullTranscript.slice(-3000) + '\n[...earlier conversation truncated...]' : context.fullTranscript}` : 'No transcript yet'}
-
-═══════════════════════════════════════════════════════════════════════════════
-MOST RECENT EXCHANGE (what just happened):
-═══════════════════════════════════════════════════════════════════════════════
+RECENT CONVERSATION:
 ${context.recentTranscript}
 
-CALL DURATION: ${context.callDurationMinutes} minutes
-TALK RATIO: ${context.talkRatio.repPercent}% rep / ${context.talkRatio.prospectPercent}% prospect
+${context.fullTranscript && context.fullTranscript.length > 500 ? `EARLIER CONTEXT (summary):\n${context.fullTranscript.slice(-1500)}` : ''}
 
-PREVIOUS SUGGESTIONS GIVEN (DO NOT REPEAT THESE - suggest something NEW):
-${context.previousSuggestions.length > 0 ? context.previousSuggestions.slice(-10).map((s, i) => `${i+1}. ${s}`).join('\n') : 'None yet'}
+---
 
-═══════════════════════════════════════════════════════════════════════════════
-YOUR TASK:
-═══════════════════════════════════════════════════════════════════════════════
+OUTPUT RULES:
+1. Give the EXACT words to say - a natural, conversational question or statement
+2. Start with a soft opener: "That makes sense...", "Interesting...", "So if I'm hearing you right...", "I'm curious..."
+3. Reference SPECIFIC details they mentioned (names, numbers, quotes)
+4. Keep it under 25 words
+5. If conversation is flowing well, return: {"q": null}
 
-Analyze the FULL CONVERSATION CONTEXT above and decide what coaching is needed.
+EXAMPLES of good suggestions:
+- "Interesting - you mentioned 7,000 leads sitting there. Of those, how many has Stacy actually been able to reach?"
+- "That makes sense. So when a lead comes in, what's the actual time between them filling out the form and getting a call?"
+- "I'm curious - you said one setter working 3 days. What happens to leads that come in on the other days?"
 
-CRITICAL: Your suggestions MUST reference the specific pain points, company details, and
-information discovered in this call. DO NOT give generic advice - use their words back to them!
+EXAMPLES of BAD suggestions (too generic):
+- "Ask about their pain points" ❌
+- "Dig deeper into their challenges" ❌
+- "Explore the budget situation" ❌
 
-WHEN TO GIVE A SUGGESTION:
-1. The PROSPECT just revealed something important - help the rep dig deeper
-2. An objection was raised that needs addressing (use their specific concern)
-3. A buying signal was detected - help capitalize on it
-4. The rep missed an opportunity to explore a pain point
-5. It's time to transition to the next section
+STAGE RULES:
+${section.order <= 6 ? '- Early stage: ONLY ask discovery questions. NO pitching, pricing, or solutions.' : ''}
+${section.order >= 7 && section.order <= 11 ? '- Mid stage: Focus on qualification (budget, timeline, decision makers).' : ''}
+${section.order >= 12 ? '- Late stage: Can discuss solutions and next steps.' : ''}
 
-WHEN TO RETURN NULL (no suggestion):
-1. The conversation is flowing naturally toward the section objective
-2. You already suggested something very similar (check PREVIOUS SUGGESTIONS above!)
-3. The rep is doing great - don't over-coach
-
-SUGGESTION QUALITY REQUIREMENTS:
-• MUST reference specific details from the conversation (names, numbers, pain points they mentioned)
-• MUST NOT be generic advice like "dig deeper" or "ask about their challenges"
-• MUST be actionable and specific to THIS prospect
-• Example BAD: "Ask about their pain points"
-• Example GOOD: "They mentioned struggling with lead routing for their 12-person team - ask: 'You said leads are falling through the cracks. Can you walk me through what happens when a new lead comes in?'"
-
-═══════════════════════════════════════════════════════════════════════════════
-🚫 ABSOLUTE RESTRICTIONS - VIOLATING THESE IS A CRITICAL ERROR 🚫
-═══════════════════════════════════════════════════════════════════════════════
-
-IF CURRENT SECTION IS 1-6 (Set Expectations, Problem Isolation, Background, Current Situation, Assess Efforts, Chunking Down):
-  ❌ NEVER say: "present your solution", "time to present", "show them the demo"
-  ❌ NEVER say: "discuss pricing", "talk about investment", "share your proposal"
-  ❌ NEVER say: "close the deal", "ask for commitment", "move forward"
-  ❌ NEVER say: "next steps", "get started", "sign up", "onboard"
-  ✅ ONLY suggest: discovery questions, listening, understanding their problem
-
-IF CURRENT SECTION IS 7-11 (Financial Qualifier, Doubt Questions, Solution Questions, Why Now, Support Questions):
-  ❌ NEVER say: "present your solution", "pitch", "close the deal"
-  ❌ NEVER say: "ask for the business", "commitment"
-  ✅ ONLY suggest: qualification questions about budget, timeline, decision makers
-
-IF CURRENT SECTION IS 1 OR 2:
-  The rep is just starting the call. They are NOT ready to present anything.
-  Focus ONLY on: setting expectations, building rapport, and finding their anchor problem.
-
-═══════════════════════════════════════════════════════════════════════════════
-
-TALK RATIO SANITY CHECK:
-• If talk ratio shows rep at <30% but transcript shows mostly rep talking, ignore the talk ratio data
-• If only one speaker detected, assume all speech is the rep
-• Never suggest "let prospect talk more" if they haven't spoken at all
-
-FORBIDDEN SUGGESTIONS BY STAGE:
-• Stages 1-6: Do NOT suggest "present your solution", "show them the demo", "explain features", "discuss pricing"
-• Stages 1-3: Do NOT suggest closing questions or commitment asks
-• All stages: Do NOT give conflicting advice (e.g., "present solution" AND "address hesitation" in same moment)
-
-Response format (JSON):
-{
-  "suggestion": {
-    "type": "question" | "tip" | "objection" | "alert" | "positive" | "transition" | "script_guidance" | "buying_signal",
-    "content": "Your specific coaching suggestion",
-    "priority": "high" | "medium" | "low"
-  },
-  "conversationInsight": "Brief insight about where the conversation is heading",
-  "predictedNextMove": "What the prospect is likely to say/do next",
-  "shouldAdvanceSection": true/false,
-  "sectionCoverage": "What key elements of this section have been covered"
-}
-
-If the conversation is going well and no intervention is needed:
-{"suggestion": null, "conversationInsight": "...", "predictedNextMove": "...", "shouldAdvanceSection": false, "sectionCoverage": "..."}`
+Return JSON: {"q": "Your exact question to ask", "why": "2-3 word reason"}
+Or if no suggestion needed: {"q": null}`
 }
 
 // Re-export script utilities for use in other modules

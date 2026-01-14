@@ -422,68 +422,26 @@ export async function POST(request: NextRequest) {
 
     const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
 
-    // Build enhanced user message with all gathered context
-    const userMessage = state.methodology === 'revpilot'
-      ? `Analyze this moment and provide script-aware coaching.
+    // Keep user message minimal - system prompt has all the context now
+    const userMessage = 'What should the rep say or ask next?'
 
-CURRENT SCRIPT SECTION: ${scriptContext?.currentSection.name} (Section ${scriptContext?.currentSection.order}/17)
-SECTION OBJECTIVE: ${scriptContext?.currentSection.objective}
-CALL PROGRESS: ${scriptContext?.progressPercentage}%
-
-=== KEY INFORMATION GATHERED ===
-ANCHOR PROBLEM: ${state.keyInfo.anchorProblem.identified
-  ? `✅ IDENTIFIED - ${state.keyInfo.anchorProblem.category?.toUpperCase()}: "${state.keyInfo.anchorProblem.problem}"`
-  : '❌ NOT YET IDENTIFIED - This is CRITICAL for Section 2!'
-}
-
-Company Context:
-- Team Size: ${state.keyInfo.teamSize || 'Unknown'}
-- Deal Size: ${state.keyInfo.dealSize || 'Unknown'}
-- Sales Cycle: ${state.keyInfo.salesCycle || 'Unknown'}
-- Current CRM: ${state.keyInfo.currentCRM || 'Unknown'}
-
-Qualification:
-- Budget: ${state.keyInfo.budget || 'Not discussed'}${state.keyInfo.budgetConfirmed ? ' (CONFIRMED)' : ''}
-- Timeline: ${state.keyInfo.timeline || 'Not discussed'} ${state.keyInfo.timelineUrgency ? `(${state.keyInfo.timelineUrgency.toUpperCase()} urgency)` : ''}
-- Decision Makers: ${state.keyInfo.decisionMakers.join(', ') || 'Unknown'}
-
-Signals:
-- Buying Signals: ${state.keyInfo.buyingSignals.length > 0 ? state.keyInfo.buyingSignals.join(', ') : 'None detected'}
-- Objections: ${state.keyInfo.objections.length > 0 ? state.keyInfo.objections.join(', ') : 'None raised'}
-${state.keyInfo.commitmentScore !== null ? `- Commitment Score: ${state.keyInfo.commitmentScore}/10` : ''}
-
-${scriptContext?.warningMessage ? `\n⚠️ CRITICAL WARNING: ${scriptContext.warningMessage}` : ''}
-${detectedObjections.length > 0 ? `\n🚨 LIVE OBJECTION: ${detectedObjections[0].category} - Address this now!` : ''}
-${detectedBuyingSignals.length > 0 ? `\n✅ BUYING SIGNAL DETECTED: ${detectedBuyingSignals[0].signal} - Capitalize on this!` : ''}`
-      : `Analyze this conversation moment and provide coaching.
-
-Key info:
-- Pain Points: ${state.keyInfo.painPoints.join('; ') || 'None identified'}
-- Budget: ${state.keyInfo.budget || 'Not discussed'}
-- Timeline: ${state.keyInfo.timeline || 'Not discussed'}
-- Decision Makers: ${state.keyInfo.decisionMakers.join(', ') || 'Unknown'}
-- Stage: ${currentStage}
-
-${detectedObjections.length > 0 ? `Objection detected: ${detectedObjections[0].category}` : ''}
-${detectedBuyingSignals.length > 0 ? `Buying signal: ${detectedBuyingSignals[0].signal}` : ''}`
-
-    // Use GPT-4o for highest quality coaching
+    // Use GPT-4o for highest quality coaching - reduced tokens for brevity
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      max_tokens: 500,  // Increased for comprehensive responses
+      max_tokens: 150,  // Much shorter - we want brief suggestions
       temperature: 0.7,
       response_format: { type: 'json_object' }
     })
 
     const responseText = completion.choices[0]?.message?.content || '{}'
-    let analysis
+    let rawAnalysis
 
     try {
-      analysis = JSON.parse(responseText)
+      rawAnalysis = JSON.parse(responseText)
     } catch {
       console.error('[Analyze] Failed to parse OpenAI response:', responseText)
 
@@ -495,6 +453,44 @@ ${detectedBuyingSignals.length > 0 ? `Buying signal: ${detectedBuyingSignals[0].
         stage: currentStage,
         talkRatio,
       }, { headers: CORS_HEADERS })
+    }
+
+    // Transform new compact format {"q": "...", "why": "..."} to expected format
+    // New format from tight prompt: {"q": "question text", "why": "reason"}
+    // Expected format: {"suggestion": {"type": "question", "content": "...", "priority": "..."}}
+    let analysis: {
+      suggestion: { type: string; content: string; priority: string } | null
+      conversationInsight?: string
+      predictedNextMove?: string
+      shouldAdvanceSection?: boolean
+      sectionCoverage?: string
+    }
+
+    if (rawAnalysis.q && typeof rawAnalysis.q === 'string') {
+      // New compact format - transform to expected format
+      analysis = {
+        suggestion: {
+          type: 'question',
+          content: rawAnalysis.q,
+          priority: 'medium'
+        },
+        conversationInsight: rawAnalysis.why || '',
+        predictedNextMove: '',
+        shouldAdvanceSection: false,
+        sectionCoverage: ''
+      }
+    } else if (rawAnalysis.suggestion) {
+      // Old format - use as-is
+      analysis = rawAnalysis
+    } else {
+      // No suggestion needed
+      analysis = {
+        suggestion: null,
+        conversationInsight: rawAnalysis.why || '',
+        predictedNextMove: '',
+        shouldAdvanceSection: false,
+        sectionCoverage: ''
+      }
     }
 
     // =========================================================================
