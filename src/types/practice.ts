@@ -10,6 +10,114 @@ export type PracticeSessionStatus = 'pending' | 'connecting' | 'active' | 'ended
 // Difficulty levels
 export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert'
 
+// Persona categories
+export type PersonaCategory = 'c-suite' | 'technical' | 'finance' | 'champions' | 'blockers' | 'gatekeepers' | 'procurement'
+
+// Call types for scenarios
+export type CallType = 'discovery' | 'cold-call' | 'demo' | 'negotiation' | 'closing' | 'rescue' | 'gatekeeper' | 'multi-stakeholder'
+
+// ============================================
+// Natural Speech & Mood System (Part 1)
+// ============================================
+
+export type MoodState = 'hostile' | 'guarded' | 'neutral' | 'curious' | 'engaged' | 'excited'
+
+export interface MoodConfig {
+  initialMood: MoodState
+  patience: number // 0-1, how long they'll tolerate weak pitch
+  interruptFrequency: 'none' | 'rare' | 'occasional' | 'frequent' | 'constant'
+  responseLength: 'terse' | 'short' | 'normal' | 'detailed'
+}
+
+export interface SpeechPatterns {
+  // Filler words to use naturally
+  fillers: string[]
+  // Thinking phrases for pauses
+  thinkingPhrases: string[]
+  // How they interrupt
+  interruptPhrases: string[]
+  // Active listening cues
+  listeningCues: string[]
+  // Trail-off phrases
+  trailOffs: string[]
+  // Speed: 0.7 = slow, 1.0 = normal, 1.3 = fast
+  speechSpeed: number
+  // Emotional intensity: 0 = calm, 1 = animated
+  emotionalIntensity: number
+}
+
+export interface MoodTriggers {
+  // Actions that improve mood
+  improveMood: string[]
+  // Actions that worsen mood
+  worsenMood: string[]
+  // Signs of warming up (for system prompt)
+  warmingSignals: string[]
+  // Signs of shutting down
+  coolingSignals: string[]
+}
+
+// ============================================
+// Gamification System (Part 5)
+// ============================================
+
+export interface Achievement {
+  id: string
+  name: string
+  description: string
+  icon: string
+  category: 'skill' | 'streak' | 'milestone' | 'special' | 'mastery'
+  xpReward: number
+  // Unlock conditions
+  condition: AchievementCondition
+  // Rarity for display
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  // Whether it's hidden until unlocked
+  hidden?: boolean
+}
+
+export type AchievementCondition =
+  | { type: 'sessions_completed'; count: number }
+  | { type: 'streak_days'; days: number }
+  | { type: 'perfect_score'; count: number }
+  | { type: 'challenge_completed'; challengeId: string }
+  | { type: 'persona_mastered'; personaId: string; wins: number }
+  | { type: 'difficulty_mastered'; difficulty: Difficulty; count: number }
+  | { type: 'call_type_mastered'; callType: CallType; count: number }
+  | { type: 'xp_earned'; amount: number }
+  | { type: 'level_reached'; level: number }
+  | { type: 'objective_completed'; objectiveType: string; count: number }
+  | { type: 'special'; trigger: string }
+
+export interface SkillNode {
+  id: string
+  name: string
+  description: string
+  icon: string
+  category: 'discovery' | 'objection-handling' | 'closing' | 'rapport' | 'negotiation' | 'executive-presence'
+  // Position in skill tree (for UI)
+  position: { x: number; y: number }
+  // Requirements to unlock
+  prerequisites: string[] // other skill node IDs
+  xpCost: number
+  // Benefits when unlocked
+  benefits: string[]
+  // Associated challenges that train this skill
+  trainingChallenges: string[]
+}
+
+export interface UserAchievements {
+  unlockedAchievements: string[]
+  achievementDates: Record<string, string>
+  achievementProgress: Record<string, number>
+}
+
+export interface UserSkillTree {
+  unlockedSkills: string[]
+  skillDates: Record<string, string>
+  totalSkillXPSpent: number
+}
+
 // ============================================
 // Challenges (hardcoded in frontend)
 // ============================================
@@ -28,6 +136,7 @@ export interface Challenge {
   description: string
   difficulty: Difficulty
   category: string
+  callType: CallType // NEW: Type of sales call
   persona: string
   personaId: string
   objectives: string[]
@@ -37,6 +146,8 @@ export interface Challenge {
   unlockRequirement?: string
   isLocked?: boolean
   systemPrompt: string // AI persona behavior prompt
+  // NEW: Skills this challenge trains
+  skillsTrained?: string[]
 }
 
 // ============================================
@@ -49,13 +160,25 @@ export interface Persona {
   title: string
   company: string
   avatar: string
-  category: 'c-suite' | 'technical' | 'finance' | 'champions' | 'blockers'
+  category: PersonaCategory
   difficulty: Difficulty
   description: string
   personality: string[]
   commonObjections: string[]
   voiceStyle: string
   systemPrompt: string // AI behavior prompt for this persona
+  // NEW: Natural speech patterns (Part 1)
+  speechPatterns?: SpeechPatterns
+  moodConfig?: MoodConfig
+  moodTriggers?: MoodTriggers
+  // NEW: Voice configuration
+  voiceConfig?: {
+    voiceId?: string // ElevenLabs voice ID
+    stability?: number // 0-1
+    similarityBoost?: number // 0-1
+    speed?: number // 0.5-2.0
+    style?: number // 0-1, emotional intensity
+  }
 }
 
 // ============================================

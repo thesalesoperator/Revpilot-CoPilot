@@ -80,6 +80,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
     }
 
+    // Get voice config for this persona
+    const voiceConfig = getVoiceConfigForPersona(persona)
+
     // Build Vapi configuration
     // The actual Vapi call will be initiated from the frontend
     // Note: serverUrl is configured in Vapi Dashboard, not here
@@ -90,9 +93,9 @@ export async function POST(request: NextRequest) {
         voice: {
           provider: '11labs' as const,
           voiceId: getVoiceIdForPersona(persona.id),
-          stability: 0.5,
-          similarityBoost: 0.75,
-          speed: 0.9, // Slightly faster for natural pacing
+          stability: voiceConfig.stability,
+          similarityBoost: voiceConfig.similarityBoost,
+          speed: voiceConfig.speed,
         },
         model: {
           provider: 'openai' as const,
@@ -179,8 +182,42 @@ function getVoiceIdForPersona(personaId: string): string {
     'hostile-executive': 'TxGEqnHWrfWFTfGW9XjX', // Josh - authoritative male
     'procurement-buyer': 'XB0fDUnXU5powFXDhCwa', // Charlotte - professional female
     'mad-scientist': 'DUnzBkwtjRWXPr6wRbmL', // Viktor - eccentric scientist
+    // New personas
+    'executive-assistant': 'XB0fDUnXU5powFXDhCwa', // Charlotte - professional female
+    'silent-buyer': 'VR6AewLTigWG4xSOukaG', // Arnold - quiet male
+    'know-it-all': 'TxGEqnHWrfWFTfGW9XjX', // Josh - authoritative male
+    'tire-kicker': 'EXAVITQu4vr4xnSDxMaL', // Bella - friendly female
+    'rapid-fire': 'TxGEqnHWrfWFTfGW9XjX', // Josh - fast-talking male
+    'emotional-buyer': 'MF3mGyEYCl7XYWbV9V6O', // Elli - warm female
   }
   return voiceMap[personaId] || '21m00Tcm4TlvDq8ikWAM'
+}
+
+// Helper to get voice config for persona (stability, speed, etc.)
+function getVoiceConfigForPersona(persona: ReturnType<typeof getPersonaById>): {
+  stability: number
+  similarityBoost: number
+  speed: number
+} {
+  // Use persona's voice config if available, otherwise defaults
+  if (persona?.voiceConfig) {
+    return {
+      stability: persona.voiceConfig.stability ?? 0.5,
+      similarityBoost: persona.voiceConfig.similarityBoost ?? 0.75,
+      speed: persona.voiceConfig.speed ?? 0.9,
+    }
+  }
+
+  // Defaults based on persona type
+  const configMap: Record<string, { stability: number; similarityBoost: number; speed: number }> = {
+    'rapid-fire': { stability: 0.4, similarityBoost: 0.75, speed: 1.25 },
+    'silent-buyer': { stability: 0.7, similarityBoost: 0.8, speed: 0.85 },
+    'emotional-buyer': { stability: 0.5, similarityBoost: 0.8, speed: 0.95 },
+    'know-it-all': { stability: 0.5, similarityBoost: 0.75, speed: 1.1 },
+    'hostile-executive': { stability: 0.5, similarityBoost: 0.75, speed: 1.0 },
+  }
+
+  return configMap[persona?.id || ''] || { stability: 0.5, similarityBoost: 0.75, speed: 0.9 }
 }
 
 // Define practice context type
@@ -357,6 +394,19 @@ function getFirstMessage(persona: ReturnType<typeof getPersonaById>): string {
     'procurement-buyer': "Hello. Jennifer Walsh, procurement. I understand you've been speaking with our IT team and you're on our shortlist. I'm here to discuss terms. Walk me through your pricing.",
 
     'mad-scientist': "Hello? Yes, this is Viktor. Who is calling please? I am in the middle of something quite important here...",
+
+    // New personas
+    'executive-assistant': "Global Dynamics, Patricia speaking. How may I direct your call?",
+
+    'silent-buyer': "Tom Richardson.",
+
+    'know-it-all': "Bradley Thornton, VP Ops. I've been in operations for 22 years, so I'm pretty familiar with most solutions in this space. What do you have?",
+
+    'tire-kicker': "Hi! I've been really excited about this call. I've heard great things about your solution and I can't wait to learn more!",
+
+    'rapid-fire': "Kevin Park, Velocity. I've got 10 minutes, probably less. My COO said this was worth my time. Quick pitch—what do you do and why should I care? Go.",
+
+    'emotional-buyer': "Hi! I'm so glad we could connect. I've been looking forward to learning more about you and your company.",
   }
 
   return firstMessages[persona.id] || "Hello?"
