@@ -4,6 +4,13 @@ import OpenAI from 'openai'
 import { getChallengeById, getPersonaById } from '@/lib/practice/challenges'
 import { calculateSessionXP, PracticeSession } from '@/types/practice'
 import { CallAnalysis } from '@/types/database'
+import { extractKeyInfo } from '@/lib/unified/intelligence'
+
+// ============================================================
+// UNIFIED CO-PILOT INTEGRATION
+// Adds key info extraction and optional unified routing
+// ============================================================
+const USE_UNIFIED_COPILOT = process.env.ENABLE_UNIFIED_COPILOT === 'true'
 
 // Create OpenAI client lazily (not at module load time)
 function getOpenAIClient(): OpenAI {
@@ -59,6 +66,13 @@ export async function POST(request: NextRequest) {
       .from('practice_sessions')
       .update({ status: 'analyzing' })
       .eq('id', session_id)
+
+    // =========================================================================
+    // UNIFIED KEY INFO EXTRACTION
+    // Extract the same key info as coaching for consistency
+    // =========================================================================
+    const keyInfo = extractKeyInfo(session.transcript as string, {})
+    console.log(`[Practice] Key info extracted: ${keyInfo.painPoints.length} pain points, budget: ${keyInfo.budget || 'none'}`)
 
     // Build analysis prompt
     const analysisPrompt = buildAnalysisPrompt(session, challenge, persona)
@@ -126,7 +140,7 @@ You must respond with valid JSON matching this exact structure:
       currentStreak: currentStreak + 1,
     })
 
-    // Update session with results
+    // Update session with results (including key_info for unified consistency)
     const { data: updatedSession, error: updateError } = await supabase
       .from('practice_sessions')
       .update({
@@ -137,6 +151,7 @@ You must respond with valid JSON matching this exact structure:
         bonus_objectives_completed: analysisResult.bonus_objectives_completed || [],
         xp_earned: xpBreakdown.total,
         xp_breakdown: xpBreakdown,
+        key_info: keyInfo, // Unified key info extraction
       })
       .eq('id', session_id)
       .select()
@@ -162,6 +177,15 @@ You must respond with valid JSON matching this exact structure:
       overall_score: analysisResult.overall_score,
       xp_breakdown: xpBreakdown,
       user_stats: updatedStats,
+      // Unified key info for consistent coaching data
+      keyInfo: {
+        painPoints: keyInfo.painPoints,
+        budget: keyInfo.budget,
+        timeline: keyInfo.timeline,
+        decisionMakers: keyInfo.decisionMakers,
+        objections: keyInfo.objections,
+        buyingSignals: keyInfo.buyingSignals,
+      },
     })
   } catch (error) {
     console.error('Error analyzing practice session:', error)

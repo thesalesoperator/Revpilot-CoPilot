@@ -7,7 +7,14 @@ import {
   SUPABASE_ANON_KEY,
   OPENAI_API_KEY,
   CORS_HEADERS,
+  APP_URL,
 } from '@/lib/coaching/config'
+
+// ============================================================
+// UNIFIED CO-PILOT ADAPTER
+// When enabled, routes requests through the new unified API
+// ============================================================
+const USE_UNIFIED_COPILOT = process.env.ENABLE_UNIFIED_COPILOT === 'true'
 import {
   detectConversationStage,
   detectObjections,
@@ -119,6 +126,80 @@ export async function POST(request: NextRequest) {
         { error: 'Unauthorized - session belongs to another user' },
         { status: 403, headers: CORS_HEADERS }
       )
+    }
+
+    // =========================================================================
+    // UNIFIED CO-PILOT ADAPTER PATH
+    // Routes to /api/co-pilot/session/[id]/analyze for unified processing
+    // =========================================================================
+    if (USE_UNIFIED_COPILOT) {
+      try {
+        // Check/create unified session mapping
+        const { data: unifiedSession } = await supabase
+          .from('co_pilot_sessions')
+          .select('id')
+          .eq('meeting_url', session.meeting_url || sessionId)
+          .eq('user_id', user.id)
+          .single()
+
+        let unifiedSessionId = unifiedSession?.id
+
+        // Create unified session if it doesn't exist
+        if (!unifiedSessionId) {
+          const { data: newSession } = await supabase
+            .from('co_pilot_sessions')
+            .insert({
+              user_id: user.id,
+              context: 'live_coaching',
+              capture_method: 'tab_audio',
+              meeting_url: session.meeting_url,
+              status: 'active',
+              started_at: session.created_at,
+              key_info: {},
+              transcript: '',
+              current_section: 'set_expectations',
+            })
+            .select('id')
+            .single()
+
+          unifiedSessionId = newSession?.id
+        }
+
+        if (unifiedSessionId) {
+          // Route to unified endpoint
+          const unifiedResponse = await fetch(`${APP_URL}/api/co-pilot/session/${unifiedSessionId}/analyze`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ transcripts }),
+          })
+
+          if (unifiedResponse.ok) {
+            const unifiedResult = await unifiedResponse.json()
+
+            // Transform unified response to legacy format
+            return NextResponse.json({
+              status: 'analyzed',
+              suggestion: unifiedResult.suggestion,
+              stage: unifiedResult.stage,
+              keyInfo: unifiedResult.keyInfo,
+              script: unifiedResult.section ? {
+                section: unifiedResult.section,
+                progress: unifiedResult.scriptProgress,
+              } : undefined,
+              // Flag that this came from unified endpoint
+              _unified: true,
+            }, { headers: CORS_HEADERS })
+          }
+          // Fall through to legacy processing if unified fails
+          console.log('[Analyze] Unified endpoint failed, falling back to legacy')
+        }
+      } catch (unifiedError) {
+        console.error('[Analyze] Unified adapter error:', unifiedError)
+        // Fall through to legacy processing
+      }
     }
 
     // Get session state from database (with cache)
