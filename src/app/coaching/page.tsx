@@ -110,9 +110,9 @@ export default function CoachingPage() {
                   only you can see.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <a href="/downloads/revpilot-chrome-extension.zip" download className="btn-primary flex items-center gap-2">
+                  <a href="/downloads/revpilot-extension-v3.0.0.zip" download className="btn-primary flex items-center gap-2">
                     <Download className="w-5 h-5" />
-                    Download Extension
+                    Download Extension (v3.0.0)
                   </a>
                   <a href="/settings#coaching" className="btn-secondary flex items-center gap-2">
                     <Chrome className="w-5 h-5" />
@@ -280,9 +280,9 @@ export default function CoachingPage() {
             Join sales pros who are crushing their quotas with AI-powered real-time coaching.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a href="/downloads/revpilot-chrome-extension.zip" download className="btn-primary inline-flex items-center gap-2">
+            <a href="/downloads/revpilot-extension-v3.0.0.zip" download className="btn-primary inline-flex items-center gap-2">
               <Download className="w-5 h-5" />
-              Download Extension
+              Download Extension (v3.0.0)
             </a>
             <a href="/settings#coaching" className="btn-secondary inline-flex items-center gap-2">
               <ArrowRight className="w-5 h-5" />
