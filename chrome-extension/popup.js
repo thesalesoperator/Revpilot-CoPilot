@@ -6,10 +6,12 @@ document.addEventListener('DOMContentLoaded', init)
 
 async function init() {
   // Check if already logged in
-  const { authToken, userId, userEmail } = await chrome.storage.local.get(['authToken', 'userId', 'userEmail'])
+  const { authToken, userId, userEmail, sessionType } = await chrome.storage.local.get(['authToken', 'userId', 'userEmail', 'sessionType'])
 
   if (authToken && userId) {
     showLoggedIn(userEmail)
+    // Load saved session type preference
+    loadSessionType(sessionType || 'live_coaching')
   } else {
     showLoginForm()
   }
@@ -19,10 +21,102 @@ async function init() {
   document.getElementById('googleLoginBtn').addEventListener('click', handleGoogleLogin)
   document.getElementById('logoutBtn').addEventListener('click', handleLogout)
 
+  // Session type selector event listeners
+  setupSessionTypeSelector()
+
   // Enter key to submit
   document.getElementById('password').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleEmailLogin()
   })
+}
+
+// ============================================================
+// SESSION TYPE SELECTOR
+// ============================================================
+
+/**
+ * Set up event listeners for session type buttons
+ */
+function setupSessionTypeSelector() {
+  const typeButtons = document.querySelectorAll('.type-btn')
+
+  typeButtons.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const sessionType = btn.getAttribute('data-type')
+      await selectSessionType(sessionType)
+    })
+  })
+}
+
+/**
+ * Load and display the saved session type
+ */
+function loadSessionType(sessionType) {
+  const typeButtons = document.querySelectorAll('.type-btn')
+
+  typeButtons.forEach(btn => {
+    if (btn.getAttribute('data-type') === sessionType) {
+      btn.classList.add('active')
+    } else {
+      btn.classList.remove('active')
+    }
+  })
+
+  console.log('[RevPilot] Session type loaded:', sessionType)
+}
+
+/**
+ * Select a session type and save to storage
+ */
+async function selectSessionType(sessionType) {
+  // Update UI
+  const typeButtons = document.querySelectorAll('.type-btn')
+  typeButtons.forEach(btn => {
+    if (btn.getAttribute('data-type') === sessionType) {
+      btn.classList.add('active')
+    } else {
+      btn.classList.remove('active')
+    }
+  })
+
+  // Save to storage
+  await chrome.storage.local.set({ sessionType })
+  console.log('[RevPilot] Session type saved:', sessionType)
+
+  // Update instructions based on session type
+  updateInstructions(sessionType)
+}
+
+/**
+ * Update instructions based on selected session type
+ */
+function updateInstructions(sessionType) {
+  const instructionsEl = document.querySelector('.instructions ol')
+  if (!instructionsEl) return
+
+  const instructions = {
+    'live_coaching': [
+      'Select your session mode above',
+      'Join a video call (Zoom, Meet, or Teams)',
+      'Click "Start Coaching" in the overlay',
+      'Get real-time AI suggestions during your call'
+    ],
+    'practice': [
+      'Select Practice mode above',
+      'Go to RevPilot Dashboard for AI roleplay',
+      'Practice sales scenarios with AI personas',
+      'Get coaching tips and feedback'
+    ],
+    'real_call_analysis': [
+      'Select Analyze mode above',
+      'Upload a recorded call or join a live call',
+      'Get detailed analysis and insights',
+      'Review key moments and improvement areas'
+    ]
+  }
+
+  const items = instructions[sessionType] || instructions['live_coaching']
+  instructionsEl.innerHTML = items.map(item => `<li>${item}</li>`).join('')
 }
 
 function showLoginForm() {
