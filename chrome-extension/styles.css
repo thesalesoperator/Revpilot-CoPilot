@@ -1,0 +1,968 @@
+/* RevPilot Sales Coach - Chrome Extension Styles
+   Horizontal layout optimized for top-of-screen coaching bar
+   Resizable and draggable */
+
+#revpilot-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+#revpilot-overlay * {
+  box-sizing: border-box;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================
+   MAIN CONTAINER - Horizontal Bar Layout
+   ============================================ */
+.revpilot-container {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  min-height: 80px;
+  max-height: 300px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.97) 0%, rgba(8, 12, 24, 0.98) 100%);
+  border: 1px solid rgba(0, 255, 193, 0.2);
+  border-radius: 16px;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 0 30px rgba(0, 255, 193, 0.1);
+  pointer-events: auto;
+  overflow: hidden;
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+}
+
+.revpilot-container.revpilot-horizontal {
+  transform: translateX(-50%);
+}
+
+/* ============================================
+   DRAG BAR - Top handle for moving
+   ============================================ */
+.revpilot-drag-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 255, 193, 0.1);
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.revpilot-drag-indicator {
+  color: rgba(0, 255, 193, 0.4);
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.revpilot-drag-bar:hover {
+  background: rgba(0, 255, 193, 0.2);
+}
+
+.revpilot-drag-bar:hover .revpilot-drag-indicator {
+  color: rgba(0, 255, 193, 0.7);
+}
+
+/* ============================================
+   RESIZE HANDLE - Bottom right corner
+   ============================================ */
+.revpilot-resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 255, 193, 0.3) 50%);
+  border-radius: 0 0 16px 0;
+}
+
+.revpilot-resize-handle:hover {
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 255, 193, 0.5) 50%);
+}
+
+/* ============================================
+   HEADER - Compact horizontal header
+   ============================================ */
+.revpilot-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(0, 255, 193, 0.03);
+  border-bottom: 1px solid rgba(0, 255, 193, 0.08);
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.revpilot-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ffc1;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.revpilot-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ef4444;
+  letter-spacing: 0.5px;
+}
+
+.revpilot-pulse {
+  width: 6px;
+  height: 6px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.revpilot-controls {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.revpilot-btn-icon {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.revpilot-btn-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+/* ============================================
+   BODY - Horizontal flex layout
+   ============================================ */
+.revpilot-body {
+  flex: 1;
+  padding: 10px 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.revpilot-body-horizontal {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   STATUS VIEW - Before coaching starts
+   ============================================ */
+.revpilot-status-horizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px;
+}
+
+.revpilot-status-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.revpilot-status-content p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.revpilot-auto-start {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.revpilot-auto-start input {
+  cursor: pointer;
+}
+
+/* ============================================
+   COACHING VIEW - During call (horizontal layout)
+   ============================================ */
+.revpilot-coaching {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+
+.revpilot-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Left Section: Progress */
+.revpilot-section-progress {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  padding-right: 14px;
+}
+
+/* Center Section: Suggestions (flexible) */
+.revpilot-section-suggestions {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================================
+   TRANSCRIPT & COACHING BOXES
+   ============================================ */
+.revpilot-transcript-box,
+.revpilot-coaching-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.revpilot-transcript-header-bar,
+.revpilot-coaching-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.revpilot-transcript-title,
+.revpilot-coaching-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.revpilot-clear-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.revpilot-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ef4444;
+}
+
+.revpilot-transcript-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 150px;
+}
+
+.revpilot-transcript-empty {
+  text-align: center;
+  padding: 20px;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.revpilot-transcript-entry {
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border-left: 2px solid #64748b;
+}
+
+.revpilot-transcript-entry.revpilot-transcript-new {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.revpilot-speaker-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+.revpilot-speaker-label.speaker-0 {
+  color: #00ffc1;
+  background: rgba(0, 255, 193, 0.15);
+}
+
+.revpilot-speaker-label.speaker-1 {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+}
+
+.revpilot-transcript-entry .revpilot-transcript-time {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.revpilot-transcript-entry .revpilot-transcript-text {
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 4px 0 0 0;
+}
+
+/* Scrollbar styling for transcript */
+.revpilot-transcript-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.revpilot-transcript-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.revpilot-transcript-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.revpilot-transcript-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Right Section: Stats */
+.revpilot-section-stats {
+  width: 160px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  padding-left: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ============================================
+   SCRIPT PROGRESS - Compact
+   ============================================ */
+.revpilot-script-progress {
+  background: rgba(0, 255, 193, 0.05);
+  border: 1px solid rgba(0, 255, 193, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.revpilot-script-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.revpilot-script-icon {
+  font-size: 14px;
+}
+
+.revpilot-script-section {
+  font-size: 12px;
+  font-weight: 600;
+  color: #00ffc1;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.revpilot-script-order {
+  font-size: 10px;
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.revpilot-script-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.revpilot-script-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffc1, #00d9a6);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.revpilot-script-objective {
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+/* Stage Indicator */
+.revpilot-stage-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.revpilot-stage-label {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.revpilot-stage-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* Methodology Selector */
+.revpilot-methodology-selector {
+  margin-top: auto;
+}
+
+.revpilot-select {
+  width: 100%;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.revpilot-select:focus {
+  outline: none;
+  border-color: rgba(0, 255, 193, 0.3);
+}
+
+/* ============================================
+   SUGGESTIONS - Scrollable cards
+   ============================================ */
+.revpilot-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.revpilot-empty {
+  text-align: center;
+  padding: 12px;
+  color: #64748b;
+}
+
+.revpilot-empty p {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Suggestion Cards */
+.revpilot-suggestion {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border-left: 3px solid;
+  background: rgba(255, 255, 255, 0.03);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.revpilot-suggestion-question { border-color: #00ffc1; background: rgba(0, 255, 193, 0.08); }
+.revpilot-suggestion-tip { border-color: #fbbf24; background: rgba(251, 191, 36, 0.08); }
+.revpilot-suggestion-objection { border-color: #f97316; background: rgba(249, 115, 22, 0.08); }
+.revpilot-suggestion-alert { border-color: #ef4444; background: rgba(239, 68, 68, 0.08); }
+.revpilot-suggestion-positive { border-color: #22c55e; background: rgba(34, 197, 94, 0.08); }
+.revpilot-suggestion-transition { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.08); }
+
+.revpilot-suggestion-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.revpilot-suggestion-question .revpilot-suggestion-type { color: #00ffc1; }
+.revpilot-suggestion-tip .revpilot-suggestion-type { color: #fbbf24; }
+.revpilot-suggestion-objection .revpilot-suggestion-type { color: #f97316; }
+.revpilot-suggestion-alert .revpilot-suggestion-type { color: #ef4444; }
+.revpilot-suggestion-positive .revpilot-suggestion-type { color: #22c55e; }
+.revpilot-suggestion-transition .revpilot-suggestion-type { color: #8b5cf6; }
+
+.revpilot-suggestion-content {
+  font-size: 12px;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.revpilot-suggestion-text {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.revpilot-suggestion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.revpilot-suggestion-time {
+  font-size: 9px;
+  color: #64748b;
+  margin-left: auto;
+}
+
+/* Mode Banners */
+.revpilot-mode-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+
+.revpilot-live-banner {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.revpilot-demo-banner {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.revpilot-banner-icon {
+  font-size: 14px;
+}
+
+.revpilot-banner-detail {
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* Warning Banner */
+.revpilot-script-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 8px;
+}
+
+.revpilot-warning-icon {
+  font-size: 14px;
+}
+
+.revpilot-warning-text {
+  font-size: 11px;
+  color: #f97316;
+  line-height: 1.3;
+}
+
+/* ============================================
+   STATS - Compact talk ratio
+   ============================================ */
+.revpilot-stats-compact {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.revpilot-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.revpilot-stat-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.revpilot-stat-label {
+  width: 36px;
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.revpilot-stat-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.revpilot-stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffc1, #00d9a6);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.revpilot-stat-bar.prospect .revpilot-stat-fill {
+  background: linear-gradient(90deg, #fb923c, #f97316);
+}
+
+.revpilot-stat-value {
+  width: 32px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+/* Flip Button */
+.revpilot-flip-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 6px;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+  display: block;
+  margin-left: auto;
+}
+
+.revpilot-flip-btn:hover {
+  background: rgba(0, 255, 193, 0.1);
+  border-color: rgba(0, 255, 193, 0.3);
+  color: #00ffc1;
+}
+
+/* ============================================
+   KEY INSIGHTS PANEL
+   ============================================ */
+.revpilot-insights-panel {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.revpilot-insights-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  user-select: none;
+}
+
+.revpilot-insights-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.revpilot-insights-icon {
+  font-size: 12px;
+}
+
+.revpilot-insights-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  flex: 1;
+}
+
+.revpilot-toggle-arrow {
+  font-size: 8px;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+
+.revpilot-insights-content {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.revpilot-insight-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.revpilot-insight-label {
+  font-size: 9px;
+  color: #64748b;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.revpilot-insight-value {
+  font-size: 9px;
+  color: #94a3b8;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.revpilot-insight-value.revpilot-insight-found {
+  color: #00ffc1;
+  font-weight: 500;
+}
+
+.revpilot-insight-value.revpilot-insight-confirmed {
+  color: #22c55e;
+}
+
+.revpilot-insight-value.revpilot-insight-urgent {
+  color: #f97316;
+}
+
+.revpilot-insight-value.revpilot-insight-positive {
+  color: #22c55e;
+}
+
+.revpilot-insight-value.revpilot-insight-warning {
+  color: #fbbf24;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.revpilot-btn-primary {
+  background: linear-gradient(135deg, #00ffc1 0%, #00d9a6 100%);
+  border: none;
+  border-radius: 8px;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.revpilot-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 193, 0.3);
+}
+
+.revpilot-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.revpilot-btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+.revpilot-btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.revpilot-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+/* ============================================
+   SUMMARY VIEW
+   ============================================ */
+.revpilot-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.revpilot-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.revpilot-summary-content {
+  flex: 1;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.revpilot-summary-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.revpilot-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0, 255, 193, 0.2);
+  border-top-color: #00ffc1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   MINIMIZED FAB
+   ============================================ */
+.revpilot-minimized {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  pointer-events: auto;
+}
+
+.revpilot-fab {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.97) 0%, rgba(8, 12, 24, 0.98) 100%);
+  border: 1px solid rgba(0, 255, 193, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s;
+  position: relative;
+}
+
+.revpilot-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 255, 193, 0.2);
+}
+
+.revpilot-notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #0f172a;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.revpilot-suggestions::-webkit-scrollbar,
+.revpilot-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.revpilot-suggestions::-webkit-scrollbar-track,
+.revpilot-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.revpilot-suggestions::-webkit-scrollbar-thumb,
+.revpilot-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.revpilot-suggestions::-webkit-scrollbar-thumb:hover,
+.revpilot-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

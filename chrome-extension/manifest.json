@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "name": "RevPilot Sales Coach",
+  "version": "2.9.0",
+  "description": "Real-time AI sales coaching during your video calls - no bot required",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabCapture",
+    "offscreen",
+    "tabs",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://*.zoom.us/*",
+    "https://zoom.us/*",
+    "https://*.google.com/*",
+    "https://meet.google.com/*",
+    "https://*.microsoft.com/*",
+    "https://teams.microsoft.com/*",
+    "https://revpilot-copilot.netlify.app/*",
+    "http://localhost:3000/*"
+  ],
+  "oauth2": {
+    "client_id": "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile"
+    ]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.zoom.us/*",
+        "https://zoom.us/*",
+        "https://meet.google.com/*",
+        "https://teams.microsoft.com/*",
+        "https://teams.live.com/*",
+        "https://*.teams.live.com/*",
+        "https://revpilot-copilot.netlify.app/test-extension*",
+        "http://localhost:3000/test-extension*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
