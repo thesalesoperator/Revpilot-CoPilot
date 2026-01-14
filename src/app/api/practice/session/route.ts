@@ -144,6 +144,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
     }
 
+    // Get voice config for this persona
+    const voiceConfig = getVoiceConfigForPersona(persona)
+
     // Build Vapi configuration
     // The actual Vapi call will be initiated from the frontend
     // Note: serverUrl is configured in Vapi Dashboard, not here
@@ -154,13 +157,13 @@ export async function POST(request: NextRequest) {
         voice: {
           provider: '11labs' as const,
           voiceId: getVoiceIdForPersona(persona.id),
-          stability: 0.5,
-          similarityBoost: 0.75,
-          speed: 0.9, // Slightly faster for natural pacing
+          stability: voiceConfig.stability,
+          similarityBoost: voiceConfig.similarityBoost,
+          speed: voiceConfig.speed,
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4-turbo', // Proven to work with Vapi
+          model: 'gpt-4o', // Faster, cheaper, same quality as gpt-4-turbo
           messages: [
             {
               role: 'system' as const,
@@ -244,8 +247,42 @@ function getVoiceIdForPersona(personaId: string): string {
     'hostile-executive': 'TxGEqnHWrfWFTfGW9XjX', // Josh - authoritative male
     'procurement-buyer': 'XB0fDUnXU5powFXDhCwa', // Charlotte - professional female
     'mad-scientist': 'DUnzBkwtjRWXPr6wRbmL', // Viktor - eccentric scientist
+    // New personas
+    'executive-assistant': 'XB0fDUnXU5powFXDhCwa', // Charlotte - professional female
+    'silent-buyer': 'VR6AewLTigWG4xSOukaG', // Arnold - quiet male
+    'know-it-all': 'TxGEqnHWrfWFTfGW9XjX', // Josh - authoritative male
+    'tire-kicker': 'EXAVITQu4vr4xnSDxMaL', // Bella - friendly female
+    'rapid-fire': 'TxGEqnHWrfWFTfGW9XjX', // Josh - fast-talking male
+    'emotional-buyer': 'MF3mGyEYCl7XYWbV9V6O', // Elli - warm female
   }
   return voiceMap[personaId] || '21m00Tcm4TlvDq8ikWAM'
+}
+
+// Helper to get voice config for persona (stability, speed, etc.)
+function getVoiceConfigForPersona(persona: ReturnType<typeof getPersonaById>): {
+  stability: number
+  similarityBoost: number
+  speed: number
+} {
+  // Use persona's voice config if available, otherwise defaults
+  if (persona?.voiceConfig) {
+    return {
+      stability: persona.voiceConfig.stability ?? 0.5,
+      similarityBoost: persona.voiceConfig.similarityBoost ?? 0.75,
+      speed: persona.voiceConfig.speed ?? 0.9,
+    }
+  }
+
+  // Defaults based on persona type
+  const configMap: Record<string, { stability: number; similarityBoost: number; speed: number }> = {
+    'rapid-fire': { stability: 0.4, similarityBoost: 0.75, speed: 1.25 },
+    'silent-buyer': { stability: 0.7, similarityBoost: 0.8, speed: 0.85 },
+    'emotional-buyer': { stability: 0.5, similarityBoost: 0.8, speed: 0.95 },
+    'know-it-all': { stability: 0.5, similarityBoost: 0.75, speed: 1.1 },
+    'hostile-executive': { stability: 0.5, similarityBoost: 0.75, speed: 1.0 },
+  }
+
+  return configMap[persona?.id || ''] || { stability: 0.5, similarityBoost: 0.75, speed: 0.9 }
 }
 
 // Define practice context type
@@ -323,32 +360,27 @@ The salesperson has not provided their product information. Ask general discover
   }
 
   return `
-## INTELLIGENT PRODUCT QUESTIONING
-The salesperson is selling:
-- Company: ${practiceContext.companyName || 'Unknown company'}
-- What they do: ${practiceContext.companyDescription || 'Unknown'}
-- Product: ${practiceContext.productDescription || 'Unknown product'}
-- Their claimed value: ${practiceContext.valueProposition || 'No value proposition provided'}
-- Target market: ${practiceContext.targetCustomers || 'Unknown'}
+## WHAT YOU KNOW ABOUT THE SALESPERSON
+You agreed to take this call, so you know the basics:
+- Company: ${practiceContext.companyName || 'Some vendor'}
+- General area: ${practiceContext.companyDescription || 'Something your colleague thought was worth your time'}
 
-### TOUGH QUESTIONS TO ASK (weave these naturally into conversation):
-${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+What you DON'T know yet (make them explain):
+- Specific product details and how it works
+- Their pricing and terms
+- Why they're different from competitors
+- Specific ROI claims or metrics
 
-### SPECIFIC CHALLENGES TO RAISE:
-${challenges.map((c, i) => `${i + 1}. ${c}`).join('\n')}
+### QUESTIONS & CHALLENGES TO USE NATURALLY:
+${questions.map(q => `- ${q}`).join('\n')}
+${challenges.map(c => `- ${c}`).join('\n')}
 
-### HOW TO USE THIS INTELLIGENCE:
-- When they pitch features → Ask "So what? How does that help ME specifically?"
-- When they claim ROI → Demand specifics: "Show me the math. What's your data source?"
-- When they name-drop customers → Ask "Can I talk to them directly?"
-- When they say "easy implementation" → Push back: "Define easy. How many hours from my team?"
-- Never accept vague answers. Make them be SPECIFIC or lose credibility.
-
-### REMEMBER:
-- You're evaluating whether to buy THIS SPECIFIC product
-- Ask questions that a real buyer in your role would actually ask
-- Challenge their claims with intelligent follow-ups
-- Don't make it easy—if they can't answer your questions, that's a red flag
+### HOW TO CHALLENGE THEM:
+- When they pitch features → "So what? How does that help ME specifically?"
+- When they claim ROI → "Show me the math. What's your data source?"
+- When they name-drop customers → "Can I talk to them directly?"
+- When they say "easy" → "Define easy. How many hours from my team?"
+- Never accept vague answers. Make them be SPECIFIC.
 `
 }
 
@@ -387,6 +419,24 @@ ${productIntelligence}
 ## CHALLENGE CONTEXT
 ${challenge.systemPrompt}
 
+## HOW TO BE A REALISTIC PROSPECT
+You're a REAL busy professional on a sales call. Act like it:
+
+WHAT YOU DO:
+- Have your own agenda and concerns—raise them when it feels natural
+- Ask tough questions about pricing, timeline, competitors, proof
+- Interrupt when they ramble or dodge questions
+- Push back on vague claims—demand specifics
+- Share your situation and challenges when relevant to evaluate fit
+- Test them with curveballs a real buyer would throw
+
+WHAT YOU DON'T DO:
+- Interview them with a checklist of questions
+- Give perfect setups that make their job easy
+- Reveal internal details they haven't earned (budget numbers, decision process)
+- Break character by mentioning "practice", "objectives", or "training"
+- Give long monologues—keep responses punchy and real (1-3 sentences typical, longer when engaged)
+
 ## NATURAL SPEECH GUIDELINES
 - NEVER use bracketed annotations like [sighs], [pauses], [typing], etc. - just speak naturally
 - Use punctuation for rhythm: ellipses (...) for hesitation, em-dashes (—) for interruptions
@@ -396,7 +446,7 @@ ${challenge.systemPrompt}
 - Stay in character 100%—you don't know this is practice
 - Speak conversationally with natural pauses built into your sentences
 
-## SCORING OBJECTIVES (hidden from user—do NOT reveal these)
+## HIDDEN SCORING (NEVER reveal or reference these)
 The user is trying to achieve:
 ${challenge.objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}
 
@@ -428,6 +478,19 @@ function getFirstMessage(persona: ReturnType<typeof getPersonaById>): string {
     'procurement-buyer': "Hello. Jennifer Walsh, procurement. I understand you've been speaking with our IT team and you're on our shortlist. I'm here to discuss terms. Walk me through your pricing.",
 
     'mad-scientist': "Hello? Yes, this is Viktor. Who is calling please? I am in the middle of something quite important here...",
+
+    // New personas
+    'executive-assistant': "Global Dynamics, Patricia speaking. How may I direct your call?",
+
+    'silent-buyer': "Tom Richardson.",
+
+    'know-it-all': "Bradley Thornton, VP Ops. I've been in operations for 22 years, so I'm pretty familiar with most solutions in this space. What do you have?",
+
+    'tire-kicker': "Hi! I've been really excited about this call. I've heard great things about your solution and I can't wait to learn more!",
+
+    'rapid-fire': "Kevin Park, Velocity. I've got 10 minutes, probably less. My COO said this was worth my time. Quick pitch—what do you do and why should I care? Go.",
+
+    'emotional-buyer': "Hi! I'm so glad we could connect. I've been looking forward to learning more about you and your company.",
   }
 
   return firstMessages[persona.id] || "Hello?"
