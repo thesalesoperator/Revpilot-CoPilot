@@ -46,11 +46,66 @@ export interface UnifiedSessionMapping {
 }
 
 // ============================================================
-// SESSION MAPPING
+// SESSION MAPPING WITH TTL
 // ============================================================
 
-// In-memory cache for session mappings (for quick lookups)
-const sessionMappings = new Map<string, string>()
+/**
+ * TTL Map implementation to prevent unbounded memory growth.
+ * Session mappings are cached for quick lookups but expire after TTL.
+ */
+class TTLMap<K, V> {
+  private cache = new Map<K, { value: V; expiresAt: number }>()
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null
+
+  constructor(private ttlMs: number = 600000) { // 10 minutes default
+    // Run cleanup every 5 minutes
+    this.cleanupInterval = setInterval(() => this.cleanup(), 300000)
+  }
+
+  set(key: K, value: V): void {
+    this.cache.set(key, { value, expiresAt: Date.now() + this.ttlMs })
+  }
+
+  get(key: K): V | undefined {
+    const entry = this.cache.get(key)
+    if (!entry) return undefined
+
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key)
+      return undefined
+    }
+
+    return entry.value
+  }
+
+  has(key: K): boolean {
+    return this.get(key) !== undefined
+  }
+
+  delete(key: K): boolean {
+    return this.cache.delete(key)
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+
+  get size(): number {
+    return this.cache.size
+  }
+
+  private cleanup(): void {
+    const now = Date.now()
+    for (const [key, entry] of this.cache.entries()) {
+      if (now > entry.expiresAt) {
+        this.cache.delete(key)
+      }
+    }
+  }
+}
+
+// In-memory cache for session mappings with 10-minute TTL
+const sessionMappings = new TTLMap<string, string>(600000)
 
 /**
  * Get or create a unified session from a legacy coaching session

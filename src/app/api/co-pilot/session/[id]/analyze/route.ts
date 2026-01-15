@@ -11,19 +11,18 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import OpenAI from 'openai'
 import type { SessionContext, KeyInfo, UnifiedSuggestion } from '@/lib/unified/types'
 import {
   detectConversationStage,
   detectObjections,
   detectBuyingSignals,
 } from '@/lib/coaching/intelligence'
+import { getOpenAI, OPENAI_MODELS, TOKEN_LIMITS } from '@/lib/openai'
 
 // Environment variables
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 
 // CORS headers for Chrome extension requests
 const CORS_HEADERS = {
@@ -187,7 +186,8 @@ export async function POST(
     // Generate suggestion if OpenAI is configured
     let suggestion: Partial<UnifiedSuggestion> | null = null
 
-    if (OPENAI_API_KEY) {
+    try {
+      getOpenAI() // Check if OpenAI is available
       // Get previous suggestions to avoid repetition
       const { data: prevSuggestions } = await supabase
         .from('co_pilot_suggestions')
@@ -211,6 +211,8 @@ export async function POST(
           detectedBuyingSignals,
         }
       )
+    } catch {
+      // OpenAI not configured, skip suggestion generation
     }
 
     // Update session in database
@@ -493,16 +495,14 @@ async function generateSuggestion(
     detectedBuyingSignals?: { signal: string }[]
   }
 ): Promise<Partial<UnifiedSuggestion> | null> {
-  if (!OPENAI_API_KEY) return null
-
-  const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
+  const openai = getOpenAI()
   const recentTranscript = transcript.slice(-3000)
 
   const systemPrompt = buildSuggestionPrompt(context, keyInfo, options)
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Use mini for real-time (cost efficient)
+      model: OPENAI_MODELS.FAST, // Use mini for real-time (cost efficient)
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -521,7 +521,7 @@ Generate ONE coaching suggestion or return null if none needed.
           `
         }
       ],
-      max_tokens: 200,
+      max_tokens: TOKEN_LIMITS.SUGGESTION,
       temperature: 0.7,
       response_format: { type: 'json_object' },
     })

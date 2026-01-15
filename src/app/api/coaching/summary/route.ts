@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import OpenAI from 'openai'
 import {
   SUPABASE_URL,
   SUPABASE_SERVICE_KEY,
-  OPENAI_API_KEY,
   CORS_HEADERS,
 } from '@/lib/coaching/config'
+import { getOpenAI, OPENAI_MODELS, TOKEN_LIMITS } from '@/lib/openai'
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: CORS_HEADERS })
@@ -72,7 +71,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate summary using OpenAI
-    if (!OPENAI_API_KEY) {
+    let openai
+    try {
+      openai = getOpenAI()
+    } catch {
       return NextResponse.json({
         summary: {
           overview: 'AI summary not available - OpenAI not configured.',
@@ -85,10 +87,8 @@ export async function POST(request: NextRequest) {
       }, { headers: CORS_HEADERS })
     }
 
-    const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
-
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: OPENAI_MODELS.FAST,
       messages: [
         {
           role: 'system',
@@ -111,7 +111,7 @@ Be concise. Focus on what matters for follow-up.`
       ],
       response_format: { type: 'json_object' },
       temperature: 0.3,
-      max_tokens: 1000,
+      max_tokens: TOKEN_LIMITS.SUMMARY,
     })
 
     const summaryContent = response.choices[0]?.message?.content

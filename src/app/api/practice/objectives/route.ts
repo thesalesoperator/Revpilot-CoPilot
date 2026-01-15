@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import OpenAI from 'openai'
+import { getOpenAI, OPENAI_MODELS, TOKEN_LIMITS } from '@/lib/openai'
 
 // Real-time objective checking during active calls
 // Uses a fast model to evaluate transcript against objectives
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
 
 interface ObjectiveCheckRequest {
   transcript: string
@@ -32,11 +28,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ completed: [] })
     }
 
-    // Use GPT-4-turbo-mini for fast, cheap evaluation
+    // Use GPT-4o-mini for fast, cheap evaluation
+    const openai = getOpenAI()
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: OPENAI_MODELS.FAST,
       temperature: 0,
-      max_tokens: 500,
+      max_tokens: TOKEN_LIMITS.OBJECTIVE_CHECK,
       messages: [
         {
           role: 'system',

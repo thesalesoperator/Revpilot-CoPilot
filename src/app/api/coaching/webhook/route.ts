@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import OpenAI from 'openai'
 import {
   SUPABASE_URL,
   SUPABASE_SERVICE_KEY,
@@ -8,6 +7,7 @@ import {
   CORS_HEADERS,
 } from '@/lib/coaching/config'
 import { getMethodology, generateCoachingSystemPrompt, type MethodologyId } from '@/lib/coaching/methodologies'
+import { getOpenAI, OPENAI_MODELS, TOKEN_LIMITS } from '@/lib/openai'
 
 // Base coaching prompt template (methodology-agnostic parts)
 const BASE_COACHING_PROMPT = `
@@ -25,11 +25,6 @@ Current transcript:
 
 // Rate limit for AI suggestions (milliseconds)
 const SUGGESTION_RATE_LIMIT = 6000
-
-function getOpenAIClient(): OpenAI | null {
-  if (!OPENAI_API_KEY) return null
-  return new OpenAI({ apiKey: OPENAI_API_KEY })
-}
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: CORS_HEADERS })
@@ -160,8 +155,10 @@ async function findSession(supabase: any, sessionId: string | null, botId?: stri
 }
 
 async function generateCoachingSuggestion(supabase: any, sessionId: string, userId: string, transcript: string) {
-  const openai = getOpenAIClient()
-  if (!openai) {
+  let openai
+  try {
+    openai = getOpenAI()
+  } catch {
     return NextResponse.json({ received: true, skipped: 'no_openai' }, { headers: CORS_HEADERS })
   }
 
@@ -190,13 +187,13 @@ async function generateCoachingSuggestion(supabase: any, sessionId: string, user
     console.log(`[Webhook] Using ${methodologyId} methodology for user ${userId}`)
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: OPENAI_MODELS.FAST,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: BASE_COACHING_PROMPT + transcript.slice(-2000) }
       ],
       temperature: 0.7,
-      max_tokens: 200,
+      max_tokens: TOKEN_LIMITS.SUGGESTION,
     })
 
     const responseText = completion.choices[0]?.message?.content || ''
