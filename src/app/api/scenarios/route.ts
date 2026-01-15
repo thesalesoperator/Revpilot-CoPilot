@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import OpenAI from 'openai'
 import {
   AIScenario,
   CreateScenarioRequest,
   CreateScenarioResponse,
   ListScenariosResponse,
 } from '@/types/scenarios'
+import { getOpenAI, OPENAI_MODELS, TOKEN_LIMITS } from '@/lib/openai'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || ''
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -141,21 +140,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Try to get source from coaching_sessions first, then call_recordings
+    // Try to get source from multiple tables (in order of preference)
     let session: Record<string, unknown> | null = null
+    let sourceType: string = 'unknown'
 
-    // Try coaching sessions
-    const { data: coachingSession } = await supabase
-      .from('coaching_sessions')
+    // 1. Try co_pilot_sessions (unified system - newest)
+    const { data: coPilotSession } = await supabase
+      .from('co_pilot_sessions')
       .select('*')
       .eq('id', source_session_id)
       .eq('user_id', user.id)
       .single()
 
-    if (coachingSession) {
-      session = coachingSession
-    } else {
-      // Try call recordings
+    if (coPilotSession) {
+      session = coPilotSession
+      sourceType = 'co_pilot_session'
+    }
+
+    // 2. Try coaching_sessions (legacy)
+    if (!session) {
+      const { data: coachingSession } = await supabase
+        .from('coaching_sessions')
+        .select('*')
+        .eq('id', source_session_id)
+        .eq('user_id', user.id)
+        .single()
+
+      if (coachingSession) {
+        session = coachingSession
+        sourceType = 'coaching_session'
+      }
+    }
+
+    // 3. Try call_recordings
+    if (!session) {
       const { data: callRecording } = await supabase
         .from('call_recordings')
         .select('*')
@@ -165,15 +183,18 @@ export async function POST(request: NextRequest) {
 
       if (callRecording) {
         session = callRecording
+        sourceType = 'call_recording'
       }
     }
 
     if (!session) {
       return NextResponse.json(
-        { error: 'Source session or recording not found' },
+        { error: 'Source session or recording not found. Please ensure the call has a transcript.' },
         { status: 404, headers: CORS_HEADERS }
       )
     }
+
+    console.log(`[Scenarios] Creating scenario from ${sourceType}: ${source_session_id}`)
 
     const transcript = String(session.transcript || '')
     if (transcript.length < 200) {
@@ -271,7 +292,11 @@ async function extractScenarioFromSession(session: Record<string, unknown>): Pro
     first_message: "Hello, thanks for reaching out. What did you want to discuss today?",
   }
 
-  if (!OPENAI_API_KEY) {
+  let openai
+  try {
+    openai = getOpenAI()
+  } catch {
+    console.log('[Scenarios] OpenAI not configured, using default scenario')
     return {
       ...defaultResult,
       system_prompt: buildBasicSystemPrompt(defaultResult),
@@ -279,7 +304,6 @@ async function extractScenarioFromSession(session: Record<string, unknown>): Pro
   }
 
   try {
-    const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
 
     // Parse existing analysis if available
     const existingAnalysis = session.analysis as Record<string, unknown> | null
@@ -312,7 +336,7 @@ Extract the following in JSON format:
 Be specific and use actual details from the transcript. The AI will use this to roleplay as this prospect.`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: OPENAI_MODELS.STANDARD, // Use full model for quality scenario extraction
       messages: [
         { role: 'system', content: extractionPrompt },
         {
@@ -322,7 +346,7 @@ Be specific and use actual details from the transcript. The AI will use this to 
       ],
       response_format: { type: 'json_object' },
       temperature: 0.4,
-      max_tokens: 2000,
+      max_tokens: TOKEN_LIMITS.SCENARIO,
     })
 
     const content = response.choices[0]?.message?.content
