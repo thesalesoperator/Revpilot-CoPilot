@@ -119,7 +119,7 @@ export async function POST(
         },
         model: {
           provider: 'openai' as const,
-          model: 'gpt-4',
+          model: 'gpt-4o', // Use GPT-4o for quality persona responses
           messages: [
             {
               role: 'system' as const,

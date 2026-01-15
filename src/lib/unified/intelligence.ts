@@ -9,7 +9,6 @@
  * across all co-pilot contexts (live_coaching, practice, real_call_analysis).
  */
 
-import OpenAI from 'openai'
 import type {
   SessionContext,
   KeyInfo,
@@ -18,6 +17,9 @@ import type {
   ConversationStage,
   XPBreakdown,
 } from './types'
+
+// Use centralized OpenAI client
+import { getOpenAI, OPENAI_MODELS, TOKEN_LIMITS } from '@/lib/openai'
 
 // Import existing logic from coaching module
 import {
@@ -44,8 +46,6 @@ import {
 // ============================================================
 // CONSTANTS
 // ============================================================
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
 
 // Script sections for progress calculation
 const SCRIPT_SECTIONS = [
@@ -252,19 +252,20 @@ export async function generateSuggestion(
     detectedBuyingSignals?: BuyingSignal[]
   } = {}
 ): Promise<Partial<UnifiedSuggestion> | null> {
-  if (!OPENAI_API_KEY) {
+  let openai
+  try {
+    openai = getOpenAI()
+  } catch {
     console.log('[Intelligence] No OpenAI API key configured')
     return null
   }
 
-  const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
   const recentTranscript = transcript.slice(-3000)
-
   const systemPrompt = buildSuggestionPrompt(context, keyInfo, options)
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Use mini for real-time efficiency
+      model: OPENAI_MODELS.FAST, // Use mini for real-time efficiency
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -283,7 +284,7 @@ Generate ONE coaching suggestion or return null if none needed.
           `
         }
       ],
-      max_tokens: 200,
+      max_tokens: TOKEN_LIMITS.SUGGESTION,
       temperature: 0.7,
       response_format: { type: 'json_object' },
     })
@@ -406,7 +407,10 @@ export async function analyzeCall(
   xpEarned: number
   xpBreakdown: XPBreakdown
 }> {
-  if (!OPENAI_API_KEY) {
+  let openai
+  try {
+    openai = getOpenAI()
+  } catch {
     // Return basic analysis without AI
     const basicScore = calculateBasicScore(keyInfo, options.durationSeconds)
     return {
@@ -423,8 +427,6 @@ export async function analyzeCall(
       },
     }
   }
-
-  const openai = new OpenAI({ apiKey: OPENAI_API_KEY })
 
   const prompt = `Analyze this sales call and score it comprehensively.
 
@@ -470,7 +472,7 @@ Be specific in strengths/improvements - reference actual things said.`
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o', // Use full GPT-4o for comprehensive analysis
+      model: OPENAI_MODELS.STANDARD, // Use full GPT-4o for comprehensive analysis (quality matters)
       messages: [
         {
           role: 'system',
@@ -479,6 +481,7 @@ Be specific in strengths/improvements - reference actual things said.`
         { role: 'user', content: prompt }
       ],
       temperature: 0.3,
+      max_tokens: TOKEN_LIMITS.ANALYSIS,
       response_format: { type: 'json_object' },
     })
 
