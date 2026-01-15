@@ -1,579 +1,564 @@
-# RevPilot Copilot - AI Sales Performance Platform
+# RevPilot CoPilot
 
-A comprehensive AI-powered sales enablement platform for sales representatives featuring commission tracking, AI roleplay practice, real-time call coaching, and team performance analytics.
+**AI Sales Coach That Never Sleeps**
 
-## Features
-
-- **Sales Dashboard**: Track all your sales in one place
-  - Add new sales with detailed payment plans
-  - Track total cash collected, contracted value, and outstanding payments
-  - View guaranteed and potential commissions
-  - Mark sales as refunded when necessary
-  - Edit and delete sales
-
-- **Payment Tracking**: Manage payment schedules
-  - Automatically generated payment schedules
-  - Mark individual payments as paid
-  - Track remaining payments
-
-- **Sales Projections**: Plan your earnings
-  - Add projected sales to calculate potential commissions
-  - Quick scenarios for 5 or 10 sales
-  - Goal calculations to hit income targets
-
-- **Settings**: Customize your experience
-  - Set up commission pay schedules
-  - Save products for quick sale entry
-  - Manage your profile
-
-## Future Vision: True Real-Time AI Co-Pilot
-
-The current platform has two AI-powered features that will share the same architectural evolution:
-1. **Live Coaching** (Chrome Extension) - Real-time guidance during actual sales calls
-2. **AI Roleplay Practice** (Vapi-powered) - Practice with AI prospects before real calls
-
-Both features will be transformed into a true AI co-pilot that is **smarter than a human sales coach, faster, and effortless to use**.
+Practice sales calls with AI prospects that talk back. Get real-time coaching during live calls. Turn your real conversations into personalized training scenarios. Level up your skills with every call.
 
 ---
 
-### Current State Analysis
+## The Problem
 
-#### Live Coaching (Chrome Extension)
+Sales training is broken.
 
-| Component | Current Implementation | Bottleneck |
-|-----------|----------------------|------------|
-| Audio Capture | Tab capture → Deepgram | 8-second batching delay |
-| Transcription | Deepgram WebSocket (nova-2) | Near real-time ✓ |
-| Analysis | GPT-4o inference | 2-5 second response time |
-| Context | Last 3000 chars + regex patterns | Limited semantic understanding |
-| Suggestions | Reactive (post-hoc) | 11-16 second total latency |
+- **$20B+** spent annually on sales training in the US alone
+- **87%** of sales training content is forgotten within 30 days
+- **70%** of sales reps don't hit quota
+- New reps take **10+ months** to reach full productivity
 
-#### AI Roleplay Practice
+The current approach: expensive workshops, role-plays with colleagues (who are also learning), and throwing reps into live calls to "figure it out." When they fail, deals are lost forever.
 
-| Component | Current Implementation | Bottleneck |
-|-----------|----------------------|------------|
-| Voice | Vapi (STT) → OpenAI → 11Labs (TTS) | 2-4 second round-trip |
-| Analysis | GPT-4o-mini every 10 seconds | Only objective checking |
-| Context | Per-turn transcript only | No semantic accumulation |
-| Feedback | Batch analysis after call ends | No real-time coaching |
-| Persona | Static personality | No adaptive difficulty |
+**There's no safe place for sales reps to practice, fail, and improve—and no coach available when they need help most: during the actual call.**
 
 ---
 
-### Unified Architecture: Four Pillars
+## The Solution
 
-Both features will share the same core infrastructure:
-
-#### 1. Streaming Intelligence Pipeline
-
-**Live Coaching:**
-```
-Current:  Audio → 8s buffer → GPT-4o (3-5s) → Display
-Future:   Audio → Utterance-based → Streaming LLM → Token-by-token
-Impact:   11-16s → 2-4s latency
-```
-
-**Practice:**
-```
-Current:  Speech → Vapi → OpenAI (batch) → TTS → Audio
-Future:   Speech → Streaming STT → Streaming LLM → Streaming TTS
-Impact:   2-4s → <1s perceived latency (first token)
-```
-
-#### 2. Multi-Tier Intelligence
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  TIER 1: Edge Detection (0-50ms)                                │
-│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
-│  │     LIVE COACHING       │  │      PRACTICE               │  │
-│  │  • Objection detection  │  │  • Objective completion     │  │
-│  │  • Buying signal alerts │  │  • Rapport indicators       │  │
-│  │  • Talk ratio monitor   │  │  • Silence detection        │  │
-│  │  • Silence detection    │  │  • Persona mood tracking    │  │
-│  └─────────────────────────┘  └─────────────────────────────┘  │
-├─────────────────────────────────────────────────────────────────┤
-│  TIER 2: Fast Inference (200-500ms) - Claude Haiku/GPT-4o-mini  │
-│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
-│  │     LIVE COACHING       │  │      PRACTICE               │  │
-│  │  • Quick suggestions    │  │  • Real-time technique tips │  │
-│  │  • Section transitions  │  │  • "Try asking about..."    │  │
-│  │  • Follow-up questions  │  │  • Course corrections       │  │
-│  └─────────────────────────┘  └─────────────────────────────┘  │
-├─────────────────────────────────────────────────────────────────┤
-│  TIER 3: Deep Reasoning (1-3s) - Claude Opus/GPT-4o             │
-│  ┌─────────────────────────┐  ┌─────────────────────────────┐  │
-│  │     LIVE COACHING       │  │      PRACTICE               │  │
-│  │  • Complex objections   │  │  • Adaptive persona         │  │
-│  │  • Deal qualification   │  │  • Dynamic difficulty       │  │
-│  │  • Closing strategy     │  │  • Post-call deep analysis  │  │
-│  └─────────────────────────┘  └─────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-#### 3. Semantic Memory System
-
-**Shared Infrastructure:**
-```
-┌────────────────────────────────────────────────────────────────┐
-│                    SEMANTIC MEMORY LAYER                        │
-│                                                                 │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐ │
-│  │  WORKING MEMORY  │  │  EPISODE MEMORY  │  │ SKILL MEMORY │ │
-│  │   (Last 60 sec)  │  │  (Key moments)   │  │ (Cross-call) │ │
-│  └──────────────────┘  └──────────────────┘  └──────────────┘ │
-│          ↓                      ↓                    ↓         │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │              RETRIEVAL-AUGMENTED COACHING               │  │
-│  │                                                         │  │
-│  │  Live Coaching:                                         │  │
-│  │  "They mentioned hating complexity earlier. Ask:        │  │
-│  │   'Was complexity the main issue with Salesforce?'"     │  │
-│  │                                                         │  │
-│  │  Practice:                                              │  │
-│  │  "Last 3 calls, you struggled with price objections.    │  │
-│  │   This persona will test that - practice your reframe." │  │
-│  └─────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────┘
-```
-
-**Live Coaching Memory:**
-- Full call transcript (vectorized)
-- Key info extracted (pain, budget, timeline, decision makers)
-- Script progress and section coverage
-- Previous suggestions (avoid repetition)
-
-**Practice Memory:**
-- Skill progression per competency
-- Weakness identification (which objections they struggle with)
-- Persona performance history
-- Technique effectiveness (what worked before)
-
-#### 4. Predictive Guidance Engine
-
-**Live Coaching:**
-- Conversation state machine (discovery → qualification → presentation → close)
-- Anticipation of prospect responses
-- Proactive nudges (talk ratio, missing qualification, approaching close)
-
-**Practice:**
-- Adaptive persona difficulty (gets harder as you improve)
-- Dynamic objection injection (targets your weak spots)
-- Skill-based challenge selection
-- Real-time technique coaching (not just objective tracking)
+RevPilot CoPilot is the AI-powered sales performance platform that combines **practice**, **real-time coaching**, and **intelligent note-taking** into one unified system.
 
 ---
 
-### Practice-Specific Enhancements
+## Core Features
 
-#### Real-Time Coaching During Practice
+### 1. AI Roleplay Practice
 
-**Current:** Only tracks objective completion every 10 seconds
-**Future:** Full coaching experience during practice calls
+Practice sales conversations against AI prospects that talk back—literally. Using voice AI (Vapi + OpenAI + 11Labs), reps can have real conversations with AI buyers who respond naturally, raise objections, and behave like actual prospects.
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│               PRACTICE CALL COACHING OVERLAY                    │
-│                                                                 │
-│  ┌─────────────┐  ┌─────────────────────────┐  ┌────────────┐ │
-│  │  TECHNIQUE  │  │      LIVE TRANSCRIPT     │  │  PERSONA   │ │
-│  │    TIPS     │  │                          │  │   STATE    │ │
-│  │             │  │  Rep: "What challenges   │  │            │ │
-│  │  💡 Good    │  │   are you facing?"       │  │  😐 Neutral│ │
-│  │  discovery  │  │                          │  │            │ │
-│  │  question!  │  │  AI: "Well, honestly     │  │  Interest: │ │
-│  │             │  │   things are fine..."    │  │  ████░░ 60%│ │
-│  │  Try:       │  │                          │  │            │ │
-│  │  "What would│  │                          │  │  Resistance│ │
-│  │  need to    │  │                          │  │  ██░░░░ 30%│ │
-│  │  change?"   │  │                          │  │            │ │
-│  └─────────────┘  └─────────────────────────┘  └────────────┘ │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  OBJECTIVES                    │  SKILLS BEING TESTED    │  │
-│  │  ☑ Build rapport              │  Discovery: ████████░░  │  │
-│  │  ☐ Establish value            │  Objection: ██████░░░░  │  │
-│  │  ☐ Handle objection           │  Closing:   ████░░░░░░  │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────┘
-```
+#### 11 Distinct AI Personas
 
-#### Adaptive AI Personas
+Each persona has unique personalities, objection patterns, communication styles, and win conditions:
 
-**Current:** Static personality, same difficulty every time
-**Future:** Personas that learn and adapt
+| Persona | Role | Difficulty | Behavioral Profile |
+|---------|------|------------|-------------------|
+| **Richard Sterling** | Skeptical CFO | Hard | Numbers-driven, questions every claim, demands data and ROI proof |
+| **Maya Chen** | Startup Founder | Medium | Fast-paced, energetic, protective of runway, half-paying attention initially |
+| **Marcus Thompson** | Hostile Executive | Expert | Actively hostile, dismissive, interrupts constantly—secretly respects strength |
+| **David Park** | VP of Engineering | Hard | Technical deep-dives, despises sales fluff, tests with architecture questions |
+| **Patricia Collins** | Executive Assistant | Medium | Protective gatekeeper, tests preparation and respect before connecting |
+| **Tom Richardson** | Silent Buyer | Hard | The Ghost—one-word answers, minimal engagement, requires excellent questions |
+| **Jennifer Walsh** | Procurement Manager | Medium | Professional negotiator, evaluating 3 vendors, plays budget games |
+| **Sarah Martinez** | Friendly Champion | Easy | Already wants your solution, needs help building internal business case |
+| **Dr. Viktor Strangelove** | Mad Scientist | Expert | Eccentric, paranoid, dramatic mood swings—win requires genuine curiosity |
+| **Additional Personas** | Various | Various | Know-it-all, Tire-kicker, Rapid-fire questioner, Emotional buyer |
 
-```
-Persona Adaptation:
+#### Real-Time Objective Tracking
 
-1. DIFFICULTY SCALING
-   • Rep aced last 3 calls → Persona becomes more skeptical
-   • Rep struggling with objections → More objections thrown
-   • Rep strong on discovery → Skip to advanced challenges
+During every practice call, the system tracks your progress against specific objectives:
 
-2. TARGETED WEAKNESS TRAINING
-   • System detects: "Rep struggles with price objections"
-   • Next persona emphasizes: Budget concerns, competitor comparisons
-   • Real-time: Harder objections when rep is doing well
+- **Objective Evaluation Every 7 Seconds**: AI evaluates transcript against objectives in real-time
+- **Strict Criteria**: "Build rapport" requires genuine connection, not just pleasantries. "Handle objection" means substantive response, not deflection.
+- **Progress Display**: See "3/5 objectives completed" updating live during the call
+- **Bonus Objectives**: Earn extra XP for exceeding expectations ("Pain Excavator", "ROI Calculator", "Champion Builder")
 
-3. DYNAMIC PERSONALITY SHIFTS
-   • Persona starts neutral
-   • If rep builds rapport → Persona warms up (new win paths open)
-   • If rep pushes too hard → Persona gets defensive
-   • Creates realistic sales dynamics
-```
+#### Live Coaching Tips During Practice
 
-#### Skill-Based Progression
+Get real-time guidance while you practice:
 
-**Current:** Simple XP + level system
-**Future:** Competency-based mastery
+- **5 Tip Types**: Tips, Questions to ask, Alerts, Positive reinforcement, Objection detection
+- **Auto-Dismiss**: Tips appear for 5 seconds with progress bar, or dismiss manually
+- **Context-Aware**: "You've been talking for 3 minutes—ask a question!" or "Great rapport—time to uncover pain points"
+- **Objection Alerts**: Instant notification when price, competition, or timing objections surface
+
+#### Adaptive Difficulty
+
+The system learns your strengths and weaknesses:
 
 ```
-┌────────────────────────────────────────────────────────────────┐
-│                    SKILL PROGRESSION SYSTEM                     │
-│                                                                 │
-│  DISCOVERY                    OBJECTION HANDLING                │
-│  ████████████░░░░ 75%        ██████░░░░░░░░░░ 40%              │
-│  ✓ Pain identification       ✓ Price reframe                   │
-│  ✓ Quantifying impact        ✗ Competition handling            │
-│  ✓ Timeline exploration      ✗ Authority concerns              │
-│  ✗ Decision process          ✗ Status quo defense              │
-│                                                                 │
-│  VALUE ARTICULATION          CLOSING                           │
-│  ██████████░░░░░░ 65%        ████░░░░░░░░░░░░ 25%              │
-│  ✓ Feature → Benefit         ✗ Commitment securing             │
-│  ✓ ROI quantification        ✗ Next steps clarity              │
-│  ✗ Competitive positioning   ✗ Urgency creation                │
-│                                                                 │
-│  RECOMMENDED NEXT CHALLENGE:                                    │
-│  "Skeptical CFO" - Focuses on objection handling + closing     │
-└────────────────────────────────────────────────────────────────┘
+Performance History Analysis:
+- Queries your last 5 sessions with each persona
+- Average < 40% → Automatically adjusts to Easy mode
+- Average 40-80% → Medium mode
+- Average 80-90% → Hard mode
+- Average ≥ 90% → Expert mode
+```
+
+**Difficulty Modifiers**:
+- **Easy**: Fewer objections, more buying signals, forgiving of stumbles
+- **Medium**: Realistic behavior, standard objections
+- **Hard**: More skeptical, requires stronger evidence, more pushback
+- **Expert**: Extremely challenging, looks for weaknesses, throws curveballs
+
+#### Sell YOUR Product
+
+Configure your actual product and company so practice feels real:
+
+- **Company Context**: Your company name, description, and positioning
+- **Product Details**: Your actual product features and capabilities
+- **Value Proposition**: Your real value prop that personas can challenge
+- **Target Customers**: Your ICP so personas ask relevant questions
+
+Personas use this context to ask realistic questions about YOUR solution, challenge YOUR claims, and raise objections specific to YOUR product category.
+
+#### Turn Live Calls Into AI Scenarios
+
+**The killer feature**: Convert your real sales calls into personalized practice scenarios.
+
+After any coaching session or call recording, the system can:
+
+1. **Extract Prospect Profile**: Name, title, company, personality traits
+2. **Identify Anchor Problem**: Their main pain point with severity level
+3. **Capture Objections**: Every objection they raised
+4. **Note Buying Signals**: Positive indicators they showed
+5. **Highlight Missed Opportunities**: What you left on the table
+6. **Generate AI Persona**: Creates a practice scenario that mimics this exact prospect
+
+**Then practice that same call again**—but this time, nail it. Track your improvement across multiple attempts with comparison metrics showing exactly where you've improved vs. the original call.
+
+```
+Source Call Score: 62%
+Attempt #3 Score: 84%
+Improvement: +22%
+Areas Improved: Objection handling, discovery depth, closing confidence
+Areas to Work On: Talk ratio, pricing presentation
+```
+
+#### Gamification System
+
+Sales improvement that feels like a game:
+
+**XP & Levels**:
+- Base XP per call (50-400 based on difficulty)
+- Objective completion bonuses (+10% per objective)
+- Bonus objective rewards (+20% per bonus)
+- Score bonuses: 90%=+100 XP, 95%=+200 XP, 100%=+500 XP
+- Difficulty multipliers: Easy=1.0x, Medium=1.25x, Hard=1.5x, Expert=2.0x
+
+**60+ Achievements**:
+- **Milestone**: First call, 10 calls, 50 calls, 100 calls, 500 calls
+- **Streaks**: 3-day, 7-day, 14-day, 30-day, 100-day practice streaks
+- **Persona Mastery**: Win against specific personas 3-5 times with 80%+ score
+- **Difficulty Mastery**: Complete all challenges at each tier with 80%+
+- **Special**: Deal recovery, no-discount wins, fast completions
+
+**5-Tier Skill Tree**:
+```
+TIER 1 - FUNDAMENTALS
+├── Active Listening
+├── Rapport Building
+└── Questioning Framework
+
+TIER 2 - INTERMEDIATE
+├── Acknowledge & Pivot
+├── Value Articulation
+└── Stakeholder Mapping
+
+TIER 3 - ADVANCED
+├── Reframe & Redirect
+├── Negotiation Tactics
+└── Executive Communication
+
+TIER 4 - EXPERT
+├── Composure Under Fire
+├── Deal Architecture
+└── Deal Recovery
+
+TIER 5 - MASTERY
+└── Sales Mastery (requires 3 prerequisites)
 ```
 
 ---
 
-### Unified Implementation Roadmap
+### 2. Real-Time Live Coaching
 
-#### Phase 1: Shared Streaming Foundation (Week 1-2)
-- [ ] Remove 8-second batching in coaching
-- [ ] Add streaming OpenAI responses to both features
-- [ ] Implement utterance-based processing
-- **Impact:** 11-16s → 3-5s (coaching), 2-4s → <1s perceived (practice)
+A Chrome extension that acts as a silent coach during actual sales calls—visible only to you.
 
-#### Phase 2: Edge Detection Layer (Week 2-3)
-- [ ] Move pattern matching to browser (coaching)
-- [ ] Add real-time technique detection (practice)
-- [ ] Instant objective completion feedback
-- [ ] Persona mood/interest tracking
-- **Impact:** Critical events surface in <100ms
+#### Works Everywhere (Bot-Free)
 
-#### Phase 3: Fast Inference Tier (Week 3-4)
-- [ ] Add Haiku/GPT-4o-mini for quick suggestions (both)
-- [ ] Real-time coaching tips during practice
-- [ ] Parallel processing: fast + deep tiers
-- **Impact:** Most suggestions in <500ms
+- **Platforms**: Zoom, Google Meet, Microsoft Teams, any web-based meeting
+- **No Bot Joins**: Captures tab audio directly via Chrome APIs
+- **Invisible to Prospects**: No "Recording" warnings, no awkward bot participants
+- **Privacy-First**: Audio is processed in real-time, not stored
 
-#### Phase 4: Semantic Memory (Week 4-6)
-- [ ] Shared vector embedding infrastructure
-- [ ] Cross-call learning for both features
-- [ ] Skill tracking and weakness identification (practice)
-- [ ] Key info persistence (coaching)
-- **Impact:** Never loses context, learns over time
+Unlike Gong, Chorus, or Fathom, RevPilot never joins your calls as a bot. Prospects never know you have AI assistance.
 
-#### Phase 5: Adaptive Intelligence (Week 6-8)
-- [ ] Predictive guidance engine (coaching)
-- [ ] Adaptive persona difficulty (practice)
-- [ ] Skill-based challenge selection
-- [ ] Targeted weakness training
-- **Impact:** AI that's ahead of the conversation
+#### Intelligent Note-Taking
 
-#### Phase 6: Ambient UI (Week 8-10)
-- [ ] Glow ring / color coding (both)
-- [ ] Whisper suggestions
-- [ ] Audio feedback option
-- [ ] Zero cognitive load interface
-- **Impact:** Effortless to use
+Never forget critical information again. The system automatically extracts and displays:
+
+**Key Information Panel** (visible during call):
+- 🔥 **Pain Points**: Every problem they mention, categorized and ranked by severity
+- 🏢 **Team Size**: Company and team context
+- 💰 **Budget**: Extracted amounts with confirmation status
+- ⏰ **Timeline**: When they need a solution, with urgency indicators
+- 👥 **Decision Makers**: Who else needs to be involved
+- ✅ **Buying Signals / Objections**: Count of positive vs. negative signals
+
+**Anchor Problem Tracking**:
+The system identifies THE problem—not just any problem—with:
+- Problem statement extracted verbatim
+- Category (data quality, pipeline, forecasting, adoption, etc.)
+- Severity level (low/medium/high/critical)
+- Direct quotes from the prospect for later reference
+
+**BANT Extraction** (Budget, Authority, Need, Timeline):
+- **Budget**: Regex patterns catch "$50K", "200K annually", etc. Tracks confirmation status.
+- **Authority**: Detects decision makers, approval chains, stakeholders mentioned
+- **Need**: Identifies primary pain and supporting problems
+- **Timeline**: Extracts dates, quarters, urgency language ("ASAP", "next month", "Q2")
+
+#### Real-Time Coaching Suggestions
+
+Get AI-powered suggestions every 3 seconds:
+
+**Suggestion Types**:
+- 🎯 **Question**: "Try asking about their current process for..."
+- 💡 **Tip**: "Good time to quantify the cost of this problem"
+- ⚠️ **Objection Alert**: "Price objection detected—focus on ROI, not discounts"
+- 🚨 **Warning**: "You've been talking for 4 minutes—pause for questions"
+- ✅ **Positive**: "Nice work uncovering that pain point!"
+
+**Objection Detection** (6 Categories):
+
+| Objection | Detection Patterns | Suggested Response |
+|-----------|-------------------|-------------------|
+| **Price** | "too expensive", "out of budget" | "What would the cost be of NOT solving this?" |
+| **Timing** | "not right now", "maybe later" | "What would need to change for this to become a priority?" |
+| **Authority** | "need to check with my boss" | "What do you think they'll want to know?" |
+| **Competition** | "looking at other options" | "What criteria are most important in your evaluation?" |
+| **Trust** | "how do I know this works" | Offer proof points and customer references |
+| **Status Quo** | "we're doing fine currently" | "What made you take this call?" |
+
+**Buying Signal Detection** (6 Types):
+
+| Signal | Detection Patterns | Recommended Action |
+|--------|-------------------|-------------------|
+| **Implementation Questions** | "how long to implement" | They're visualizing! Transition to next steps |
+| **Internal Stakeholder** | "I should include my team" | Offer to schedule with stakeholder |
+| **Specific Use Case** | "we could use this for..." | Dig deeper on this use case |
+| **Pricing Interest** | "what does this cost" | Interest in pricing = interest in buying |
+| **Timeline Discussion** | "when could we start" | They have urgency! Confirm and map backwards |
+| **Positive Feedback** | "this is exactly what we need" | Don't miss it! Ask if ready to move forward |
+
+#### Talk Ratio Monitoring
+
+Real-time tracking of who's talking:
+
+- **Visual Bars**: Your talk time vs. their talk time, updating every 3 seconds
+- **Smart Calibration**: Auto-detects who's the rep vs. prospect
+- **Manual Override**: "Flip Speakers" button if it gets it wrong
+- **Alerts**: Coaching suggestions trigger when you're talking too much
+
+**Optimal Talk Ratio**: 40-60% rep, 40-60% prospect. The system alerts when you exceed 70%.
+
+#### Sales Methodology Tracking
+
+Track your progress through proven sales frameworks:
+
+**RevPilot Methodology** (17 Sections):
+
+| # | Section | Objective | Min. Time |
+|---|---------|-----------|-----------|
+| 1 | Set Expectations | Get permission to ask questions | 30s |
+| 2 | Isolate Problem | Find the specific anchor problem | 60s |
+| 3 | Background Questions | Understand B2B context | 90s |
+| 4 | Current Situation | Deep dive into current state | 120s |
+| 5 | Assess Efforts | Learn from past attempts | 60s |
+| 6 | Chunking Down | Get granular on the problem | 90s |
+| 7 | Financial Qualifier | Quantify cost & budget | 60s |
+| 8 | Doubt Questions | Create urgency through reflection | 60s |
+| 9 | Solution Questions | Explore their ideal solution | 60s |
+| 10 | Why Now | Confirm urgency & catalyst | 45s |
+| 11 | Support Questions | Map decision makers & process | 60s |
+| 12 | Desired Situation | Paint future state picture | 60s |
+| 13 | Transition | Permission-based bridge to pitch | 15s |
+| 14 | Pitch | Present your solution | 180s |
+| 15 | Commitment | Gauge commitment (1-10 scale) | 60s |
+| 16 | Onboarding | Walk through implementation | 60s |
+| 17 | Investment | Present pricing & close | 60s |
+
+**Section-Aware Suggestions**:
+- Suggestions are validated against your current section
+- Can't pitch in discovery sections (1-6)
+- Can't discuss pricing before qualification (7-11)
+- System warns: "🔴 CRITICAL: Stay in this section! No anchor problem identified yet"
+
+**Additional Methodologies Supported**: MEDDIC, SPIN, Challenger, Sandler, BANT, General
+
+#### Post-Call Summary
+
+When you end a coaching session:
+
+- **Sentiment Analysis**: 😊 Positive / 😐 Neutral / 😟 Negative
+- **Overview**: AI-generated summary of the call
+- **Key Points**: Bullet list of important information
+- **Action Items**: What you committed to doing
+- **Objections Raised**: Summary of concerns to address
+- **Next Steps**: Clear path forward
 
 ---
 
-### Technical Requirements (Shared)
+## How It Works
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Edge Compute | Cloudflare Workers | <50ms pattern matching |
-| Vector DB | Pinecone / pgvector | Semantic memory storage |
-| Streaming | WebSocket / SSE | Real-time responses |
-| Fast Model | Claude Haiku / GPT-4o-mini | Quick suggestions |
-| Deep Model | Claude Opus / GPT-4o | Complex reasoning |
-| Embeddings | text-embedding-3-small | Semantic search |
-
-**Estimated Costs:**
-- Live Coaching: $0.50-0.85 per call hour
-- Practice Session: $0.15-0.25 per 10-minute session
-- Shared infrastructure: Amortized across both features
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          REVPILOT COPILOT                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│   PRACTICE MODE                         LIVE COACHING MODE              │
+│   ─────────────                         ──────────────────              │
+│                                                                         │
+│   You speak ──► Vapi (Voice AI)         You speak ──► Zoom/Meet/Teams  │
+│        │                                      │                         │
+│        ▼                                      ▼                         │
+│   AI Prospect responds                  Chrome Extension captures audio │
+│   with realistic objections                   │                         │
+│        │                                      ▼                         │
+│        ▼                                Deepgram transcribes (3s batch) │
+│   Real-time objective tracking                │                         │
+│   + coaching tips                             ▼                         │
+│        │                                GPT-4o analyzes + suggests      │
+│        ▼                                      │                         │
+│   Post-call scoring                           ▼                         │
+│   + XP earned                           Live coaching overlay           │
+│        │                                + key info extraction           │
+│        ▼                                      │                         │
+│   [CONVERT TO SCENARIO]                       ▼                         │
+│        │                                [CONVERT TO SCENARIO]           │
+│        └──────────────────┬─────────────────┘                          │
+│                           ▼                                             │
+│                  PERSONALIZED AI SCENARIO                               │
+│                  Practice the same call again                           │
+│                  Track improvement over time                            │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                      SHARED INTELLIGENCE LAYER                          │
+│                                                                         │
+│   • Pain point extraction (16 categories, severity ranking)             │
+│   • Objection detection (price, timing, authority, competition, etc.)   │
+│   • Buying signal recognition (implementation, stakeholder, pricing)    │
+│   • BANT extraction (Budget, Authority, Need, Timeline)                 │
+│   • Conversation stage tracking (17 sections)                           │
+│   • Talk ratio monitoring (real-time word count)                        │
+│   • Skill progression tracking (XP, achievements, skill tree)           │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Future Vision: Universal Real-Time Meeting Intelligence
+## Why RevPilot Wins
 
-Beyond sales coaching, the core architecture can power a **universal meeting companion** - essentially Fathom/Otter but with real-time intelligence instead of post-call summaries.
+| Challenge | Traditional Training | RevPilot CoPilot |
+|-----------|---------------------|------------------|
+| Practice availability | Schedule with manager | 24/7, unlimited |
+| Realistic scenarios | Colleagues pretending | 11 AI personas with real objections |
+| Feedback timing | Days/weeks later | Real-time, during the call |
+| Personalization | One-size-fits-all | Adaptive difficulty, targets weaknesses |
+| Note-taking | Manual or forgot | Automatic key info extraction |
+| Cost per rep | $1,500+/year | $50-100/month |
+| Coaching during calls | Impossible at scale | Every call, every rep |
+| Learn from real calls | Watch recordings | Convert to practice scenarios |
 
-### The Problem with Current Note-Takers
+---
 
-| Tool | When You Get Value | The Problem |
-|------|-------------------|-------------|
-| Fathom | After the call | You've already forgotten what you meant to follow up on |
-| Otter | After the call | 30-minute meeting = 15 minutes reading transcript |
-| Fireflies | After the call | Key decisions buried in walls of text |
-| Manual notes | During call | You're distracted, miss context, notes are messy |
+## Future Vision
 
-**The gap:** You need intelligence DURING the call, not after.
+### Self-Improving Coaching Through Call Intelligence
 
-### RevPilot Meeting Intelligence (Future)
+**Coming Soon**: The system will learn from every call to provide increasingly personalized coaching.
 
-Real-time companion for ANY meeting type - not just sales.
+**Vector Database Integration**:
+- Store call transcripts as semantic embeddings
+- Find similar past calls when you encounter new objections
+- "Last time you heard this objection, here's what worked..."
+- Build a knowledge base from your wins
 
+**Self-Improvement Loop**:
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  MEETING COMPANION (non-intrusive sidebar or overlay)              │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  📋 LIVE RECAP (updates as people talk)                     │   │
-│  │                                                              │   │
-│  │  • Marketing wants to push launch to Q2 (Sarah, 3:42)       │   │
-│  │  • Budget approved for $50K pilot (Mike confirmed)          │   │
-│  │  • Blocker: Legal review needed before signing              │   │
-│  │  • You agreed to send the proposal by Friday                │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  ⚡ ACTION ITEMS (auto-detected)                            │   │
-│  │                                                              │   │
-│  │  ☐ You: Send proposal by Friday                             │   │
-│  │  ☐ Sarah: Schedule legal review                             │   │
-│  │  ☐ Mike: Confirm budget allocation with finance             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  💡 CONTEXT PROMPTS                                         │   │
-│  │                                                              │   │
-│  │  "Mike mentioned 'the same issue as last quarter' -         │   │
-│  │   worth asking what happened then?"                         │   │
-│  │                                                              │   │
-│  │  "Sarah seems hesitant about timeline. Might be worth       │   │
-│  │   understanding what's driving the delay."                  │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  🎯 MEETING HEALTH                                          │   │
-│  │                                                              │   │
-│  │  Talk distribution: You 23% | Sarah 35% | Mike 42%          │   │
-│  │  Decisions made: 2 of 4 agenda items                        │   │
-│  │  Time remaining: 8 min | Unaddressed: Budget timeline       │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────────┘
+1. Live Call → System extracts key patterns
+2. Patterns stored → Vector embeddings created
+3. Future Calls → System retrieves relevant context
+4. Coaching improves → Based on YOUR successful techniques
+5. Rep improves → Personalized to YOUR style and product
 ```
 
-### Use Cases Beyond Sales
+**Adaptive Intelligence**:
+- Learn which coaching suggestions you use vs. dismiss
+- Adjust suggestion style to match your communication patterns
+- Identify your specific weak areas across all calls
+- Recommend targeted practice scenarios
 
-| Meeting Type | Real-Time Intelligence |
-|--------------|----------------------|
-| **1:1s with Manager** | "You mentioned wanting to discuss promotion 10 min ago - meeting ending soon" |
-| **Client Calls** | Live recap of requirements, auto-detect scope creep |
-| **Team Standups** | Track blockers mentioned, flag recurring issues |
-| **Interviews** | Candidate response tracking, suggested follow-up questions |
-| **Board Meetings** | Decision tracking, action item assignment |
-| **Customer Support** | Issue categorization, solution suggestions |
-| **Project Kickoffs** | Requirement capture, stakeholder concern tracking |
+### Universal Meeting Intelligence
 
-### Key Features
+The future isn't just sales coaching—it's **intelligent meeting assistance for everyone**.
 
-#### 1. Live Recap (Not Transcript)
-```
-Traditional:    Full transcript → Read after → Extract meaning
-RevPilot:       Conversation → Real-time summarization → Key points only
+**Phase 1** (Current): Sales call coaching + practice
+**Phase 2** (Planned): Real-time meeting assistance for any meeting type
 
-"We discussed the Q2 timeline and Sarah mentioned concerns about
-the marketing team's bandwidth given the product launch..."
+**Universal Meeting Features**:
+- **Live Recap**: Not just transcription—actual summarization as the meeting happens
+- **Auto-Detected Action Items**: "You just committed to sending the proposal by Friday"
+- **Meeting Health Monitoring**: Is this meeting productive? Are the right people talking?
+- **Commitment Tracking**: What did each person agree to do?
+- **Context Continuity**: "Last meeting you discussed X—here's where you left off"
+- **Smart Nudges**: "You've been in this meeting for 45 minutes without deciding anything"
 
-        ↓ Becomes ↓
+**The Vision**: A Fathom/Otter killer that provides value *during* the call, not after. Real-time intelligence that makes every meeting more productive, with key insights captured before you hang up.
 
-"• Q2 timeline discussed
- • Sarah: Marketing bandwidth is a concern (product launch conflict)"
-```
-
-#### 2. Commitment Detection
-Automatically surfaces when someone commits to something:
-- "I'll send that over by Friday" → ☐ You: Send [that] by Friday
-- "Let me check with legal" → ☐ Speaker: Check with legal
-- "We can do $50K" → 💰 Budget: $50K confirmed
-
-#### 3. Context Continuity
-References earlier parts of the conversation:
-- "Earlier, Mike said 'same issue as last quarter' - never explained"
-- "You agreed to 3 things but only 2 have been addressed"
-- "This contradicts what Sarah said at 4:23"
-
-#### 4. Meeting Health Monitoring
-- **Talk ratio:** "You've spoken 60% - might want to ask more questions"
-- **Agenda tracking:** "2 of 5 items covered, 10 minutes left"
-- **Energy detection:** "Conversation energy dropped - might need a break"
-- **Decision density:** "45 minutes in, no decisions made yet"
-
-#### 5. Smart Nudges
-Context-aware prompts that help you be more effective:
-- "Good moment to summarize and confirm alignment"
-- "Sarah mentioned a concern but moved on quickly - worth revisiting?"
-- "You've been talking for 3 minutes - pause for questions?"
-
-### Implementation Approach
-
-The sales coaching infrastructure directly transfers:
-
-| Sales Feature | Meeting Intelligence Equivalent |
-|--------------|--------------------------------|
-| Script section tracking | Agenda item tracking |
-| Key info extraction | Decision/action item extraction |
-| Objection detection | Concern/blocker detection |
-| Buying signal alerts | Agreement/commitment detection |
-| Talk ratio | Participation balance |
-| Coaching suggestions | Context prompts |
-
-### Differentiation from Fathom/Otter
-
-| Feature | Fathom/Otter | RevPilot Meeting Intelligence |
-|---------|--------------|------------------------------|
-| When you get value | After call | During call |
-| Output format | Full transcript + summary | Live key points only |
-| Action items | Extracted post-call | Detected real-time |
-| Context prompts | None | Live suggestions |
-| Meeting health | None | Real-time monitoring |
-| Commitment tracking | Basic post-call | Live with attribution |
-
-### Phase 7: Meeting Intelligence (Future)
-- [ ] Generic meeting mode (non-sales)
-- [ ] Live summarization (not transcription)
-- [ ] Action item auto-detection
-- [ ] Meeting health monitoring
-- [ ] Agenda tracking
-- [ ] Cross-meeting context (remember past discussions)
-- [ ] Integration with calendar (pre-populate context)
-- [ ] Post-meeting auto-summary email
+---
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14+ with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
+- **Frontend**: Next.js 16 + React 19 + TypeScript
+- **Styling**: Tailwind CSS v4
 - **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Icons**: Lucide React
+- **Authentication**: Supabase Auth with Google OAuth
+- **Voice AI**: Vapi.ai (orchestrating Deepgram STT + OpenAI LLM + 11Labs TTS)
+- **Live Coaching**: Chrome Extension + Deepgram WebSocket + GPT-4o
+- **Real-Time Analysis**: GPT-4o-mini for fast suggestions, GPT-4o for deep analysis
+- **Testing**: Vitest
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm
 - Supabase account
+- OpenAI API key
+- Vapi.ai account (for practice calls)
+- Deepgram API key (for live coaching)
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/revpilot-copilot.git
-cd revpilot-copilot
-```
-
-### 2. Install dependencies
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/thesalesoperator/Revpilot-CoPilot.git
+cd Revpilot-CoPilot
+
+# Install dependencies
 npm install
-```
 
-### 3. Set up Supabase
+# Configure environment variables
+cp .env.example .env.local
+# Edit .env.local with your API keys
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to the SQL Editor and run the schema from `supabase/schema.sql`
-3. Copy your project URL and anon key from Settings > API
-
-### 4. Configure environment variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-### 5. Run the development server
-
-```bash
+# Run development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the app.
+### Environment Variables
 
-## Project Structure
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-```
-revpilot-commission-calculator/
-├── chrome-extension/       # RevPilot Sales Coach Chrome Extension
-│   ├── manifest.json       # Extension configuration
-│   ├── background.js       # Service worker
-│   ├── content.js          # Injected UI for coaching overlay
-│   ├── offscreen.js        # Audio capture & Deepgram transcription
-│   └── popup.js            # Extension popup
-│
-├── src/
-│   ├── app/                # Next.js App Router
-│   │   ├── api/            # Backend API routes
-│   │   │   ├── coaching/   # Real-time coaching endpoints
-│   │   │   ├── practice/   # AI roleplay practice
-│   │   │   └── community/  # Social features
-│   │   ├── dashboard/      # Main sales dashboard
-│   │   ├── coaching/       # Coaching sessions page
-│   │   ├── practice/       # Roleplay practice page
-│   │   └── settings/       # User settings & extension download
-│   │
-│   ├── components/
-│   │   ├── layout/         # Layout components (Sidebar, etc.)
-│   │   ├── ui/             # Reusable UI components
-│   │   └── practice/       # Practice-specific components
-│   │
-│   └── lib/
-│       ├── coaching/       # Coaching logic & AI prompts
-│       ├── supabase/       # Database client setup
-│       └── utils.ts        # Utility functions
-│
-├── public/
-│   └── downloads/          # Chrome extension ZIP for download
-│
-├── docs/                   # Documentation
-│   ├── GOOGLE_OAUTH_WEB_SETUP.md
-│   ├── COMMUNITY_PLAN.md
-│   └── LANDING_PAGE_STANDALONE.md
-│
-├── supabase/               # Database migrations
-│
-└── archive/                # Archived/unused code
-    └── close-extension/    # Close CRM extension (not active)
+# OpenAI
+OPENAI_API_KEY=your_openai_key
+
+# Vapi (Practice Calls)
+VAPI_API_KEY=your_vapi_key
+NEXT_PUBLIC_VAPI_PUBLIC_KEY=your_vapi_public_key
+
+# Deepgram (Live Coaching)
+DEEPGRAM_API_KEY=your_deepgram_key
 ```
 
-## Color Scheme
+### Chrome Extension Setup
 
-- **Dark Background**: #00102e
-- **Teal Accent**: #00ffc1
-- **Orange Gradient**: #ff0043 → #ff9855 → #ffbe57
+1. Navigate to `chrome://extensions/`
+2. Enable "Developer mode"
+3. Click "Load unpacked"
+4. Select the `chrome-extension` folder
+5. Grant microphone permissions when prompted
 
-## Deployment
+---
 
-### Deploy on Vercel
+## Architecture Highlights
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy!
+### Multi-Tier Intelligence
+
+```
+TIER 1: Edge Detection (<50ms)
+├── Pattern matching for objections (20+ patterns)
+├── Keyword spotting for buying signals
+├── Talk ratio calculation (word count per speaker)
+└── Section transition detection
+
+TIER 2: Fast Inference (200-500ms)
+├── GPT-4o-mini for real-time suggestions
+├── Objective completion checking
+├── Key info extraction
+└── 150 token limit for speed
+
+TIER 3: Deep Reasoning (1-3s)
+├── GPT-4o for post-call analysis
+├── Scenario generation from transcripts
+├── Comprehensive scoring (5 dimensions)
+└── Improvement recommendations
+```
+
+### Scoring System
+
+Every call is scored across 5 dimensions (100 points total):
+
+| Dimension | Points | What It Measures |
+|-----------|--------|-----------------|
+| Discovery | 25 | Did you uncover real problems? |
+| Objection Handling | 25 | Did you address concerns effectively? |
+| Value Articulation | 20 | Did you connect value to their needs? |
+| Call Control | 15 | Did you guide the conversation? |
+| Close Execution | 15 | Did you advance the deal? |
+
+---
+
+## Market Opportunity
+
+- **Sales Training Market**: $5.7B globally, growing 8% YoY
+- **Sales Enablement Software**: $3.4B, growing 15% YoY
+- **Conversation Intelligence**: $1.8B, growing 20% YoY
+
+RevPilot sits at the intersection of all three—a unified platform for practice, coaching, and performance intelligence.
+
+**TAM**: Every B2B sales team in the world
+**SAM**: 5.7M B2B sales reps in the US alone
+**SOM**: SMB/Mid-market sales teams (1-100 reps) looking for affordable, scalable training
+
+---
+
+## Why Now
+
+1. **Voice AI matured**: Vapi, ElevenLabs, and Deepgram make real-time voice conversations possible at low cost
+2. **LLMs reached critical capability**: GPT-4o can genuinely coach sales conversations with nuance
+3. **Remote work created the opening**: No more "manager listening in"—reps need digital coaching
+4. **Sales hiring costs exploding**: Companies need to ramp reps faster with less human training
+5. **Conversation intelligence commoditized**: Recording calls is table stakes—real-time coaching is the next frontier
+
+---
+
+## Contributing
+
+We welcome contributions! See our development setup above to get started.
+
+```bash
+# Run tests
+npm run test
+
+# Run linting
+npm run lint
+
+# Build for production
+npm run build
+```
+
+---
 
 ## License
 
-MIT License
+MIT License - see LICENSE file for details.
+
+---
+
+**RevPilot CoPilot**: Practice with AI. Coach in real-time. Never miss a key insight. Close more deals.
